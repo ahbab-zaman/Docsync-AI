@@ -1,50 +1,34 @@
 # Progress Tracker
 
-Update this file after each completed Phase 1 feature. A quick look should show what is done, what is next, and what remains.
-
----
-
 ## Current Status
-
-**Phase:** Phase 1 — Foundation
-**Last completed:** 14 Quality and Polish
-**Next:** Phase 2 (future planning)
-
----
+**Phase:** Phase 2 — Collaboration Layer
+**Last completed:** Phase 1 foundation and context refresh
+**Next:** Phase 2 editor shell
 
 ## Progress
 
 ### Phase 1 — Foundation
+- [x] 01 Project setup and `/src` structure
+- [x] 02 UI token direction and palette decision
+- [x] 03 Landing / auth / workspace foundation
+- [x] 04 Phase 1 planning docs
 
-- [x] 01 Foundation Setup — App scaffold, Tailwind v4, shadcn/ui, Inter font, src/ structure, env template
-- [x] 02 Landing Page — Full premium marketing page: nav header, hero, feature cards grid, collaboration preview, AI preview block, CTA section, footer; auth-aware CTAs
-- [x] 03 Authentication — Login/register pages with server actions, Zod validation, bcrypt hashing, session cookies
-- [x] 04 App Shell — Sidebar layout for `/app/*` routes with nav links
-- [x] 05 Dashboard — Dashboard page at `/app` with mock workspace cards
-- [x] 06 Workspace Management
-- [x] 07 Project Management
-- [x] 08 Document Editor Foundation
-- [x] 09 AI Assistant Panel
-- [x] 10 Members and Access
-- [x] 11 Notifications and Activity — Notifications page at `/app/notifications` with notification list, activity feed, unread/read states, empty states, mark-as-read actions, and sidebar badge
-- [x] 12 Profile and Settings — Settings page at `/app/settings` with mock profile form
-- [x] 13 Database Schema — SQL schema, pg helper, repository layer (users, workspaces, projects, documents, members)
-- [x] 14 Quality and Polish — sonner toast library, Skeleton/ConfirmDialog/EmptyState/LoadingSpinner primitives, error boundary, loading skeletons for 5 routes, toast feedback on key actions, accessible InviteModal with focus trap & ARIA attributes, confirmation dialogs for destructive actions
-
----
-
-## Phase 2 — Reserved
-
-Phase 2 will be planned later and is intentionally left open for the collaboration engine, presence synchronization, cursor tracking, and deeper AI workflows.
-
----
+### Phase 2 — Collaboration Layer
+- [ ] 01 Editor shell
+- [ ] 02 TipTap integration
+- [ ] 03 Hocuspocus + Yjs sync
+- [ ] 04 Presence + cursors
+- [ ] 05 Comments + mentions
+- [ ] 06 AI actions in editor
+- [ ] 07 Version history
+- [ ] 08 Notifications
+- [ ] 09 Search
+- [ ] 10 Responsive polish
 
 ## Decisions Made During Build
-
-_Add decisions here as they are made during implementation._
-
----
-
-## Notes
-
-_Add notes here as the build progresses — workarounds, patterns, anything that differs from the context files._
+- Use a single-repo modular architecture.
+- Keep durable collaboration data in PostgreSQL.
+- Keep ephemeral realtime state in Redis.
+- Use TipTap + Yjs/Hocuspocus for shared document editing.
+- Use Socket.IO for presence and lightweight live events.
+- Keep the UI bright and readable with the Ivory Nebula palette.

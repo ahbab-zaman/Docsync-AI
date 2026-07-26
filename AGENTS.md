@@ -1,172 +1,113 @@
-# AGENTS.md — Docsync
+# AGENTS.md — Phase 2 Collaboration Workspace
 
-> **Read this file first before touching any code.**
-> After this, read `docs/project-overview.md` and `docs/architecture.md` in full before starting a feature. Then read only the other docs relevant to the task you are building.
+> Read this file first, every session, before touching any code. After this, read `project-overview.md` and `architecture.md` in full before starting any feature.
 
 ---
 
 ## 1. Project Overview
 
-Docsync is a **single-repo** Next.js application for real-time AI collaboration. The repo owns the UI, authentication, server actions, route handlers, database access, realtime hooks, and background job integration.
+This repo is the frontend + app shell for a real-time AI collaboration workspace. The app is built as a single codebase with a `/src` structure from the start and a modular architecture that supports real-time documents, comments, presence, notifications, and AI-assisted editing.
 
-Phase 1 focuses on the foundation: marketing page, auth, authenticated shell, workspace/project/document structure, AI panel, members, notifications, settings, and the core database model.
+Phase 1 established the foundation. Phase 2 is the collaboration layer:
+- collaborative editor
+- live cursors and presence
+- comments and mentions
+- AI actions inside the editor
+- version history
+- notifications
+- search across collaboration content
 
 ---
 
 ## 2. Core Technologies
 
-- **Framework**: Next.js (App Router)
-- **Language**: TypeScript (strict)
-- **Styling**: Tailwind CSS v4
-- **UI primitives**: shadcn/ui
-- **Rich text editor**: Tiptap
-- **Realtime transport**: Socket.IO
-- **Collaboration foundation**: Yjs + Hocuspocus
-- **Database access**: PostgreSQL + `pg` + repository layer
-- **Database**: PostgreSQL
-- **Cache / pub-sub / queue store**: Redis
-- **Background jobs**: BullMQ
-- **Validation**: Zod
+- Framework: Next.js (App Router)
+- Language: TypeScript (strict)
+- Styling: Tailwind CSS v4
+- UI primitives: shadcn/ui
+- Editor: TipTap
+- Realtime document sync: Yjs + Hocuspocus
+- Realtime events: Socket.IO
+- Backend: Node.js
+- Database: PostgreSQL
+- Data access: `pg` repository layer or another SQL-first approach approved in `library-docs.md`
+- Cache / ephemeral realtime state: Redis
+- Jobs: BullMQ
+
+Do not introduce Prisma.
 
 ---
 
-## 3. Project Initialization
+## 3. Read Order
 
-This project starts from an empty repository. Set up the base app before any feature work.
+Before building anything, read these files in this order:
+1. `project-overview.md`
+2. `architecture.md`
+3. `build-plan.md`
+4. `code-structure.md`
+5. `library-docs.md`
+6. `ui-rules.md`
+7. `ui-tokens.md`
+8. `ui-registry.md`
+9. `progress-tracker.md`
 
-### 3.1 Bootstrap Order
+---
 
-1. Create the Next.js app with TypeScript and the App Router.
-2. Enable the `/src` directory from day one.
-3. Set up Tailwind CSS v4 and global design tokens.
-4. Add Inter as the root font in `src/app/layout.tsx`.
-5. Install the core libraries for Phase 1:
-   - shadcn/ui
-   - PostgreSQL client (`pg`)
-   - Repository layer helpers
-   - PostgreSQL client
-   - Redis client
-   - BullMQ
-   - Socket.IO
-   - Tiptap
-   - Yjs / Hocuspocus
-   - Zod
-6. Create the base folders and files for the app shell, shared utilities, and feature modules.
-7. Add environment variable templates before writing feature code.
-8. Create the initial route scaffold for all Phase 1 pages.
-9. Wire the first mock-data pages before any backend logic.
-10. Only then begin Phase 1 feature implementation.
-
-### 3.2 Required Source Root
-
-The project source must live under `/src`:
+## 4. Project Structure
 
 ```text
-src/
-├── app/
-├── components/
-├── lib/
-├── server/
-├── hooks/
-├── store/
-├── types/
-├── data/
-├── styles/
-└── utils/
+/
+├── AGENTS.md
+├── .agent/
+│   ├── architecture.md
+│   ├── imprint.md
+│   ├── review.md
+│   ├── recover.md
+│   ├── remember.md
+├── context/
+│   ├── project-overview.md
+│   ├── architecture.md
+│   ├── build-plan.md
+│   ├── progress-tracker.md
+│   ├── code-structure.md
+│   ├── library-docs.md
+│   ├── ui-rules.md
+│   ├── ui-tokens.md
+│   └── ui-registry.md
+├── src/
+│   ├── app/
+│   ├── components/
+│   ├── lib/
+│   ├── hooks/
+│   ├── types/
+│   ├── actions/
+│   ├── repositories/
+│   ├── realtime/
+│   └── styles/
+└── ...
 ```
 
-### 3.3 Bootstrap Rules
+---
 
-- never start feature work before the base app shell exists
-- never build Phase 2 infrastructure during setup
-- keep the first commit focused on structure, theme tokens, and routing
-- mock data is allowed during setup, but real feature logic is not
+## 5. Phase 2 Build Principle
 
-## 3. Working Rules
-
-- Think before implementing.
-- Read the docs before writing code.
-- Keep scope narrow.
-- Build one feature completely before the next.
-- Prefer clarity over cleverness.
-- Every feature must be testable.
-- Never let one failure crash the whole flow.
-- Use mock data first when the build plan asks for it.
+1. Update UI spec and tokens if needed.
+2. Build the editor shell and layout first.
+3. Add mock data and verify the layout visually.
+4. Wire realtime collaboration.
+5. Add persistence and server actions.
+6. Add AI actions in the editor.
+7. Add notifications, comments, search, and history.
+8. Update the progress tracker after every completed feature.
 
 ---
 
-## 4. Source Layout
+## 6. Scope Rules
 
-The app source must live under `/src`.
-
-```text
-src/
-├── app/
-├── components/
-├── lib/
-├── server/
-├── hooks/
-├── store/
-├── types/
-├── data/
-├── styles/
-└── utils/
-```
-
-### Routing
-- all routes use App Router
-- public pages stay in marketing/auth groups
-- protected pages stay under the app shell group
-
-### Data access
-- All database access goes through the repository layer and shared database helper
-- never query the database directly from UI components
-
-### Mutations
-- server actions own form submissions
-- route handlers are only for HTTP-style endpoints
-
----
-
-## 5. Code Quality Rules
-
-- strict TypeScript only
-- no `any`
-- explicit function inputs and outputs
-- named exports only for components
-- one component per file
-- no raw color classes
-- no hardcoded theme values
-- keep server and client logic separate
-
----
-
-## 6. UI Rules
-
-- use Inter as the main font
-- use tokens from `ui-tokens.md`
-- follow `ui-rules.md` for layout, spacing, and states
-- use `ui-registry.md` before making a new shared component
-- keep the document editor visually dominant
-
----
-
-## 7. Error Handling
-
-- every server action has `try/catch`
-- every route handler has `try/catch`
-- show human-readable errors to users
-- log server-side failures with a clear prefix
-- never leak raw stack traces into the UI
-
----
-
-## 8. Phase Guidance
-
-### Phase 1
-Build the foundation cleanly and keep collaboration mostly structural.
-
-### Phase 2
-Add the full live collaboration engine, cursor presence, richer syncing, and deeper AI workflows.
-
-Do not build Phase 2 behavior until Phase 1 is stable.
+- Scope is sacred.
+- Build one collaboration feature at a time.
+- Every feature must be testable before moving on.
+- Keep code readable and modular.
+- Use server components by default.
+- Add `"use client"` only where browser state, event handlers, or third-party client-only libraries require it.
+- Never add Prisma.
