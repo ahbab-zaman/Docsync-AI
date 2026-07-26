@@ -1,4 +1,9 @@
-export default function DashboardPage() {
+import Link from "next/link";
+import { getWorkspaces } from "@/server/actions/workspace";
+
+export default async function DashboardPage() {
+  const { workspaces } = await getWorkspaces();
+
   return (
     <div className="space-y-6">
       <div>
@@ -8,17 +13,22 @@ export default function DashboardPage() {
         </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-lg border border-border bg-surface p-4">
-          <h3 className="font-medium text-foreground">Personal Workspace</h3>
-          <p className="text-sm text-text-secondary mt-1">3 projects</p>
-        </div>
-        <div className="rounded-lg border border-border bg-surface p-4">
-          <h3 className="font-medium text-foreground">Team Alpha</h3>
-          <p className="text-sm text-text-secondary mt-1">12 projects</p>
-        </div>
-        <div className="rounded-lg border border-dashed border-border bg-surface-secondary p-4 flex items-center justify-center">
-          <span className="text-sm text-text-muted">+ New Workspace</span>
-        </div>
+        {workspaces.slice(0, 3).map((workspace) => (
+          <Link
+            key={workspace.id}
+            href={`/app/workspaces/${workspace.id}`}
+            className="rounded-lg border border-border bg-surface p-4 hover:border-border-strong transition-colors block"
+          >
+            <h3 className="font-medium text-foreground">{workspace.name}</h3>
+            <p className="text-sm text-text-secondary mt-1">{workspace.project_count} projects</p>
+          </Link>
+        ))}
+        <Link
+          href="/app/workspaces/new"
+          className="rounded-lg border border-dashed border-border bg-surface-secondary p-4 flex items-center justify-center hover:border-border-strong transition-colors"
+        >
+          <span className="text-sm font-medium text-text-muted">+ New workspace</span>
+        </Link>
       </div>
     </div>
   );

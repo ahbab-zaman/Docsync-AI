@@ -7,8 +7,8 @@ Update this file after each completed Phase 1 feature. A quick look should show 
 ## Current Status
 
 **Phase:** Phase 1 — Foundation
-**Last completed:** 03 Authentication
-**Next:** 06 Workspace Management
+**Last completed:** 08 Document Editor Foundation
+**Next:** 09 AI Assistant Panel
 
 ---
 
@@ -21,9 +21,9 @@ Update this file after each completed Phase 1 feature. A quick look should show 
 - [x] 03 Authentication — Login/register pages with server actions, Zod validation, bcrypt hashing, session cookies
 - [x] 04 App Shell — Sidebar layout for `/app/*` routes with nav links
 - [x] 05 Dashboard — Dashboard page at `/app` with mock workspace cards
-- [ ] 06 Workspace Management
-- [ ] 07 Project Management
-- [ ] 08 Document Editor Foundation
+- [x] 06 Workspace Management
+- [x] 07 Project Management
+- [x] 08 Document Editor Foundation
 - [ ] 09 AI Assistant Panel
 - [ ] 10 Members and Access
 - [ ] 11 Notifications and Activity

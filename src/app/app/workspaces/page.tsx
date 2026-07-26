@@ -1,4 +1,9 @@
-export default function WorkspacesPage() {
+import Link from "next/link";
+import { getWorkspaces } from "@/server/actions/workspace";
+
+export default async function WorkspacesPage() {
+  const { workspaces } = await getWorkspaces();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -8,35 +13,35 @@ export default function WorkspacesPage() {
             All your workspaces in one place.
           </p>
         </div>
+        <Link
+          href="/app/workspaces/new"
+          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent-dark transition-colors"
+        >
+          New workspace
+        </Link>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-lg border border-border bg-surface p-5 space-y-2">
-          <h3 className="font-semibold text-foreground">Personal Workspace</h3>
-          <p className="text-sm text-text-secondary">
-            Your personal projects and documents.
-          </p>
-          <span className="inline-flex items-center rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent">
-            3 projects
-          </span>
-        </div>
-        <div className="rounded-lg border border-border bg-surface p-5 space-y-2">
-          <h3 className="font-semibold text-foreground">Team Alpha</h3>
-          <p className="text-sm text-text-secondary">
-            Main product development workspace.
-          </p>
-          <span className="inline-flex items-center rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent">
-            12 projects
-          </span>
-        </div>
-        <div className="rounded-lg border border-border bg-surface p-5 space-y-2">
-          <h3 className="font-semibold text-foreground">Design Team</h3>
-          <p className="text-sm text-text-secondary">
-            Design system and UX projects.
-          </p>
-          <span className="inline-flex items-center rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent">
-            5 projects
-          </span>
-        </div>
+        {workspaces.map((workspace) => (
+          <Link
+            key={workspace.id}
+            href={`/app/workspaces/${workspace.id}`}
+            className="rounded-lg border border-border bg-surface p-5 space-y-2 hover:border-border-strong transition-colors block"
+          >
+            <h3 className="font-semibold text-foreground">{workspace.name}</h3>
+            {workspace.description && (
+              <p className="text-sm text-text-secondary">{workspace.description}</p>
+            )}
+            <span className="inline-flex items-center rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent">
+              {workspace.project_count} projects
+            </span>
+          </Link>
+        ))}
+        <Link
+          href="/app/workspaces/new"
+          className="rounded-lg border border-dashed border-border bg-surface-secondary p-5 flex items-center justify-center hover:border-border-strong transition-colors"
+        >
+          <span className="text-sm font-medium text-text-muted">+ New workspace</span>
+        </Link>
       </div>
     </div>
   );

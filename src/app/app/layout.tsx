@@ -23,6 +23,12 @@ export default function AppLayout({
             Workspaces
           </a>
           <a
+            href="/app/workspaces/new"
+            className="rounded-md px-3 py-2 text-sm font-medium text-text-secondary hover:bg-surface hover:text-foreground transition-colors"
+          >
+            New Workspace
+          </a>
+          <a
             href="/app/settings"
             className="rounded-md px-3 py-2 text-sm font-medium text-text-secondary hover:bg-surface hover:text-foreground transition-colors"
           >
