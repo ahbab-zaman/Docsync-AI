@@ -26,7 +26,7 @@ Update this file after each completed Phase 1 feature. A quick look should show 
 - [x] 08 Document Editor Foundation
 - [x] 09 AI Assistant Panel
 - [x] 10 Members and Access
-- [ ] 11 Notifications and Activity
+- [x] 11 Notifications and Activity — Notifications page at `/app/notifications` with notification list, activity feed, unread/read states, empty states, mark-as-read actions, and sidebar badge
 - [x] 12 Profile and Settings — Settings page at `/app/settings` with mock profile form
 - [x] 13 Database Schema — SQL schema, pg helper, repository layer (users, workspaces, projects, documents, members)
 - [ ] 14 Quality and Polish

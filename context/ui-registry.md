@@ -197,3 +197,54 @@ Last updated: 2026-07-26
 | Padding | `p-4` |
 | Text | `text-sm text-text-muted` |
 | Layout | `flex items-center justify-center` |
+
+### NotificationList
+
+File: `src/components/notifications/NotificationList.tsx`
+Last updated: 2026-07-27
+
+| Property | Class |
+|---|---|
+| Section title | `text-lg font-semibold text-foreground` |
+| Unread count label | `text-sm font-normal text-text-muted` |
+| Container | `rounded-lg border border-border divide-y divide-border` |
+| Row background (unread) | `bg-surface-secondary` |
+| Row background (read) | `bg-surface` |
+| Row padding | `p-4` |
+| Row gap | `gap-3` |
+| Icon | `text-sm text-text-muted` |
+| Title (unread) | `text-sm font-semibold text-foreground` |
+| Title (read) | `text-sm font-medium text-foreground` |
+| Description | `text-xs text-text-secondary` |
+| Timestamp | `text-xs text-text-muted` |
+| Action link | `text-xs text-accent hover:text-accent-dark transition-colors` |
+| Empty state | `rounded-lg border border-border bg-surface p-12 text-center` |
+
+### ActivityList
+
+File: `src/components/notifications/ActivityList.tsx`
+Last updated: 2026-07-27
+
+| Property | Class |
+|---|---|
+| Section title | `text-lg font-semibold text-foreground` |
+| Container | `rounded-lg border border-border divide-y divide-border` |
+| Row background | `bg-surface` |
+| Row padding | `p-4` |
+| Description | `text-sm font-medium text-foreground` |
+| Metadata name | `text-xs font-medium text-text-secondary` |
+| Metadata separator | `text-xs text-text-muted` |
+| Metadata workspace | `text-xs text-text-muted` |
+| Metadata timestamp | `text-xs text-text-muted` |
+
+### NotificationList — Empty State
+
+File: `src/components/notifications/NotificationList.tsx`
+Last updated: 2026-07-27
+
+| Property | Class |
+|---|---|
+| Container | `rounded-lg border border-border bg-surface p-12 text-center` |
+| Icon | `text-2xl mb-2` |
+| Title | `text-sm font-medium text-foreground` |
+| Subtitle | `text-xs text-text-muted mt-1` |
