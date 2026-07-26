@@ -1,16 +1,24 @@
 "use server";
 
 import { z, ZodError } from "zod";
-import {
-  getMockMembersByWorkspace,
-  getMockPendingInvites,
-  inviteMockMember,
-  acceptMockInvite,
-  cancelMockInvite,
-  changeMockMemberRole,
-  removeMockMember,
-} from "@/data/mock-workspaces";
-import type { MockMember, MockPendingInvite } from "@/data/mock-workspaces";
+import { query } from "@/lib/db";
+import { getDevUserId } from "@/lib/auth-helpers";
+
+interface Member {
+  id: string;
+  name: string;
+  email: string;
+  role: "owner" | "admin" | "member";
+  avatar_url: string | null;
+}
+
+interface PendingInvite {
+  id: string;
+  email: string;
+  role: "admin" | "member";
+  invited_by: string;
+  invited_at: Date;
+}
 
 const inviteSchema = z.object({
   workspaceId: z.string().min(1),
@@ -20,10 +28,18 @@ const inviteSchema = z.object({
 
 export async function getMembers(
   workspaceId: string
-): Promise<{ members: MockMember[]; pendingInvites: MockPendingInvite[] }> {
-  const members = getMockMembersByWorkspace(workspaceId);
-  const pendingInvites = getMockPendingInvites(workspaceId);
-  return { members, pendingInvites };
+): Promise<{ members: Member[]; pendingInvites: PendingInvite[] }> {
+    const memberResult = await query<Member>(
+    `SELECT u.id, u.name, u.email, u.avatar_url, wm.role
+     FROM workspace_members wm
+     JOIN users u ON u.id = wm.user_id
+     WHERE wm.workspace_id = $1
+     ORDER BY wm.joined_at`,
+    [workspaceId]
+  );
+
+  // Pending invites table doesn't exist yet, return empty
+  return { members: memberResult.rows, pendingInvites: [] };
 }
 
 export async function inviteMember(
@@ -37,10 +53,24 @@ export async function inviteMember(
       role: formData.get("role"),
     });
 
-    const result = inviteMockMember(data.workspaceId, data.email, data.role);
-    if (!result) {
-      return { error: "User is already a member or workspace not found." };
+    const userResult = await query(
+      "SELECT id FROM users WHERE email = $1",
+      [data.email]
+    );
+
+    if (userResult.rows.length === 0) {
+      return { error: "User with this email not found." };
     }
+
+    const userId = userResult.rows[0].id;
+
+    await query(
+      `INSERT INTO workspace_members (workspace_id, user_id, role)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (workspace_id, user_id) DO UPDATE SET role = $3`,
+      [data.workspaceId, userId, data.role]
+    );
+
     return { success: true };
   } catch (error) {
     if (error instanceof ZodError) {
@@ -54,29 +84,17 @@ export async function inviteMember(
 }
 
 export async function acceptInvite(
-  workspaceId: string,
-  inviteId: string
+  _workspaceId: string,
+  _inviteId: string
 ): Promise<{ success?: boolean; error?: string }> {
-  try {
-    const result = acceptMockInvite(workspaceId, inviteId);
-    if (!result) return { error: "Invite not found." };
-    return { success: true };
-  } catch {
-    return { error: "Failed to accept invite." };
-  }
+  return { error: "Not implemented" };
 }
 
 export async function cancelInvite(
-  workspaceId: string,
-  inviteId: string
+  _workspaceId: string,
+  _inviteId: string
 ): Promise<{ success?: boolean; error?: string }> {
-  try {
-    const result = cancelMockInvite(workspaceId, inviteId);
-    if (!result) return { error: "Invite not found." };
-    return { success: true };
-  } catch {
-    return { error: "Failed to cancel invite." };
-  }
+  return { error: "Not implemented" };
 }
 
 export async function changeRole(
@@ -85,8 +103,10 @@ export async function changeRole(
   role: "admin" | "member"
 ): Promise<{ success?: boolean; error?: string }> {
   try {
-    const result = changeMockMemberRole(workspaceId, userId, role);
-    if (!result) return { error: "Cannot change role for this member." };
+    await query(
+      "UPDATE workspace_members SET role = $1 WHERE workspace_id = $2 AND user_id = $3 AND role != 'owner'",
+      [role, workspaceId, userId]
+    );
     return { success: true };
   } catch {
     return { error: "Failed to change role." };
@@ -98,8 +118,10 @@ export async function removeMember(
   userId: string
 ): Promise<{ success?: boolean; error?: string }> {
   try {
-    const result = removeMockMember(workspaceId, userId);
-    if (!result) return { error: "Cannot remove owner or member not found." };
+    await query(
+      "DELETE FROM workspace_members WHERE workspace_id = $1 AND user_id = $2 AND role != 'owner'",
+      [workspaceId, userId]
+    );
     return { success: true };
   } catch {
     return { error: "Failed to remove member." };

@@ -43,7 +43,7 @@ export default function DocumentEditor({
   const [content, setContent] = useState(initialContent);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(true);
-  const [aiPanelOpen, setAiPanelOpen] = useState(true);
+  const [rightPanel, setRightPanel] = useState<"ai" | "comments" | null>("ai");
   const [outlineOpen, setOutlineOpen] = useState(false);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
