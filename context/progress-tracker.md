@@ -14,10 +14,10 @@
 - [x] 04 Phase 1 planning docs
 
 ### Phase 2 — Collaboration Layer
-- [ ] 01 Editor shell
-- [ ] 02 TipTap integration
-- [ ] 03 Hocuspocus + Yjs sync
-- [ ] 04 Presence + cursors
+- [x] 01 Editor shell
+- [x] 02 TipTap integration
+- [x] 03 Hocuspocus + Yjs sync
+- [x] 04 Presence + cursors
 - [ ] 05 Comments + mentions
 - [ ] 06 AI actions in editor
 - [ ] 07 Version history

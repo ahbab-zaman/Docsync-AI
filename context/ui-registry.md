@@ -10,5 +10,43 @@ Before building any component:
 
 After building any component — update this file with the component name, file path, and exact classes used.
 
+### Realtime
+- `src/realtime/socket-events.ts` — Socket.IO event name constants
+- `src/realtime/presence.ts` — PresenceUser and RoomPresence types
+- `src/realtime/cursor.ts` — CursorPosition, CursorData, TypingUser types
+- `src/realtime/rooms.ts` — Room management types
+- `src/realtime/notification-events.ts` — NotificationEvent types
+
+### Hooks
+- `src/hooks/useSocket.ts` — Socket.IO connection hook with presence and cursor events
+- `src/hooks/useDocumentSync.ts` — Yjs/Hocuspocus/TipTap collaboration hook
+- `src/hooks/usePresence.ts` — Presence management hook
+
+### Server
+- `server/hocuspocus-server.ts` — Hocuspocus collaboration server
+- `server/socket-server.ts` — Socket.IO presence/events server
+
 ## Components
-_Empty. Components will be added here as they are built in Phase 2._
+
+### Editor Shell
+- `src/components/editor/OutlinePanel.tsx` — Left outline panel showing document heading structure
+  - Classes: `p-4`, `text-xs font-semibold text-text-muted uppercase tracking-wider`, space-y, hover states
+- `src/components/editor/EditorShell.tsx` — Three-zone layout wrapper (outline | editor | AI panel)
+- `src/components/documents/TiptapEditor.tsx` — Enhanced TipTap editor with icon toolbar using lucide-react
+  - Toolbar: Bold, Italic, Strike, H1-H3, Bullet/Ordered lists, Quote, Code, Undo/Redo
+  - Container: `rounded-lg border border-border bg-surface`, toolbar: `bg-surface-secondary`
+
+### Presence
+- `src/components/presence/CollaboratorAvatars.tsx` — Overlapping avatar circles with online indicators
+  - Props: `collaborators`, `max`, `size`
+  - Online dot: `h-2.5 w-2.5 rounded-full border-[1.5px] border-surface bg-success`
+
+### Data
+- `src/data/mock-collaborators.ts` — Mock collaborator data with colors and online status
+
+### Document Editor (enhanced)
+- `src/app/app/documents/[documentId]/DocumentEditor.tsx` — Full three-zone editor layout
+  - Top action bar: outline toggle, save status, manual save, collaborator avatars, online count, AI toggle
+  - Left: outline panel (collapsible, 56-wide)
+  - Center: title input + TiptapEditor + metadata footer
+  - Right: AI panel (collapsible, 80-wide)
