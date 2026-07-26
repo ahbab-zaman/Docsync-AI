@@ -1,16 +1,21 @@
 "use client";
 
+import { useEffect } from "react";
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { createWorkspace } from "@/server/actions/workspace";
 
 export default function NewWorkspacePage() {
   const router = useRouter();
   const [state, formAction, pending] = useActionState(createWorkspace, {});
 
-  if (state.success && state.workspace) {
-    router.push(`/app/workspaces/${state.workspace.id}`);
-  }
+  useEffect(() => {
+    if (state.success && state.workspace) {
+      toast.success("Workspace created");
+      router.push(`/app/workspaces/${state.workspace.id}`);
+    }
+  }, [state.success, state.workspace, router]);
 
   return (
     <div className="space-y-6 max-w-lg">

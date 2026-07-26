@@ -7,8 +7,8 @@ Update this file after each completed Phase 1 feature. A quick look should show 
 ## Current Status
 
 **Phase:** Phase 1 — Foundation
-**Last completed:** 10 Members and Access
-**Next:** 11 Notifications and Activity
+**Last completed:** 14 Quality and Polish
+**Next:** Phase 2 (future planning)
 
 ---
 
@@ -29,7 +29,7 @@ Update this file after each completed Phase 1 feature. A quick look should show 
 - [x] 11 Notifications and Activity — Notifications page at `/app/notifications` with notification list, activity feed, unread/read states, empty states, mark-as-read actions, and sidebar badge
 - [x] 12 Profile and Settings — Settings page at `/app/settings` with mock profile form
 - [x] 13 Database Schema — SQL schema, pg helper, repository layer (users, workspaces, projects, documents, members)
-- [ ] 14 Quality and Polish
+- [x] 14 Quality and Polish — sonner toast library, Skeleton/ConfirmDialog/EmptyState/LoadingSpinner primitives, error boundary, loading skeletons for 5 routes, toast feedback on key actions, accessible InviteModal with focus trap & ARIA attributes, confirmation dialogs for destructive actions
 
 ---
 

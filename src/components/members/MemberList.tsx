@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import type { MockMember, MockPendingInvite } from "@/data/mock-workspaces";
 import RoleSelector from "./RoleSelector";
 import InviteModal from "./InviteModal";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { inviteMember, changeRole, removeMember, acceptInvite, cancelInvite } from "@/server/actions/members";
 
 interface MemberListProps {
@@ -22,6 +24,7 @@ export default function MemberList({
   const [members, setMembers] = useState<MockMember[]>(initialMembers);
   const [invites, setInvites] = useState<MockPendingInvite[]>(initialInvites);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [removingMember, setRemovingMember] = useState<MockMember | null>(null);
 
   const currentUser = members.find((m) => m.id === currentUserId);
   const currentUserRole = currentUser?.role ?? "member";
@@ -36,6 +39,7 @@ export default function MemberList({
     const result = await changeRole(workspaceId, userId, role);
     if (result.success) {
       setMembers((prev) => prev.map((m) => (m.id === userId ? { ...m, role } : m)));
+      toast.success(`Role changed to ${role}`);
     }
   };
 
@@ -43,13 +47,16 @@ export default function MemberList({
     const result = await removeMember(workspaceId, userId);
     if (result.success) {
       setMembers((prev) => prev.filter((m) => m.id !== userId));
+      toast.success("Member removed");
     }
+    setRemovingMember(null);
   };
 
   const handleAccept = async (inviteId: string) => {
     const result = await acceptInvite(workspaceId, inviteId);
     if (result.success) {
       setInvites((prev) => prev.filter((i) => i.id !== inviteId));
+      toast.success("Invite accepted");
     }
   };
 
@@ -57,6 +64,7 @@ export default function MemberList({
     const result = await cancelInvite(workspaceId, inviteId);
     if (result.success) {
       setInvites((prev) => prev.filter((i) => i.id !== inviteId));
+      toast.success("Invite cancelled");
     }
   };
 
@@ -100,7 +108,7 @@ export default function MemberList({
               {member.role !== "owner" && (currentUserRole === "owner" || currentUserRole === "admin") && (
                 <button
                   type="button"
-                  onClick={() => handleRemove(member.id)}
+                  onClick={() => setRemovingMember(member)}
                   className="text-xs text-text-muted hover:text-error transition-colors"
                 >
                   Remove
@@ -113,10 +121,16 @@ export default function MemberList({
 
       {invites.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-foreground mb-3">Pending invites ({invites.length})</h3>
-          <div className="rounded-lg border border-border divide-y divide-border">
+          <h3 className="text-sm font-semibold text-foreground mb-3" id="pending-invites-heading">
+            Pending invites ({invites.length})
+          </h3>
+          <div
+            className="rounded-lg border border-border divide-y divide-border"
+            role="list"
+            aria-labelledby="pending-invites-heading"
+          >
             {invites.map((invite) => (
-              <div key={invite.id} className="flex items-center justify-between p-4">
+              <div key={invite.id} className="flex items-center justify-between p-4" role="listitem">
                 <div>
                   <p className="text-sm text-foreground">{invite.email}</p>
                   <p className="text-xs text-text-muted">
@@ -152,6 +166,16 @@ export default function MemberList({
           onClose={() => setShowInviteModal(false)}
         />
       )}
+
+      <ConfirmDialog
+        open={removingMember !== null}
+        title="Remove member"
+        message={`Are you sure you want to remove ${removingMember?.name} from this workspace? This action cannot be undone.`}
+        confirmLabel="Remove"
+        variant="danger"
+        onConfirm={() => removingMember && handleRemove(removingMember.id)}
+        onCancel={() => setRemovingMember(null)}
+      />
     </div>
   );
 }

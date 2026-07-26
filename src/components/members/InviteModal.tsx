@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 interface InviteModalProps {
   workspaceId: string;
@@ -13,6 +14,34 @@ export default function InviteModal({ workspaceId, onInvite, onClose }: InviteMo
   const [role, setRole] = useState<"member" | "admin">("member");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  const emailRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    emailRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "Tab" && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last?.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first?.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,6 +56,7 @@ export default function InviteModal({ workspaceId, onInvite, onClose }: InviteMo
       if (result && "error" in result && result.error) {
         setError(result.error);
       } else {
+        toast.success("Invitation sent");
         onClose();
       }
     } catch {
@@ -37,20 +67,29 @@ export default function InviteModal({ workspaceId, onInvite, onClose }: InviteMo
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-md rounded-xl border border-border bg-surface p-6 shadow-lg">
-        <h2 className="text-lg font-semibold text-foreground">Invite member</h2>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="invite-title"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div ref={dialogRef} className="w-full max-w-md rounded-xl border border-border bg-surface p-6 shadow-lg">
+        <h2 id="invite-title" className="text-lg font-semibold text-foreground">Invite member</h2>
         <p className="mt-1 text-sm text-text-secondary">Send an invitation to join this workspace.</p>
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium text-foreground">Email address</label>
             <input
+              ref={emailRef}
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="colleague@company.com"
               required
+              aria-describedby={error ? "invite-error" : undefined}
+              aria-invalid={error ? "true" : undefined}
               className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
@@ -66,7 +105,11 @@ export default function InviteModal({ workspaceId, onInvite, onClose }: InviteMo
               <option value="admin">Admin</option>
             </select>
           </div>
-          {error && <p className="text-sm text-error">{error}</p>}
+          {error && (
+            <p id="invite-error" className="text-sm text-error" role="alert">
+              {error}
+            </p>
+          )}
           <div className="flex gap-3 justify-end">
             <button
               type="button"

@@ -1,7 +1,8 @@
 "use client";
 
-import { Suspense, useActionState } from "react";
+import { useEffect, Suspense, useActionState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { createProject } from "@/server/actions/project";
 
 function NewProjectForm() {
@@ -11,9 +12,12 @@ function NewProjectForm() {
 
   const [state, formAction, pending] = useActionState(createProject, {});
 
-  if (state.success && state.project) {
-    router.push(`/app/projects/${state.project.id}`);
-  }
+  useEffect(() => {
+    if (state.success && state.project) {
+      toast.success("Project created");
+      router.push(`/app/projects/${state.project.id}`);
+    }
+  }, [state.success, state.project, router]);
 
   if (!workspaceId) {
     return (

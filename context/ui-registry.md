@@ -248,3 +248,57 @@ Last updated: 2026-07-27
 | Icon | `text-2xl mb-2` |
 | Title | `text-sm font-medium text-foreground` |
 | Subtitle | `text-xs text-text-muted mt-1` |
+
+### Skeleton
+
+File: `src/components/ui/Skeleton.tsx`
+Last updated: 2026-07-27
+
+| Property | Class |
+|---|---|
+| Background | `bg-surface-tertiary` |
+| Animation | `animate-pulse` |
+| Radius | `rounded-md` |
+| A11y | `aria-hidden="true"` |
+
+### ConfirmDialog
+
+File: `src/components/ui/ConfirmDialog.tsx`
+Last updated: 2026-07-27
+
+| Property | Class |
+|---|---|
+| Overlay | `fixed inset-0 z-50 flex items-center justify-center bg-black/40` |
+| Container | `w-full max-w-sm rounded-xl border border-border bg-surface p-6 shadow-lg` |
+| Title | `text-lg font-semibold text-foreground` |
+| Message | `text-sm text-text-secondary` |
+| Action group | `flex gap-3 justify-end` |
+| Default confirm | `bg-accent text-accent-foreground hover:opacity-90` |
+| Danger confirm | `bg-error text-accent-foreground hover:opacity-90` |
+| Cancel button | `rounded-lg border border-border px-4 py-2 text-sm font-medium text-text-primary hover:bg-surface-secondary` |
+| A11y | `role="dialog"`, `aria-modal="true"`, `aria-labelledby` |
+
+### EmptyState
+
+File: `src/components/ui/EmptyState.tsx`
+Last updated: 2026-07-27
+
+| Property | Class |
+|---|---|
+| Container | `rounded-lg border border-border bg-surface p-12 text-center flex flex-col items-center justify-center` |
+| Icon | `text-2xl mb-2` |
+| Title | `text-sm font-medium text-foreground` |
+| Description | `text-xs text-text-muted mt-1 max-w-sm` |
+| Action wrapper | `mt-4` |
+
+### LoadingSpinner
+
+File: `src/components/ui/LoadingSpinner.tsx`
+Last updated: 2026-07-27
+
+| Property | Class |
+|---|---|
+| Container | `flex flex-col items-center justify-center gap-2` |
+| Spinner | `h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent` |
+| Label | `text-xs text-text-muted` |
+| A11y | `role="status"`, `aria-live="polite"` |

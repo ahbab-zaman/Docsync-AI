@@ -1,7 +1,8 @@
 "use client";
 
-import { Suspense, useActionState } from "react";
+import { useEffect, Suspense, useActionState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { createDocument } from "@/server/actions/document";
 
 function NewDocumentForm() {
@@ -11,9 +12,12 @@ function NewDocumentForm() {
 
   const [state, formAction, pending] = useActionState(createDocument, {});
 
-  if (state.success && state.document) {
-    router.push(`/app/documents/${state.document.id}`);
-  }
+  useEffect(() => {
+    if (state.success && state.document) {
+      toast.success("Document created");
+      router.push(`/app/documents/${state.document.id}`);
+    }
+  }, [state.success, state.document, router]);
 
   if (!projectId) {
     return (

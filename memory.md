@@ -1,42 +1,49 @@
-# Memory — Notifications and Activity
+# Memory — Quality and Polish
 
 Last updated: 2026-07-27
 
 ## What was built
 
-**11 Notifications and Activity:**
-- `src/types/notifications.ts` — Notification, ActivityEvent types, NotificationType union
-- `src/data/mock-notifications.ts` — 7 mock notifications, 7 mock activity events, helper functions (create, mark read, mark all read, get unread count)
-- `src/server/actions/notifications.ts` — getNotifications, getActivity, getUnreadCount, markAsRead, markAllAsRead server actions
-- `src/components/notifications/NotificationList.tsx` — Notification list with unread/read visual states, individual mark-as-read, mark all as read, empty state
-- `src/components/notifications/ActivityList.tsx` — Activity feed with type icon, metadata, empty state
-- `src/components/layout/Sidebar.tsx` — Refactored sidebar from inline layout into a client component with live unread notification badge
-- `src/app/app/notifications/page.tsx` — Notifications page at `/app/notifications` with both sections
-- Updated `src/app/app/layout.tsx` — Replaced inline nav with Sidebar component
+**14 Quality and Polish:**
+- `src/components/ui/Skeleton.tsx` — Loading skeleton with `animate-pulse` and `bg-surface-tertiary`
+- `src/components/ui/ConfirmDialog.tsx` — Accessible confirmation dialog with danger/default variants, focus trap, Escape key, backdrop click, ARIA attributes
+- `src/components/ui/EmptyState.tsx` — Reusable empty state with icon, title, description, action slot
+- `src/components/ui/LoadingSpinner.tsx` — Reusable spinner with `role="status"` and `aria-live="polite"`
+- `src/app/app/error.tsx` — Error boundary with reset button
+- `src/app/app/loading.tsx` — App-level loading skeleton
+- `src/app/app/workspaces/loading.tsx` — Workspaces list loading skeleton
+- `src/app/app/workspaces/[workspaceId]/loading.tsx` — Workspace detail loading skeleton
+- `src/app/app/projects/[projectId]/loading.tsx` — Project detail loading skeleton
+- `src/app/app/documents/[documentId]/loading.tsx` — Document editor loading skeleton
+- Updated `src/app/layout.tsx` — Added sonner Toaster with dark theme styling
+- Updated `src/components/members/InviteModal.tsx` — Full accessibility pass: dialog role, aria-modal, focus trap, Escape key, backdrop click, auto-focus, aria-invalid, role="alert"
+- Updated `src/components/members/MemberList.tsx` — Added ConfirmDialog for member removal, toast feedback for all actions, ARIA list roles
+- Updated `src/app/app/documents/[documentId]/DocumentEditor.tsx` — Toast on save, aria-live on save indicator
+- Updated `src/app/app/workspaces/new/page.tsx` — Toast on workspace create, useEffect redirect pattern
+- Updated `src/app/app/projects/new/page.tsx` — Toast on project create, useEffect redirect pattern
+- Updated `src/app/app/documents/new/page.tsx` — Toast on document create, useEffect redirect pattern
+- Installed `sonner` — toast notification library
 
 ## Decisions made
 
-- Notifications and Activity are on the same page (split into two sections) to keep Phase 1 simple
-- Sidebar refactored to a client component to support the dynamic notification badge
-- Notification types use text symbols (→, ✎, ✓, etc.) rather than icons — keeps Phase 1 dependency-free
-
-## Problems solved
-
-- Review found 2 minor issues: sidebar badge used `bg-accent` (button style) instead of `bg-accent-soft text-accent` (badge pattern); unused `NotificationBadge.tsx` dead code — both fixed via recover
+- Toast library: sonner chosen (lightweight, modern, React 19 compatible, works with Tailwind v4)
+- Skeleton uses `bg-surface-tertiary` with `animate-pulse` (matches design tokens, not hardcoded)
+- Danger buttons use `bg-error` which is properly defined in the theme token system
+- Focus trap implemented manually (no external dependency) to keep the dependency footprint small
+- Redirect pattern changed from render-time `router.push()` to `useEffect` to avoid React lifecycle warnings
 
 ## Current state
 
-- Build passes cleanly — 16 routes compile (including new `/app/notifications`)
-- Notifications page shows both notification list and activity feed
-- Unread/read states are visually distinct
-- Sidebar shows live unread count badge via server action
-- All data still mock — no real DB connection
+- Build passes cleanly — 15 routes compile
+- All Phase 1 features are complete and marked done
+- Phase 2 is next (requires planning)
 
 ## Next session starts with
 
-Build **14 Quality and Polish**: loading skeletons, empty states, error states, toasts, confirmation dialogs, responsive behavior, keyboard interactions, accessibility pass.
+Plan Phase 2: collaborative editing, presence syncing, cursor tracking, real-time comments, Yjs/Hocuspocus sync, richer AI orchestration, multi-client collaboration.
 
 ## Open questions
 
 - Session persistence strategy for auth still unresolved
 - Auth route protection middleware not yet implemented
+- Phase 2 scope and build order not yet defined

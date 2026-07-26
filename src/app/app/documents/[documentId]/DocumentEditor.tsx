@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import TiptapEditor from "@/components/documents/TiptapEditor";
 import { saveDocument } from "@/server/actions/document";
 import AiPanel from "@/components/ai/AiPanel";
@@ -101,7 +102,7 @@ export default function DocumentEditor({
             placeholder="Untitled"
           />
           <div className="flex items-center gap-3 shrink-0">
-            <span className="text-xs text-text-muted">
+            <span className="text-xs text-text-muted" role="status" aria-live="polite">
               {saving
                 ? "Saving..."
                 : saved
@@ -121,7 +122,10 @@ export default function DocumentEditor({
             </button>
             <button
               type="button"
-              onClick={handleSave}
+              onClick={() => {
+                handleSave();
+                toast.success("Document saved");
+              }}
               disabled={saving || saved}
               className="rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-accent-foreground hover:bg-accent-dark transition-colors disabled:opacity-50"
             >
