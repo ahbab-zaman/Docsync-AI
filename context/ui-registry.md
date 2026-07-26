@@ -172,17 +172,36 @@ Last updated: 2026-07-26
 | Form spacing | `space-y-4` |
 | Input group | `space-y-2` |
 
-### Marketing Hero
+### Marketing Page
 
 File: `src/app/page.tsx`
-Last updated: 2026-07-26
+Last updated: 2026-07-27
 
 | Property | Class |
 |---|---|
-| Heading | `text-5xl font-bold tracking-tight text-foreground` |
-| Subtitle | `mt-4 text-xl text-text-secondary max-w-lg` |
-| CTA group | `mt-8 flex gap-4` |
-| Inner | `w-full max-w-4xl px-8 text-center` |
+| Header BG | `border-b border-border` |
+| Header inner | `mx-auto flex h-16 max-w-6xl items-center justify-between px-6` |
+| Logo | `text-lg font-bold text-foreground tracking-tight` |
+| Nav link | `text-sm text-text-secondary hover:text-foreground transition-colors` |
+| Hero badge | `inline-flex items-center rounded-full border border-border bg-surface-secondary px-4 py-1.5 text-xs text-text-muted` |
+| Hero heading | `text-5xl sm:text-6xl font-bold tracking-tight text-foreground leading-tight` |
+| Accent text | `text-accent` |
+| Hero subtitle | `mt-6 text-lg text-text-secondary max-w-2xl mx-auto leading-relaxed` |
+| Section title | `text-3xl font-bold text-foreground` |
+| Section subtitle | `mt-3 text-text-secondary max-w-xl mx-auto` |
+| Feature card | `rounded-xl border border-border bg-surface p-6 space-y-3 hover:border-border-strong` |
+| Feature icon wrap | `flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-lg text-accent` |
+| Feature title | `font-semibold text-foreground` |
+| Feature desc | `text-sm text-text-secondary leading-relaxed` |
+| Section grid | `grid gap-6 sm:grid-cols-2 lg:grid-cols-3` |
+| Split section | `grid items-center gap-12 lg:grid-cols-2` |
+| Checklist item | `flex items-center gap-3 text-sm text-text-secondary` |
+| Checklist bullet | `flex h-5 w-5 items-center justify-center rounded-full bg-accent-soft text-xs text-accent` |
+| Preview panel | `rounded-xl border border-border bg-surface-secondary p-6` |
+| Preview card | `rounded-lg border border-border bg-surface p-4 space-y-3` |
+| Footer | `border-t border-border py-12` |
+| Footer inner | `flex flex-col items-center justify-between gap-6 sm:flex-row` |
+| Footer link | `text-xs text-text-muted hover:text-text-secondary transition-colors` |
 
 ### Dashboard Empty State
 

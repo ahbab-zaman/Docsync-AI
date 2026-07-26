@@ -17,7 +17,7 @@ Update this file after each completed Phase 1 feature. A quick look should show 
 ### Phase 1 — Foundation
 
 - [x] 01 Foundation Setup — App scaffold, Tailwind v4, shadcn/ui, Inter font, src/ structure, env template
-- [x] 02 Landing Page — Marketing hero with CTAs at `/`
+- [x] 02 Landing Page — Full premium marketing page: nav header, hero, feature cards grid, collaboration preview, AI preview block, CTA section, footer; auth-aware CTAs
 - [x] 03 Authentication — Login/register pages with server actions, Zod validation, bcrypt hashing, session cookies
 - [x] 04 App Shell — Sidebar layout for `/app/*` routes with nav links
 - [x] 05 Dashboard — Dashboard page at `/app` with mock workspace cards

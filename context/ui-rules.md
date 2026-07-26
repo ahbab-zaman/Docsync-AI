@@ -1,242 +1,422 @@
 # UI Rules
 
-Concise rules for building the PulseBoard UI. The design language should feel premium, dark-first, spacious, and intentional.
+Concise rules for building the AI collaboration workspace UI. Design tokens are the source of truth — use them exactly and keep the interface bright, readable, and premium.
 
 ---
 
 ## Font
 
-Always import **Inter** in the root layout with `next/font/google`.
+Always import **Inter** via `next/font/google` in the root layout.
 
-- Use the font on the `<html>` element through the CSS variable class.
-- Do not use a system font as the main font.
-- Keep typography calm and readable.
+```typescript
+import { Inter } from "next/font/google";
 
----
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
+```
 
-## Layout Philosophy
-
-### Marketing pages
-- centered content
-- generous vertical spacing
-- strong hero section
-- minimal chrome
-
-### Auth pages
-- focused card layout
-- single-column form flow
-- clear validation states
-
-### App shell
-- left sidebar navigation
-- top utility bar
-- main content that breathes
-- no cluttered dense dashboard feel
-
-### Document page
-- three-panel layout on desktop
-- editor in the center
-- context on the left
-- AI assistant on the right
+Apply the font variable class to the `<html>` tag in the root layout. Never use system fonts as the primary font.
 
 ---
 
-## Page Widths
+## Layout
 
-- Marketing max width: `1200px`
-- App max width: `1440px`
-- Editor content width: `min(960px, 100%)`
-- Sidebar width: `280px`
-- Right AI panel width: `320px`
-- Top bar height: `64px`
+* Page max width: `1440px`, centered
+* Main content padding: `32px` on desktop, `20px` on tablet, `16px` on mobile
+* Section gap: `24px`
+* Cards and panels must not touch the viewport edges
+* Keep the layout spacious and readable
+* Use normal flow layout; avoid fixed-position UI unless absolutely necessary
 
----
+### Responsive behavior
 
-## Card Style
-
-All content blocks should feel like premium surfaces.
-
-- rounded corners
-- subtle border
-- soft shadow
-- slightly elevated from the background
-- no noisy gradients on card surfaces
-
-Cards should feel like panels, not boxes.
+* Desktop: multi-column layouts are allowed
+* Tablet: reduce to two columns where needed
+* Mobile: stack everything into one column
+* Side panels should collapse below main content on small screens
+* Tables should become stacked cards or horizontal scroll on mobile when necessary
+* Buttons should wrap cleanly instead of overflowing
+* Nav items should compress gracefully on small screens
 
 ---
 
-## Navigation Rules
+## Navbar
 
-### Sidebar
-Use for:
-- Dashboard
-- Workspaces
-- Projects
-- Documents
-- AI
-- Members
-- Notifications
-- Settings
+The app uses a **top navbar only**.
 
-### Top bar
-Use for:
-- search
-- quick create
-- online presence
-- notifications
-- profile menu
+* Background: `bg-surface`
+* Bottom border: `border-border`
+* Navbar height: `64px`
+* Left side: logo + product name
+* Right side: dashboard, find jobs, profile, and quick actions
+
+### Active / inactive states
+
+* Active item: `text-accent`, font weight `500`
+* Inactive item: `text-text-secondary`, font weight `500`
+* No underline
+* Active state is color only
+
+### Mobile navbar
+
+* Collapse to a compact layout on mobile
+* Keep only essential actions visible
+* Use a menu button or condensed actions if needed
+
+---
+
+## Cards
+
+Every major content section should live inside a card.
+
+```css
+background: var(--color-surface);
+border: 1px solid var(--color-border);
+border-radius: 16px;
+padding: 24px;
+box-shadow: var(--shadow-card);
+```
+
+### Card rules
+
+* Use white / ivory surfaces only
+* Do not use colored card backgrounds for normal sections
+* Color should appear in badges, buttons, bars, icons, and text accents
+* Keep card content clear and well spaced
+* Use hover shadow sparingly for interactive cards
+
+### Card variants
+
+* Standard card: default content section
+* Compact card: smaller padding for dense UI
+* Highlight card: used only for hero, notices, or important summaries
 
 ---
 
 ## Typography Hierarchy
 
-### Page titles
-- large
-- clear
-- confident
+Use only the defined typography levels consistently.
 
 ### Section headings
-- medium
-- strong contrast
-- minimal decoration
 
-### Body text
-- readable at 14–16px
-- never too light
-- avoid overusing uppercase
+* Font size: `16px`
+* Font weight: `600`
+* Color: `text-text-primary`
+* Line height: `24px`
 
-### Muted text
-- use only for helper text, timestamps, and captions
+### Page titles
+
+* Font size: `28px`
+* Font weight: `700`
+* Color: `text-text-primary`
+* Line height: `36px`
+
+### Body / primary content
+
+* Font size: `14px`
+* Font weight: `500`
+* Color: `text-text-primary`
+* Line height: `20px`
+
+### Secondary / muted text
+
+* Font size: `12px`
+* Font weight: `400`
+* Color: `text-text-muted`
+* Line height: `16px`
+
+### Stat numbers
+
+* Font size: `30px`
+* Font weight: `600`
+* Color: `text-text-primary`
+
+### Typography rules
+
+* Never mix too many weights inside one element
+* Avoid decorative typography
+* Keep copy concise and readable
+* Use muted text for timestamps, helper text, and labels
 
 ---
 
 ## Buttons
 
-### Primary
-- use the primary accent color
-- for main actions only
-- examples: Create workspace, Save document, Ask AI
+### Primary button
 
-### Secondary
-- use the surface style
-- for less important actions
+* Background: `bg-accent`
+* Text: `text-accent-foreground`
+* Radius: `8px`
+* Padding: `8px 16px`
+* Font size: `14px`
+* Font weight: `500`
 
-### Ghost
-- for lightweight actions
-- examples: cancel, back, close
+### Secondary button
 
-### Danger
-- reserved for destructive actions only
+* Background: `bg-surface`
+* Border: `border-border`
+* Text: `text-text-primary`
+* Radius: `8px`
+* Padding: `8px 16px`
 
----
+### Tertiary / ghost button
 
-## Forms
+* Transparent background
+* Text uses token colors
+* No heavy borders unless needed
 
-- use clear labels
-- keep spacing consistent
-- show validation inline
-- keep inputs visually calm
-- avoid dense stacked fields
-- use helper text only when helpful
+### Button rules
 
----
-
-## Editor Rules
-
-The document editor is the hero screen.
-
-### Editor should include
-- title field
-- rich text body
-- formatting toolbar
-- outline or table of contents
-- AI action menu
-- save status
-- version hint
-
-### Editor behavior
-- preserve content cleanly
-- autosave when possible
-- keep the cursor stable
-- never make the canvas feel cramped
+* Use the primary button only for the main action on the page
+* Do not overload the page with too many primary buttons
+* Keep hover states subtle
+* Keep buttons large enough for mobile tap targets
 
 ---
 
-## AI Panel Rules
+## Form Inputs
 
-- keep AI responses structured
-- separate prompt input from response output
-- show loading states clearly
-- support quick action chips
-- avoid giant unbroken paragraphs in generated output
+```css
+background: var(--color-surface);
+border: 1px solid var(--color-border);
+border-radius: 8px;
+padding: 8px 12px;
+font-size: 14px;
+color: var(--color-text-primary);
+placeholder-color: var(--color-text-muted);
+```
+
+### Input rules
+
+* Always show a visible focus state using `ring-accent`
+* Never use raw Tailwind color classes
+* Use clear labels above inputs
+* Keep helper text short and muted
+* Inputs must stretch to fit the container width
+
+### Mobile form rules
+
+* Inputs should stack vertically
+* Keep label spacing consistent
+* Avoid cramped two-column forms on small screens unless absolutely necessary
+
+---
+
+## Badges
+
+All badges use pill shape unless specified otherwise.
+
+```css
+border-radius: 9999px;
+padding: 2px 8px;
+font-size: 12px;
+font-weight: 500;
+```
+
+### Badge types
+
+* Matched skill: `bg-success-lightest` + `text-success-foreground`
+* Missing skill: `bg-accent-muted` + `text-accent`
+* Neutral badge: `bg-surface-secondary` + `text-text-secondary`
+* AI badge: `bg-secondary-muted` + `text-secondary`
+* Warning badge: `bg-warning-lightest` + `text-warning`
+
+---
+
+## Tables
+
+Use tables only when the data benefits from a grid layout.
+
+### Table rules
+
+* White / ivory rows only
+* No alternating row colors
+* Use subtle borders between rows
+* Header text should be uppercase or small caps style, muted, and readable
+* Hover state should be soft and lightweight
+
+### Mobile table behavior
+
+* Convert dense tables into stacked cards when possible
+* If keeping a table, allow horizontal scrolling on small screens
+* Never let text overflow outside the viewport
+
+---
+
+## Match Score Bars
+
+Inline progress bars should be small, clear, and consistent.
+
+```css
+height: 4px;
+border-radius: 9999px;
+background: var(--color-border);
+```
+
+### Score colors
+
+* `90–100%` → success color
+* `70–89%` → info color
+* `50–69%` → warning color
+* Below `50%` → muted text / secondary surface
+
+The score bar should always appear next to or under the percentage number.
 
 ---
 
 ## Empty States
 
-Every empty section needs a useful empty state.
+Every section that can be empty must have an empty state.
 
-### Empty state should include
-- one short sentence
-- optional icon
-- one next-step CTA if appropriate
+### Empty state rules
 
-Never leave a blank void where the user is supposed to understand the state.
+* Keep text short
+* Use muted text
+* Add a useful CTA if there is a logical next action
+* Optional icon is allowed
+* Avoid large illustrations unless they add real value
 
----
+### Tone
 
-## Loading States
-
-Use:
-- skeletons for data-heavy panels
-- subtle spinners for small actions
-- disabled buttons while submitting
-- short loading copy for AI generation
+Empty states should feel helpful, not heavy.
 
 ---
 
-## Motion Rules
+## Layout-Specific Rules
 
-- keep motion subtle
-- use short transitions
-- hover effects should feel light
-- avoid playful or bouncy motion
-- use motion to guide attention, not distract
+### Dashboard
+
+* Use stat cards at the top
+* Use activity and analytics sections below
+* Keep the most important data visible first
+* Use cards in a clear vertical rhythm
+
+### Document / editor-like pages
+
+* Use a three-zone layout when space allows:
+
+  * left: outline or navigation
+  * center: editor/content
+  * right: AI assistant or details panel
+* Collapse to one column on mobile
+
+### Project / workspace overview
+
+* Use summary cards
+* Show recent activity, members, documents, and quick actions
+* Tabs are allowed, but do not overuse them
+
+### Landing page
+
+* Use a premium hero
+* Include how-it-works, features, testimonials, and CTA sections
+* Keep the page airy and readable
+* Do not make it feel like a dashboard
 
 ---
 
-## Responsiveness
+## Color Usage Rules
 
-### Desktop
-Full app shell with sidebar and panels.
+### Backgrounds
 
-### Tablet
-Sidebar may collapse into a rail or sheet.
+* Use `bg-background` for the app shell
+* Use `bg-surface` for cards, menus, and panels
+* Use `bg-surface-secondary` for subtle sections
+* Use `bg-surface-tertiary` only for depth or small supporting areas
 
-### Mobile
-- sidebar becomes a drawer
-- panels stack vertically
-- editor remains readable
-- avoid tiny touch targets
+### Accent usage
+
+* Use `accent` for primary actions and active navigation
+* Use `secondary` for AI, online, and collaborative states
+* Use `highlight` for warm emphasis and premium attention areas
+
+### Do not
+
+* Use raw hex values in components
+* Use raw Tailwind color classes like `bg-purple-500` or `text-gray-600`
+* Make the entire interface dark again
+* Use too many accent colors at once
+* Add heavy gradients to every section
+
+---
+
+## Shadows and Depth
+
+* Default cards use a soft shadow
+* Hover states can deepen the shadow slightly
+* Popovers and menus can use a stronger shadow
+* Do not use harsh or dramatic shadows
+
+Keep the UI crisp, but not heavy.
+
+---
+
+## Radius Rules
+
+* Inputs and buttons: `8px`
+* Standard cards: `16px`
+* Large panels: `24px`
+* Pills and badges: `9999px`
+
+Do not stack too many nested rounded containers inside one component.
+
+---
+
+## Motion
+
+Use subtle motion only.
+
+### Allowed
+
+* soft hover transitions
+* fade-ins
+* small scale on buttons
+* loading skeletons
+* gentle section transitions
+
+### Not allowed
+
+* excessive motion
+* distracting bounce effects
+* aggressive animations
+* animation that reduces clarity
 
 ---
 
 ## Accessibility
 
-- maintain contrast
-- use semantic buttons and labels
-- focus states must be obvious
-- do not rely on color alone for meaning
-- keep touch targets comfortable
+* Maintain strong text contrast
+* Keep interactive targets large enough on mobile
+* Labels must not be replaced by placeholders
+* Focus states must be visible
+* Do not rely on color alone to communicate meaning
 
 ---
 
-## Hard Rules
+## Do Nots
 
-- never hardcode random colors in components
-- never mix unrelated visual styles
-- never make every element look equally important
-- never overload the page with too many shadows
-- never use a different typography system on one page
-- never let the document editor feel secondary
+* Never use raw Tailwind color classes
+* Never hardcode colors inside components
+* Never make cards dark unless explicitly required for a special component
+* Never create noisy gradients or neon effects
+* Never use more than two nested radius levels in one UI block
+* Never hide important actions on mobile
+* Never let content become unreadable for the sake of style
+
+---
+
+## Design Goal
+
+The UI should feel:
+
+* premium
+* clean
+* bright
+* uncommon
+* readable
+* modern
+* product-focused
+
+The visual identity should lean toward **Ivory Nebula**: warm ivory surfaces, crisp dark text, violet for primary actions, teal for AI/realtime states, and warm orange for emphasis.
