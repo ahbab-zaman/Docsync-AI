@@ -1,62 +1,115 @@
 @import "tailwindcss";
 
 @theme inline {
+  /* Font */
   --font-sans: var(--font-inter);
   --font-mono: "Menlo", "Consolas", "Monaco", monospace;
 
-  --color-background: #070b14;
-  --color-surface: #101827;
-  --color-surface-secondary: #182235;
-  --color-surface-tertiary: #1e2940;
-  --color-surface-muted: #0c1220;
+  /* Backgrounds */
+  --color-background: #f6f1ea;
+  --color-surface: #fffdf8;
+  --color-surface-secondary: #f5eee2;
+  --color-surface-tertiary: #ede4d7;
+  --color-surface-muted: #f8f3ec;
 
-  --color-border: rgba(255, 255, 255, 0.08);
-  --color-border-strong: rgba(255, 255, 255, 0.14);
-  --color-border-muted: rgba(255, 255, 255, 0.06);
+  /* Borders */
+  --color-border: #ddd4c6;
+  --color-border-light: #e7decf;
+  --color-border-muted: #d8cdbd;
 
-  --color-text-primary: #f5f7ff;
-  --color-text-secondary: #a7b1c2;
-  --color-text-muted: #7b879a;
-  --color-text-inverse: #070b14;
+  /* Text */
+  --color-text-primary: #15131a;
+  --color-text-secondary: #5c5966;
+  --color-text-muted: #8d8796;
+  --color-text-dark: #3f3a47;
+  --color-text-darker: #2e2935;
+  --color-text-darkest: #111015;
+  --color-text-black: #0d0c10;
+  --color-text-slate: #2b2830;
+  --color-text-slate-medium: #6d6876;
 
-  --color-accent: #7c5cff;
-  --color-accent-dark: #6447ff;
-  --color-accent-light: #b7a6ff;
-  --color-accent-soft: rgba(124, 92, 255, 0.16);
+  /* Primary accent — violet */
+  --color-accent: #5b4bff;
+  --color-accent-dark: #4332f2;
+  --color-accent-light: #ece9ff;
+  --color-accent-muted: #f5f3ff;
   --color-accent-foreground: #ffffff;
 
-  --color-secondary: #2ed3b7;
-  --color-secondary-dark: #16bfa4;
-  --color-secondary-light: #8cf3e5;
-  --color-secondary-soft: rgba(46, 211, 183, 0.16);
-  --color-secondary-foreground: #06131f;
+  /* Secondary accent — teal */
+  --color-secondary: #0fa3b1;
+  --color-secondary-dark: #0b7f8a;
+  --color-secondary-light: #d9f7fa;
+  --color-secondary-muted: #eefcfd;
+  --color-secondary-foreground: #ffffff;
 
-  --color-success: #2ed3b7;
-  --color-success-soft: rgba(46, 211, 183, 0.14);
+  /* Warm highlight */
+  --color-highlight: #d97d54;
+  --color-highlight-light: #fae5dc;
+  --color-highlight-muted: #fdf3ef;
+  --color-highlight-foreground: #ffffff;
 
-  --color-warning: #f5b95b;
-  --color-warning-soft: rgba(245, 185, 91, 0.14);
+  /* Success — green */
+  --color-success: #1f9d73;
+  --color-success-alt: #18a06f;
+  --color-success-dark: #157a58;
+  --color-success-darker: #0f6347;
+  --color-success-light: #d7f2e8;
+  --color-success-lightest: #eefaf5;
+  --color-success-foreground: #157a58;
 
-  --color-error: #ff6b7a;
-  --color-error-soft: rgba(255, 107, 122, 0.14);
+  /* Info — blue */
+  --color-info: #4a84ff;
+  --color-info-dark: #245ff0;
+  --color-info-medium: #3a73f6;
+  --color-info-light: #dbe6ff;
+  --color-info-lightest: #eef3ff;
+  --color-info-foreground: #245ff0;
+  --color-info-muted: #8fa7db;
 
-  --color-info: #61a8ff;
-  --color-info-soft: rgba(97, 168, 255, 0.14);
+  /* Warning — amber */
+  --color-warning: #d6a100;
+  --color-warning-foreground: #ffffff;
+  --color-warning-light: #fff3cc;
+  --color-warning-lightest: #fff9e6;
 
-  --color-overlay: rgba(7, 11, 20, 0.72);
-  --color-backdrop: rgba(7, 11, 20, 0.88);
+  /* Error — red */
+  --color-error: #e25555;
+  --color-error-foreground: #ffffff;
+  --color-error-light: #ffe0e0;
+  --color-error-lightest: #fff1f1;
 
-  --radius-xs: 6px;
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 18px;
+  /* LinkedIn brand */
+  --color-linkedin: #0a66c2;
+  --color-linkedin-light: #dce6f1;
+  --color-linkedin-foreground: #ffffff;
+
+  /* Dark overlays */
+  --color-overlay: #15131a;
+  --color-overlay-dark: #0f0d13;
+
+  /* Gradients */
+  --color-gradient-start: #5b4bff;
+  --color-gradient-end: #0fa3b1;
+  --color-gradient-warm-start: #d97d54;
+  --color-gradient-warm-end: #f2b38b;
+
+  /* Radius */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
   --radius-xl: 24px;
   --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-card: 0px 10px 30px rgba(21, 19, 26, 0.06);
+  --shadow-card-hover: 0px 14px 40px rgba(21, 19, 26, 0.09);
+  --shadow-popover: 0px 18px 50px rgba(21, 19, 26, 0.12);
 }
 
 :root {
-  --background: #070b14;
-  --foreground: #f5f7ff;
+  --background: #f6f1ea;
+  --foreground: #15131a;
 }
 
 body {
