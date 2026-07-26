@@ -7,8 +7,8 @@ Update this file after each completed Phase 1 feature. A quick look should show 
 ## Current Status
 
 **Phase:** Phase 1 — Foundation
-**Last completed:** 08 Document Editor Foundation
-**Next:** 09 AI Assistant Panel
+**Last completed:** 10 Members and Access
+**Next:** 11 Notifications and Activity
 
 ---
 
@@ -24,8 +24,8 @@ Update this file after each completed Phase 1 feature. A quick look should show 
 - [x] 06 Workspace Management
 - [x] 07 Project Management
 - [x] 08 Document Editor Foundation
-- [ ] 09 AI Assistant Panel
-- [ ] 10 Members and Access
+- [x] 09 AI Assistant Panel
+- [x] 10 Members and Access
 - [ ] 11 Notifications and Activity
 - [x] 12 Profile and Settings — Settings page at `/app/settings` with mock profile form
 - [x] 13 Database Schema — SQL schema, pg helper, repository layer (users, workspaces, projects, documents, members)

@@ -1,0 +1,82 @@
+"use client";
+
+import { useState, useCallback } from "react";
+import type { AiActionType, AiResponse as AiResponseType, AiSuggestion } from "@/types/ai";
+import { mockSuggestions } from "@/data/mock-ai";
+import { runAiAction } from "@/server/actions/ai";
+import PromptInput from "./PromptInput";
+import SuggestionChips from "./SuggestionChips";
+import AiResponseView from "./AiResponse";
+
+interface AiPanelProps {
+  documentContent: string;
+  documentId?: string;
+  onInsertContent?: (content: string) => void;
+}
+
+export default function AiPanel({ documentContent, documentId, onInsertContent }: AiPanelProps) {
+  const [responses, setResponses] = useState<AiResponseType[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const handlePrompt = useCallback(
+    async (prompt: string, actionType: AiActionType = "custom") => {
+      setLoading(true);
+      const { response, error } = await runAiAction(actionType, prompt, documentContent);
+      setLoading(false);
+      if (response) {
+        setResponses((prev) => [response, ...prev]);
+      }
+    },
+    [documentContent]
+  );
+
+  const handleSuggestionSelect = useCallback(
+    (suggestion: AiSuggestion) => {
+      handlePrompt(suggestion.prompt, suggestion.actionType);
+    },
+    [handlePrompt]
+  );
+
+  const handleInsert = useCallback(
+    (content: string) => {
+      if (onInsertContent) {
+        onInsertContent(content);
+      }
+    },
+    [onInsertContent]
+  );
+
+  const handleDiscard = useCallback((id: string) => {
+    setResponses((prev) => prev.filter((r) => r.id !== id));
+  }, []);
+
+  return (
+    <div className="flex h-full flex-col gap-3">
+      <div className="shrink-0">
+        <h3 className="text-sm font-semibold text-foreground mb-3">AI Assistant</h3>
+        <div className="space-y-3">
+          <PromptInput onSubmit={(p) => handlePrompt(p)} disabled={loading} />
+          <SuggestionChips suggestions={mockSuggestions} onSelect={handleSuggestionSelect} disabled={loading} />
+        </div>
+      </div>
+
+      {loading && (
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-secondary p-3">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+          <span className="text-xs text-text-muted">AI is thinking...</span>
+        </div>
+      )}
+
+      <div className="flex-1 space-y-3 overflow-y-auto">
+        {responses.length === 0 && !loading && (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <p className="text-sm text-text-muted">Ask AI to summarize, rewrite, or extract insights from this document.</p>
+          </div>
+        )}
+        {responses.map((r) => (
+          <AiResponseView key={r.id} response={r} onInsert={handleInsert} onDiscard={handleDiscard} />
+        ))}
+      </div>
+    </div>
+  );
+}

@@ -1,63 +1,53 @@
-# Memory — Phase 1 Foundation + Auth + DB Schema
+# Memory — AI Assistant Panel + Members and Access
 
-Last updated: 2026-07-26
+Last updated: 2026-07-27
 
 ## What was built
 
-**Foundation setup:**
-- Next.js 16.2.12 with TypeScript, App Router, `/src` directory, Tailwind CSS v4
-- Inter font, shadcn/ui initialized, all Phase 1 core libraries installed
-- Base folder structure: `components/`, `lib/`, `server/`, `hooks/`, `store/`, `types/`, `data/`, `styles/`, `utils/`
+**09 AI Assistant Panel:**
+- `src/types/ai.ts` — AiActionType, AiResponse, AiRun, AiSuggestion types
+- `src/data/mock-ai.ts` — 5 suggestion chips, mock AI responses for summarize/rewrite/action-items/suggest-titles/project-summary/custom
+- `src/server/actions/ai.ts` — runAiAction (simulated delay), saveAiResult server actions
+- `src/components/ai/AiPanel.tsx` — Main AI panel with prompt input, suggestion chips, response history, loading state, empty state
+- `src/components/ai/PromptInput.tsx` — Auto-resizing textarea, Enter to submit, Shift+Enter for newline
+- `src/components/ai/SuggestionChips.tsx` — Capsule buttons for quick actions
+- `src/components/ai/AiResponse.tsx` — Response card with label, timestamp, HTML content, Insert/Discard actions
+- `src/app/app/ai/page.tsx` — Standalone AI page at `/app/ai`
+- Integrated AI toggle panel (320px, right side) into document editor
 
-**Design tokens:**
-- `src/app/globals.css` — Midnight Aurora dark theme with `accent` (violet), `secondary` (teal), semantic tokens, custom radii
-- `context/ui-tokens.md` and `context/ui-registry.md` aligned to the actual CSS
-
-**Routes / pages (all mock, build-verified):**
-- `/` — Marketing landing page
-- `/login` — Login form with server action
-- `/register` — Register form with server action
-- `/app` — Dashboard with mock workspace cards
-- `/app/workspaces` — Workspace list with badges
-- `/app/settings` — Settings/profile page
-
-**Database layer:**
-- `src/lib/db.ts` — PostgreSQL pool wrapper with `query`/`transaction` helpers
-- `src/server/schema.sql` — Tables: users, workspaces, workspace_members, projects, documents
-- `src/server/repositories/` — user, workspace, project, document repositories
-- `src/types/index.ts` — TypeScript interfaces for all entities
-
-**Auth:**
-- `src/server/auth.ts` — Password hashing (bcryptjs), login/register, session cookie management
-- `src/server/actions/auth.ts` — Server actions with Zod validation for login/register
+**10 Members and Access:**
+- Extended `src/data/mock-workspaces.ts` — added MockPendingInvite, pendingInvites array, more mock members, helper functions (invite, accept, cancel, change role, remove)
+- `src/server/actions/members.ts` — getMembers, inviteMember (Zod validated), acceptInvite, cancelInvite, changeRole, removeMember
+- `src/components/members/MemberList.tsx` — Members table with avatars, role selector, remove button, pending invites section
+- `src/components/members/InviteModal.tsx` — Modal form with email and role fields, error handling
+- `src/components/members/RoleSelector.tsx` — Dropdown for admin/member, disabled for owner
+- `src/app/app/members/page.tsx` — Members page at `/app/members`
+- Sidebar links for AI Assistant and Members
 
 ## Decisions made
 
-- Auth pages use route group `(auth)` — no shared auth layout yet
-- App shell lives at `app/` (real directory, not route group) for `/app/*` URLs
-- DB helper at `src/lib/db.ts` (not `src/server/`) per architecture.md
-- Project name is **Docsync** (user's choice, not PulseBoard from template)
-- Color palette fixed to Midnight Aurora (dark theme) matching ui-tokens.md
+- AI panel: toggle button (not always-open) to keep editor canvas dominant
+- AI inserted content appends to existing document content as HTML (Phase 1 simplicity)
+- Members page uses first workspace as default (no workspace selector yet — kept simple for Phase 1 mock)
+- Role enforcement: only owner/admin can invite/remove; owner role cannot be changed or removed
+- Pending invites included in mock data with Accept/Cancel actions
 
 ## Problems solved
 
-- Zod v4 uses `error.issues` not `error.errors` — fixed in server actions
-- Build failed from duplicate route group pages at `/` — resolved by using `app/` real directory instead of `(app)` route group
-- Type self-reference in `transaction` function — extracted `QueryFn` type
-- bcryptjs install failed silently — re-ran with proper timeout
+- Error message swallowing in invite flow: `InviteModal.onInvite` signature changed to return result object, so server validation errors (e.g., "User is already a member") are displayed to the user instead of a generic message
 
 ## Current state
 
-- Build passes cleanly — all 7 routes compile
-- Auth pages submit but sessions aren't persisted to DB/Redis yet (cookie is created but not read back)
-- All pages use mock data — no real DB connection
-- Empty folders: `components/`, `data/`, `hooks/`, `store/`, `styles/`, `utils/`
+- Build passes cleanly — 15 routes compile
+- AI panel works in document editor (toggle) and standalone page
+- Members page shows members + pending invites with role management
+- All data still mock — no real DB connection
 
 ## Next session starts with
 
-Build **06 Workspace Management**: workspace creation flow, workspace overview page, server actions for CRUD, wire to real data.
+Build **11 Notifications and Activity**: notifications page, activity list, unread state, empty state, mark as read action, notification creation on key events.
 
 ## Open questions
 
-- Session persistence strategy: Redis or database table for session tokens?
-- Auth route protection middleware — when to implement?
+- Session persistence strategy for auth still unresolved
+- Auth route protection middleware not yet implemented

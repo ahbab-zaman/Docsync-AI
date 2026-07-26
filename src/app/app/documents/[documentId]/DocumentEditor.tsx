@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import TiptapEditor from "@/components/documents/TiptapEditor";
 import { saveDocument } from "@/server/actions/document";
+import AiPanel from "@/components/ai/AiPanel";
 
 interface DocumentEditorProps {
   documentId: string;
@@ -27,6 +28,7 @@ export default function DocumentEditor({
   const [content, setContent] = useState(initialContent);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(true);
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleSave = useCallback(async () => {
@@ -62,6 +64,14 @@ export default function DocumentEditor({
     [handleSave]
   );
 
+  const handleInsertContent = useCallback(
+    (newContent: string) => {
+      setContent((prev) => prev + newContent);
+      setSaved(false);
+    },
+    []
+  );
+
   useEffect(() => {
     return () => {
       if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
@@ -80,40 +90,63 @@ export default function DocumentEditor({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <input
-          type="text"
-          value={title}
-          onChange={handleTitleChange}
-          className="text-3xl font-bold text-foreground bg-transparent border-none focus:outline-none w-full placeholder:text-text-muted"
-          placeholder="Untitled"
-        />
-        <div className="flex items-center gap-3 shrink-0">
-          <span className="text-xs text-text-muted">
-            {saving
-              ? "Saving..."
-              : saved
-                ? "Saved"
-                : "Unsaved changes"}
-          </span>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving || saved}
-            className="rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-accent-foreground hover:bg-accent-dark transition-colors disabled:opacity-50"
-          >
-            Save
-          </button>
+    <div className="flex gap-6">
+      <div className="flex-1 min-w-0 space-y-4">
+        <div className="flex items-center justify-between">
+          <input
+            type="text"
+            value={title}
+            onChange={handleTitleChange}
+            className="text-3xl font-bold text-foreground bg-transparent border-none focus:outline-none w-full placeholder:text-text-muted"
+            placeholder="Untitled"
+          />
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="text-xs text-text-muted">
+              {saving
+                ? "Saving..."
+                : saved
+                  ? "Saved"
+                  : "Unsaved changes"}
+            </span>
+            <button
+              type="button"
+              onClick={() => setAiPanelOpen((v) => !v)}
+              className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                aiPanelOpen
+                  ? "border-accent bg-accent/10 text-accent"
+                  : "border-border text-text-secondary hover:bg-surface-secondary"
+              }`}
+            >
+              AI
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving || saved}
+              className="rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-accent-foreground hover:bg-accent-dark transition-colors disabled:opacity-50"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+
+        <TiptapEditor content={initialContent} onUpdate={handleContentUpdate} />
+
+        <div className="flex items-center gap-4 text-xs text-text-muted border-t border-border pt-3">
+          <span>Created {formatDate(createdAt)} by {createdByName}</span>
+          <span>Last updated {formatDate(updatedAt)}</span>
         </div>
       </div>
 
-      <TiptapEditor content={initialContent} onUpdate={handleContentUpdate} />
-
-      <div className="flex items-center gap-4 text-xs text-text-muted border-t border-border pt-3">
-        <span>Created {formatDate(createdAt)} by {createdByName}</span>
-        <span>Last updated {formatDate(updatedAt)}</span>
-      </div>
+      {aiPanelOpen && (
+        <div className="w-80 shrink-0 border-l border-border pl-6">
+          <AiPanel
+            documentContent={content}
+            documentId={documentId}
+            onInsertContent={handleInsertContent}
+          />
+        </div>
+      )}
     </div>
   );
 }
