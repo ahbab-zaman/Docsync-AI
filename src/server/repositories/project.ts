@@ -1,4 +1,4 @@
-import { query } from "@/server/db";
+import { query } from "@/lib/db";
 import type { Project } from "@/types";
 
 export async function createProject(

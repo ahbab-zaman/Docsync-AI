@@ -1,4 +1,4 @@
-import { query } from "@/server/db";
+import { query } from "@/lib/db";
 import type { User, UserPublic } from "@/types";
 
 export async function createUser(

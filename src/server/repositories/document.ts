@@ -1,4 +1,4 @@
-import { query } from "@/server/db";
+import { query } from "@/lib/db";
 import type { Document } from "@/types";
 
 export async function createDocument(

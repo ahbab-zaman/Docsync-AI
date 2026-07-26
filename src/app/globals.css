@@ -1,41 +1,62 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
   --font-mono: "Menlo", "Consolas", "Monaco", monospace;
 
-  --color-brand-50: #eef2ff;
-  --color-brand-100: #e0e7ff;
-  --color-brand-200: #c7d2fe;
-  --color-brand-300: #a5b4fc;
-  --color-brand-400: #818cf8;
-  --color-brand-500: #6366f1;
-  --color-brand-600: #4f46e5;
-  --color-brand-700: #4338ca;
-  --color-brand-800: #3730a3;
-  --color-brand-900: #312e81;
+  --color-background: #070b14;
+  --color-surface: #101827;
+  --color-surface-secondary: #182235;
+  --color-surface-tertiary: #1e2940;
+  --color-surface-muted: #0c1220;
 
-  --color-surface: #ffffff;
-  --color-surface-secondary: #f9fafb;
-  --color-border: #e5e7eb;
-  --color-border-light: #f3f4f6;
-  --color-text-primary: #111827;
-  --color-text-secondary: #6b7280;
-  --color-text-muted: #9ca3af;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.14);
+  --color-border-muted: rgba(255, 255, 255, 0.06);
+
+  --color-text-primary: #f5f7ff;
+  --color-text-secondary: #a7b1c2;
+  --color-text-muted: #7b879a;
+  --color-text-inverse: #070b14;
+
+  --color-accent: #7c5cff;
+  --color-accent-dark: #6447ff;
+  --color-accent-light: #b7a6ff;
+  --color-accent-soft: rgba(124, 92, 255, 0.16);
+  --color-accent-foreground: #ffffff;
+
+  --color-secondary: #2ed3b7;
+  --color-secondary-dark: #16bfa4;
+  --color-secondary-light: #8cf3e5;
+  --color-secondary-soft: rgba(46, 211, 183, 0.16);
+  --color-secondary-foreground: #06131f;
+
+  --color-success: #2ed3b7;
+  --color-success-soft: rgba(46, 211, 183, 0.14);
+
+  --color-warning: #f5b95b;
+  --color-warning-soft: rgba(245, 185, 91, 0.14);
+
+  --color-error: #ff6b7a;
+  --color-error-soft: rgba(255, 107, 122, 0.14);
+
+  --color-info: #61a8ff;
+  --color-info-soft: rgba(97, 168, 255, 0.14);
+
+  --color-overlay: rgba(7, 11, 20, 0.72);
+  --color-backdrop: rgba(7, 11, 20, 0.88);
+
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #070b14;
+  --foreground: #f5f7ff;
 }
 
 body {

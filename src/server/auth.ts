@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { createUser, findUserByEmail, findUserById as findUser } from "@/server/repositories/user";
 import type { User, UserPublic } from "@/types";
 
-const SESSION_COOKIE = "docsync_session";
+const SESSION_COOKIE = "pulseboard_session";
 const SALT_ROUNDS = 12;
 
 export async function hashPassword(password: string): Promise<string> {

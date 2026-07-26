@@ -6,209 +6,101 @@ All colors, typography, spacing, radii, and component values for the project. Us
 
 ## How to Use
 
-Use design tokens from `src/styles/tokens.css` or `app/globals.css` via CSS variables. Do not hardcode colors inside components. Do not use raw Tailwind color classes for product colors.
+Use design tokens from `src/app/globals.css` via CSS variable classes. Do not hardcode colors inside components. Do not use raw Tailwind color classes for product colors.
 
 ---
 
-## Design System Direction
+## Design System
 
 **Palette name:** Midnight Aurora
 
-This palette is dark, premium, and futuristic with violet as the primary accent and teal as the secondary accent.
+Dark, premium, futuristic with violet (`accent`) as the primary and teal (`secondary`) as the secondary accent.
 
 ---
 
-## CSS Theme Tokens
+## Token Reference
 
-```css
-@import "tailwindcss";
+Tokens are defined in `src/app/globals.css` under `@theme inline` and map directly to Tailwind utility classes:
 
-@theme {
-  /* Font */
-  --font-sans: "Inter", sans-serif;
+### Backgrounds
+- `bg-background` — page canvas (`#070b14`)
+- `bg-surface` — main card/panel (`#101827`)
+- `bg-surface-secondary` — nested panels, sidebar (`#182235`)
+- `bg-surface-tertiary` — elevated controls (`#1e2940`)
+- `bg-surface-muted` — subtle backgrounds (`#0c1220`)
 
-  /* Backgrounds */
-  --color-background: #070b14;
-  --color-surface: #101827;
-  --color-surface-secondary: #182235;
-  --color-surface-tertiary: #1e2940;
-  --color-surface-muted: #0c1220;
+### Borders
+- `border-border` — default border (`rgba(255,255,255,0.08)`)
+- `border-border-strong` — stronger border (`rgba(255,255,255,0.14)`)
+- `border-border-muted` — subtle border (`rgba(255,255,255,0.06)`)
 
-  /* Borders */
-  --color-border: rgba(255, 255, 255, 0.08);
-  --color-border-strong: rgba(255, 255, 255, 0.14);
-  --color-border-muted: rgba(255, 255, 255, 0.06);
+### Text
+- `text-text-primary` — headings, key content (`#f5f7ff`)
+- `text-text-secondary` — supporting copy (`#a7b1c2`)
+- `text-text-muted` — captions, timestamps (`#7b879a`)
+- `text-text-inverse` — on accent backgrounds (`#070b14`)
 
-  /* Text */
-  --color-text-primary: #f5f7ff;
-  --color-text-secondary: #a7b1c2;
-  --color-text-muted: #7b879a;
-  --color-text-inverse: #070b14;
+### Accent (violet — primary)
+- `bg-accent` / `text-accent` — main accent (`#7c5cff`)
+- `bg-accent-dark` / `hover:bg-accent-dark` — darker hover state (`#6447ff`)
+- `text-accent-light` — light accent text (`#b7a6ff`)
+- `bg-accent-soft` — soft accent background (`rgba(124,92,255,0.16)`)
+- `text-accent-foreground` — text on accent bg (`#ffffff`)
 
-  /* Primary accent */
-  --color-accent: #7c5cff;
-  --color-accent-dark: #6447ff;
-  --color-accent-light: #b7a6ff;
-  --color-accent-soft: rgba(124, 92, 255, 0.16);
-  --color-accent-foreground: #ffffff;
+Use `accent` for: primary buttons, active navigation, focus rings, important status, selected states.
 
-  /* Secondary accent */
-  --color-secondary: #2ed3b7;
-  --color-secondary-dark: #16bfa4;
-  --color-secondary-light: #8cf3e5;
-  --color-secondary-soft: rgba(46, 211, 183, 0.16);
-  --color-secondary-foreground: #06131f;
+### Secondary (teal)
+- `bg-secondary` / `text-secondary` (`#2ed3b7`)
+- `bg-secondary-dark` (`#16bfa4`)
+- `bg-secondary-soft` (`rgba(46,211,183,0.16)`)
 
-  /* Success */
-  --color-success: #2ed3b7;
-  --color-success-soft: rgba(46, 211, 183, 0.14);
+Use `secondary` for: AI states, online presence, success moments.
 
-  /* Warning */
-  --color-warning: #f5b95b;
-  --color-warning-soft: rgba(245, 185, 91, 0.14);
+### Semantic
+- `text-error` / `bg-error-soft` — errors (`#ff6b7a`)
+- `text-warning` / `bg-warning-soft` — warnings (`#f5b95b`)
+- `text-success` / `bg-success-soft` — success (`#2ed3b7`)
+- `text-info` / `bg-info-soft` — info (`#61a8ff`)
 
-  /* Error */
-  --color-error: #ff6b7a;
-  --color-error-soft: rgba(255, 107, 122, 0.14);
-
-  /* Info */
-  --color-info: #61a8ff;
-  --color-info-soft: rgba(97, 168, 255, 0.14);
-
-  /* Overlay */
-  --color-overlay: rgba(7, 11, 20, 0.72);
-  --color-backdrop: rgba(7, 11, 20, 0.88);
-
-  /* Radius */
-  --radius-xs: 6px;
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
-  --radius-full: 9999px;
-
-  /* Spacing */
-  --space-page-x: 32px;
-  --space-page-y: 32px;
-  --space-section: 24px;
-  --space-card: 24px;
-  --space-control: 12px;
-
-  /* Sizing */
-  --size-header: 64px;
-  --size-sidebar: 280px;
-  --size-right-panel: 320px;
-  --size-button: 44px;
-  --size-input: 44px;
-
-  /* Shadow */
-  --shadow-card: 0 16px 40px rgba(0, 0, 0, 0.28);
-  --shadow-float: 0 24px 60px rgba(0, 0, 0, 0.36);
-}
-```
-
----
-
-## Color Usage Guide
-
-### Background layers
-- `background` is the page canvas
-- `surface` is the main card color
-- `surface-secondary` is for nested panels
-- `surface-tertiary` is for elevated controls
-
-### Text layers
-- `text-primary` for headings and key content
-- `text-secondary` for supporting copy
-- `text-muted` for captions and timestamps
-
-### Accent usage
-Use `accent` for:
-- primary buttons
-- active navigation
-- focus rings
-- important status indicators
-- selected states
-
-Use `secondary` for:
-- AI states
-- online presence
-- success moments
-- positive feedback
+### Radius
+- `rounded-xs` — 6px
+- `rounded-sm` — 10px
+- `rounded-md` — 14px (sidebar links)
+- `rounded-lg` — 18px (cards, buttons, inputs)
+- `rounded-xl` — 24px (panels, sheets)
+- `rounded-full` — 9999px (badges, avatars)
 
 ---
 
 ## Component Values
 
 ### Buttons
-- height: `44px`
-- radius: `14px`
-- primary background: `--color-accent`
-- primary text: `--color-accent-foreground`
+- radius: `rounded-lg`
+- primary background: `bg-accent`
+- primary text: `text-accent-foreground`
+- hover: `hover:bg-accent-dark`
 
 ### Inputs
-- height: `44px`
-- radius: `14px`
-- border: `--color-border`
-- background: `--color-surface-secondary`
+- radius: `rounded-lg`
+- border: `border-border`
+- background: `bg-surface`
+- focus ring: `ring-accent`
 
 ### Cards
-- radius: `18px`
-- padding: `24px`
-- shadow: `--shadow-card`
+- radius: `rounded-lg`
+- padding: `p-4` or `p-5`
+- border: `border border-border`
 
-### Panels / Sheets
-- radius: `24px`
-- shadow: `--shadow-float`
+### Sidebar
+- background: `bg-surface-secondary`
+- link radius: `rounded-md`
+- link default: `text-text-secondary`
+- link hover: `hover:bg-surface hover:text-foreground`
 
----
-
-## Typography Scale
-
-### Display
-- `32px`
-- weight: `700`
-- line height: `40px`
-
-### Page Title
-- `28px`
-- weight: `700`
-- line height: `36px`
-
-### Section Heading
-- `18px`
-- weight: `600`
-- line height: `28px`
-
-### Body
-- `15px`
-- weight: `400`
-- line height: `24px`
-
-### Small / Meta
-- `12px`
-- weight: `400`
-- line height: `18px`
-
----
-
-## Layout Values
-
-- max content width: `1440px`
-- page horizontal padding: `32px`
-- desktop gap between sections: `24px`
-- sidebar width: `280px`
-- right panel width: `320px`
-- top bar height: `64px`
-
----
-
-## Editor Values
-
-- editor content width: `960px`
-- editor padding: `32px`
-- toolbar height: `48px`
-- selection highlight: `--color-accent-soft`
+### Badges
+- radius: `rounded-full`
+- background: `bg-accent-soft`
+- text: `text-accent`
 
 ---
 

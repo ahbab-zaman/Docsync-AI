@@ -15,7 +15,7 @@ export default function SettingsPage() {
             <input
               type="text"
               defaultValue="John Doe"
-              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
           <div className="space-y-2">
@@ -23,7 +23,7 @@ export default function SettingsPage() {
             <input
               type="email"
               defaultValue="john@example.com"
-              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
         </div>

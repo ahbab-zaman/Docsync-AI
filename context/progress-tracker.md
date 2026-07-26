@@ -7,8 +7,8 @@ Update this file after each completed Phase 1 feature. A quick look should show 
 ## Current Status
 
 **Phase:** Phase 1 — Foundation
-**Last completed:** None yet
-**Next:** 01 Foundation Setup
+**Last completed:** 03 Authentication
+**Next:** 06 Workspace Management
 
 ---
 
@@ -16,19 +16,19 @@ Update this file after each completed Phase 1 feature. A quick look should show 
 
 ### Phase 1 — Foundation
 
-- [ ] 01 Foundation Setup
-- [ ] 02 Landing Page
-- [ ] 03 Authentication
-- [ ] 04 App Shell
-- [ ] 05 Dashboard
+- [x] 01 Foundation Setup — App scaffold, Tailwind v4, shadcn/ui, Inter font, src/ structure, env template
+- [x] 02 Landing Page — Marketing hero with CTAs at `/`
+- [x] 03 Authentication — Login/register pages with server actions, Zod validation, bcrypt hashing, session cookies
+- [x] 04 App Shell — Sidebar layout for `/app/*` routes with nav links
+- [x] 05 Dashboard — Dashboard page at `/app` with mock workspace cards
 - [ ] 06 Workspace Management
 - [ ] 07 Project Management
 - [ ] 08 Document Editor Foundation
 - [ ] 09 AI Assistant Panel
 - [ ] 10 Members and Access
 - [ ] 11 Notifications and Activity
-- [ ] 12 Profile and Settings
-- [ ] 13 Database Schema
+- [x] 12 Profile and Settings — Settings page at `/app/settings` with mock profile form
+- [x] 13 Database Schema — SQL schema, pg helper, repository layer (users, workspaces, projects, documents, members)
 - [ ] 14 Quality and Polish
 
 ---

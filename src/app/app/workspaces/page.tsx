@@ -15,7 +15,7 @@ export default function WorkspacesPage() {
           <p className="text-sm text-text-secondary">
             Your personal projects and documents.
           </p>
-          <span className="inline-flex items-center rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-700">
+          <span className="inline-flex items-center rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent">
             3 projects
           </span>
         </div>
@@ -24,7 +24,7 @@ export default function WorkspacesPage() {
           <p className="text-sm text-text-secondary">
             Main product development workspace.
           </p>
-          <span className="inline-flex items-center rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-700">
+          <span className="inline-flex items-center rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent">
             12 projects
           </span>
         </div>
@@ -33,7 +33,7 @@ export default function WorkspacesPage() {
           <p className="text-sm text-text-secondary">
             Design system and UX projects.
           </p>
-          <span className="inline-flex items-center rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-700">
+          <span className="inline-flex items-center rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent">
             5 projects
           </span>
         </div>

@@ -32,7 +32,7 @@ export default function RegisterPage() {
               type="text"
               placeholder="Your name"
               required
-              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
           <div className="space-y-2">
@@ -45,7 +45,7 @@ export default function RegisterPage() {
               type="email"
               placeholder="you@example.com"
               required
-              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
           <div className="space-y-2">
@@ -59,23 +59,23 @@ export default function RegisterPage() {
               placeholder="Create a password"
               required
               minLength={8}
-              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
           {state.error && (
-            <p className="text-sm text-red-600">{state.error}</p>
+            <p className="text-sm text-error">{state.error}</p>
           )}
           <button
             type="submit"
             disabled={pending}
-            className="w-full rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 transition-colors disabled:opacity-50"
+            className="w-full rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-dark transition-colors disabled:opacity-50"
           >
             {pending ? "Creating account..." : "Create account"}
           </button>
         </form>
         <p className="text-center text-sm text-text-secondary">
           Already have an account?{" "}
-          <a href="/login" className="font-medium text-brand-600 hover:text-brand-700">
+          <a href="/login" className="font-medium text-accent hover:text-accent-dark">
             Sign in
           </a>
         </p>
