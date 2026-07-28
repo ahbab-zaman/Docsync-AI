@@ -41,6 +41,34 @@ After building any component — update this file with the component name, file 
   - Props: `collaborators`, `max`, `size`
   - Online dot: `h-2.5 w-2.5 rounded-full border-[1.5px] border-surface bg-success`
 
+### Comments
+- `src/components/comments/CommentThread.tsx` — Threaded comment with reply/resolve
+  - Props: `comment`, `onReply`, `onResolve`
+  - Shows avatar, name, time, content, replies, resolve button
+- `src/components/comments/CommentSidebar.tsx` — Sidebar listing unresolved and resolved comments
+  - Props: `documentId`, `comments`, `onCommentsChange`
+  - Header with count, new comment input, unresolved list, resolved collapsible
+- `src/components/comments/CommentReplyBox.tsx` — Reply textarea with mention autocomplete
+  - Props: `onSubmit`, `onCancel`
+  - Uses `MentionSuggestions` for `@` mentions
+- `src/components/comments/CommentBubble.tsx` — TipTap BubbleMenu that appears on text selection
+  - Shows "Comment" button to create comment anchored to selected text
+  - Uses `@tiptap/react` BubbleMenu
+- `src/components/comments/CommentMarkers.ts` — ProseMirror decorations extension for comment highlights
+  - Highlights text ranges with comment color and bottom border
+  - Exports `updateCommentRanges()` to update decorations reactively
+- `src/components/comments/MentionSuggestions.tsx` — Dropdown for `@` mention autocomplete
+  - Keyboard navigation (arrow keys, enter, escape)
+  - Shows avatar + name + email of matching users
+  - Inserts `@UserName` into textarea value
+
+### Editor Shell (updated)
+- `src/components/documents/TiptapEditor.tsx` — Now includes `CommentMarkers` extension and `CommentBubble`
+  - New props: `commentRanges?: CommentRange[]`, `onAddComment?: (from, to, text) => void`
+- `src/app/app/documents/[documentId]/DocumentEditor.tsx` — Now has proper right panel toggle (AI or Comments)
+  - Comments button with unresolved count badge
+  - Both panels rendered conditionally based on `rightPanel` state state
+
 ### Data
 - `src/data/mock-collaborators.ts` — Mock collaborator data with colors and online status
 

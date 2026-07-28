@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import MentionSuggestions from "./MentionSuggestions";
+import { mockMentionUsers } from "@/data/mock-comments";
+import type { MentionUser } from "@/types/comments";
 
 interface CommentReplyBoxProps {
   onSubmit: (content: string) => void;
@@ -32,14 +35,25 @@ export default function CommentReplyBox({ onSubmit, onCancel }: CommentReplyBoxP
     }
   };
 
+  const handleMention = (user: MentionUser) => {
+    // mention already inserted in value by MentionSuggestions
+  };
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 relative">
+      <MentionSuggestions
+        users={mockMentionUsers}
+        value={content}
+        onChange={setContent}
+        onMention={handleMention}
+        textareaRef={textareaRef}
+      />
       <textarea
         ref={textareaRef}
         value={content}
         onChange={(e) => setContent(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Write a reply..."
+        placeholder="Write a reply... Use @ to mention someone"
         rows={2}
         className="w-full rounded-md border border-border bg-surface-secondary px-3 py-2 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent resize-none"
       />

@@ -9,8 +9,9 @@ import {
   PanelLeftClose,
   PanelRightOpen,
   PanelRightClose,
-  Sparkles,
   MessageSquare,
+  MessageSquareText,
+  Sparkles,
 } from "lucide-react";
 import TiptapEditor from "@/components/documents/TiptapEditor";
 import OutlinePanel from "@/components/editor/OutlinePanel";
@@ -18,8 +19,11 @@ import AiPanel from "@/components/ai/AiPanel";
 import CommentSidebar from "@/components/comments/CommentSidebar";
 import CollaboratorAvatars from "@/components/presence/CollaboratorAvatars";
 import { saveDocument } from "@/server/actions/document";
+import { createComment } from "@/server/actions/comments";
 import { getAllMockCollaborators } from "@/data/mock-collaborators";
+import { getMockComments } from "@/data/mock-comments";
 import { cn } from "@/lib/utils";
+import type { CommentRange } from "@/types/comments";
 
 interface DocumentEditorProps {
   documentId: string;
@@ -45,10 +49,23 @@ export default function DocumentEditor({
   const [saved, setSaved] = useState(true);
   const [rightPanel, setRightPanel] = useState<"ai" | "comments" | null>("ai");
   const [outlineOpen, setOutlineOpen] = useState(false);
+  const [comments, setComments] = useState(getMockComments(documentId));
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const collaborators = getAllMockCollaborators();
   const onlineCount = collaborators.filter((c) => c.isOnline).length;
+
+  const commentRanges: CommentRange[] = comments
+    .filter((c) => c.selectionRange)
+    .map((c) => ({
+      id: c.id,
+      from: c.selectionRange!.from,
+      to: c.selectionRange!.to,
+      resolved: c.resolved,
+      userColor: c.userColor,
+    }));
+
+  const unresolvedCount = comments.filter((c) => !c.resolved).length;
 
   const handleSave = useCallback(async () => {
     setSaving(true);
@@ -95,6 +112,22 @@ export default function DocumentEditor({
     handleSave();
     toast.success("Document saved");
   }, [handleSave]);
+
+  const handleAddCommentFromSelection = useCallback(
+    async (from: number, to: number, _text: string) => {
+      const result = await createComment({
+        documentId,
+        content: "",
+        selectionRange: { from, to },
+      });
+      if (result.comment) {
+        setComments((prev) => [result.comment!, ...prev]);
+        setRightPanel("comments");
+        toast.success("Comment added");
+      }
+    },
+    [documentId]
+  );
 
   useEffect(() => {
     return () => {
@@ -156,15 +189,33 @@ export default function DocumentEditor({
           <div className="w-px h-5 bg-border" />
           <button
             type="button"
-            onClick={() => setAiPanelOpen((v) => !v)}
+            onClick={() => setRightPanel(rightPanel === "comments" ? null : "comments")}
             className={cn(
               "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
-              aiPanelOpen
+              rightPanel === "comments"
                 ? "border-accent bg-accent-muted text-accent"
                 : "border-border text-text-secondary hover:bg-surface-secondary"
             )}
           >
-            {aiPanelOpen ? <PanelRightClose className="h-3.5 w-3.5" /> : <PanelRightOpen className="h-3.5 w-3.5" />}
+            {rightPanel === "comments" ? <MessageSquareText className="h-3.5 w-3.5" /> : <MessageSquare className="h-3.5 w-3.5" />}
+            Comments
+            {unresolvedCount > 0 && (
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-highlight px-1 text-[10px] font-medium text-white">
+                {unresolvedCount}
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => setRightPanel(rightPanel === "ai" ? null : "ai")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
+              rightPanel === "ai"
+                ? "border-accent bg-accent-muted text-accent"
+                : "border-border text-text-secondary hover:bg-surface-secondary"
+            )}
+          >
+            {rightPanel === "ai" ? <PanelRightClose className="h-3.5 w-3.5" /> : <PanelRightOpen className="h-3.5 w-3.5" />}
             AI
           </button>
         </div>
@@ -190,7 +241,12 @@ export default function DocumentEditor({
               placeholder="Untitled"
             />
 
-            <TiptapEditor content={initialContent} onUpdate={handleContentUpdate} />
+            <TiptapEditor
+              content={initialContent}
+              onUpdate={handleContentUpdate}
+              commentRanges={commentRanges}
+              onAddComment={handleAddCommentFromSelection}
+            />
 
             <div className="flex items-center gap-4 text-xs text-text-muted border-t border-border mt-4 pt-3 pb-2">
               <span>Created {formatDate(createdAt)} by {createdByName}</span>
@@ -199,8 +255,17 @@ export default function DocumentEditor({
           </div>
         </div>
 
-        {/* Right AI panel */}
-        {aiPanelOpen && (
+        {/* Right panel */}
+        {rightPanel === "comments" && (
+          <div className="w-80 shrink-0 overflow-y-auto rounded-lg border border-border bg-surface p-4">
+            <CommentSidebar
+              documentId={documentId}
+              comments={comments}
+              onCommentsChange={setComments}
+            />
+          </div>
+        )}
+        {rightPanel === "ai" && (
           <div className="w-80 shrink-0 overflow-y-auto rounded-lg border border-border bg-surface p-4">
             <AiPanel
               documentContent={content}

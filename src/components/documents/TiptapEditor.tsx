@@ -18,11 +18,16 @@ import {
   Redo,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import CommentBubble from "@/components/comments/CommentBubble";
+import { CommentMarkers, updateCommentRanges } from "@/components/comments/CommentMarkers";
+import type { CommentRange } from "@/types/comments";
 
 interface TiptapEditorProps {
   content: string;
   onUpdate: (html: string) => void;
   editable?: boolean;
+  commentRanges?: CommentRange[];
+  onAddComment?: (from: number, to: number, text: string) => void;
 }
 
 interface ToolbarButtonProps {
@@ -57,7 +62,13 @@ function ToolbarDivider() {
   return <span className="w-px h-5 bg-border mx-0.5" />;
 }
 
-export default function TiptapEditor({ content, onUpdate, editable = true }: TiptapEditorProps) {
+export default function TiptapEditor({
+  content,
+  onUpdate,
+  editable = true,
+  commentRanges = [],
+  onAddComment,
+}: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -65,6 +76,7 @@ export default function TiptapEditor({ content, onUpdate, editable = true }: Tip
           levels: [1, 2, 3],
         },
       }),
+      CommentMarkers,
     ],
     content,
     editable,
@@ -78,6 +90,12 @@ export default function TiptapEditor({ content, onUpdate, editable = true }: Tip
       },
     },
   });
+
+  useEffect(() => {
+    if (commentRanges.length > 0) {
+      updateCommentRanges(commentRanges);
+    }
+  }, [commentRanges]);
 
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
@@ -94,7 +112,7 @@ export default function TiptapEditor({ content, onUpdate, editable = true }: Tip
   if (!editor) return null;
 
   return (
-    <div className="rounded-lg border border-border bg-surface overflow-hidden">
+    <div className="rounded-lg border border-border bg-surface relative">
       <div className="flex flex-wrap items-center gap-0.5 border-b border-border px-2 py-1.5 bg-surface-secondary">
         <ToolbarButton
           icon={Bold}
@@ -171,6 +189,7 @@ export default function TiptapEditor({ content, onUpdate, editable = true }: Tip
           />
         </div>
       </div>
+      {onAddComment && <CommentBubble editor={editor} onAddComment={onAddComment} />}
       <EditorContent editor={editor} />
     </div>
   );

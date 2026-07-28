@@ -27,3 +27,11 @@ export interface MentionUser {
   name: string;
   email: string;
 }
+
+export interface CommentRange {
+  id: string;
+  from: number;
+  to: number;
+  resolved: boolean;
+  userColor: string;
+}
