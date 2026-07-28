@@ -21,7 +21,7 @@
 - [x] 05 Comments + mentions
 - [x] 06 AI actions in editor
 - [x] 07 Version history
-- [ ] 08 Notifications
+- [x] 08 Notifications
 - [ ] 09 Search
 - [ ] 10 Responsive polish
 
@@ -41,3 +41,5 @@
 - New `SelectionMenu` component replaces `CommentBubble` for a unified UX.
 - Version history uses mock data with content snapshots stored in-memory; restore replaces current state client-side.
 - Version history panel lives in the right sidebar slot alongside AI and Comments toggles.
+- Notifications use lucide-react icons in both list views and sidebar badge.
+- Sidebar polls unread count every 30 seconds and shows active state via pathname.

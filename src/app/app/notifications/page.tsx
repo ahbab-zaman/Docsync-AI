@@ -9,7 +9,7 @@ export default async function NotificationsPage() {
   ]);
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
+    <div className="max-w-3xl mx-auto space-y-10">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Notifications & Activity</h1>
         <p className="text-sm text-text-secondary mt-1">
@@ -18,7 +18,9 @@ export default async function NotificationsPage() {
       </div>
 
       <NotificationList initialNotifications={notifications} />
-      <ActivityList activity={activity} />
+      <div className="border-t border-border pt-8">
+        <ActivityList activity={activity} />
+      </div>
     </div>
   );
 }

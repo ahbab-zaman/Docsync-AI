@@ -1,4 +1,4 @@
-# Memory — Phase 2: Version History
+# Memory — Phase 2: Notifications
 
 Last updated: 2026-07-29
 
@@ -31,6 +31,12 @@ Last updated: 2026-07-29
 - Updated `src/app/app/documents/[documentId]/DocumentEditor.tsx` — Added History button and panel toggle
 - Updated `src/app/app/documents/[documentId]/DocumentEditor.tsx` — Added version restore handler to update content state
 
+### Session 4 — Notifications (08)
+- Updated `src/components/layout/Sidebar.tsx` — Added lucide icons, Bell badge with unread count, active state highlighting, 30s polling
+- Updated `src/components/notifications/NotificationList.tsx` — Replaced emoji with lucide icons, proper Tailwind styling, icon-per-type mapping
+- Updated `src/components/notifications/ActivityList.tsx` — Same icon/styling upgrade
+- Updated `src/app/app/notifications/page.tsx` — Separated sections with border divider
+
 ## Decisions made
 - Selection menu merges Comment + AI into one floating toolbar instead of separate bubbles
 - AI sidebar shows selected text as context when triggered from selection
@@ -41,6 +47,8 @@ Last updated: 2026-07-29
 - Version history uses mock data with content snapshots stored in-memory
 - Version history panel lives in the right sidebar slot alongside AI and Comments
 - Restore replaces document content client-side via `setContent`
+- Notifications use lucide-react icons instead of emoji for consistency with the rest of the UI
+- Sidebar polls unread count on a 30s interval; no WebSocket push yet
 
 ## Problems solved
 - `BubbleMenu` export missing from @tiptap/react v3 — replaced with custom floating component
@@ -49,13 +57,14 @@ Last updated: 2026-07-29
 - TypeScript `useEffect` cleanup with nullable editor — used local variable pattern
 
 ## Current state
-- Phase 2 items 01-07 complete
+- Phase 2 items 01-08 complete
 - Build compiles and type-checks successfully
-- All features use mock data — no PostgreSQL/Redis wiring yet for versions, comments, or AI
+- All features use mock data — no PostgreSQL/Redis wiring yet
 
 ## Next session starts with
-08 Notifications — notification center, unread count, notification detail rows
+09 Search — search documents, search comments, search mentions, search activity events
 
 ## Open questions
 - Version history persistence strategy: PostgreSQL snapshots vs Yjs document versions?
 - How version restore interacts with active Yjs/Hocuspocus collaboration?
+- Notification delivery strategy: Socket.IO push vs polling?

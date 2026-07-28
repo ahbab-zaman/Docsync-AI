@@ -107,6 +107,17 @@ After building any component — update this file with the component name, file 
 ### Mock Data
 - `src/data/mock-versions.ts` — Mock version snapshots for doc-1 with `getMockVersions`, `addMockVersion`, `getMockVersionById`
 
+### Notifications
+- `src/components/notifications/NotificationList.tsx` — Notification list with lucide type icons, mark read/mark all
+  - Props: `initialNotifications`
+  - Icons: UserPlus, UserMinus, ShieldCheck, FileEdit, Share2, UserCheck, FolderPlus, Settings
+  - Classes: `bg-surface-secondary` for unread, `rounded-full bg-accent/10 text-accent` for icon badges
+- `src/components/notifications/ActivityList.tsx` — Activity event list with same icon pattern
+  - Props: `activity`
+  - Classes: `rounded-full bg-surface-tertiary text-text-muted` for icon badges
+- `src/components/layout/Sidebar.tsx` — Nav sidebar with lucide icons, active state via `usePathname`, bell icon with unread badge, 30s polling
+  - Classes: active `bg-accent text-accent-foreground`, inactive `text-text-secondary hover:bg-surface hover:text-foreground`
+
 ### Data
 - `src/data/mock-collaborators.ts` — Mock collaborator data with colors and online status
 
