@@ -67,16 +67,7 @@ export default function CommentBubble({ editor, onAddComment }: CommentBubblePro
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [visible]);
 
-  useEffect(() => {
-    const ed = editor;
-    if (!ed) return;
-    const handleClick = () => {
-      const { from, to } = ed.state.selection;
-      if (from === to) setVisible(false);
-    };
-    ed.on("click", handleClick);
-    return () => { ed.off("click", handleClick); };
-  }, [editor]);
+
 
   if (!visible || !range || !range.text.trim() || !editor) return null;
 

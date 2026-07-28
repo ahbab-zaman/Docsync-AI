@@ -2,8 +2,8 @@
 
 ## Current Status
 **Phase:** Phase 2 — Collaboration Layer
-**Last completed:** Phase 1 foundation and context refresh
-**Next:** Phase 2 editor shell
+**Last completed:** 05 Comments + mentions
+**Next:** 06 AI actions in editor
 
 ## Progress
 
@@ -18,7 +18,7 @@
 - [x] 02 TipTap integration
 - [x] 03 Hocuspocus + Yjs sync
 - [x] 04 Presence + cursors
-- [ ] 05 Comments + mentions
+- [x] 05 Comments + mentions
 - [ ] 06 AI actions in editor
 - [ ] 07 Version history
 - [ ] 08 Notifications
@@ -32,3 +32,7 @@
 - Use TipTap + Yjs/Hocuspocus for shared document editing.
 - Use Socket.IO for presence and lightweight live events.
 - Keep the UI bright and readable with the Ivory Nebula palette.
+- Comment markers use a custom ProseMirror extension with decorations (via `@tiptap/pm/view`).
+- Bubble menu for selected-text comment action uses a custom React component instead of `BubbleMenu` (not available in @tiptap/react v3).
+- Mention autocomplete uses a textarea-based `@` trigger with keyboard navigation.
+- Comment state is lifted to `DocumentEditor` so it can sync with both `CommentSidebar` and `CommentMarkers`.
