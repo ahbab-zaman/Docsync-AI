@@ -20,7 +20,7 @@
 - [x] 04 Presence + cursors
 - [x] 05 Comments + mentions
 - [x] 06 AI actions in editor
-- [ ] 07 Version history
+- [x] 07 Version history
 - [ ] 08 Notifications
 - [ ] 09 Search
 - [ ] 10 Responsive polish
@@ -39,3 +39,5 @@
 - Selection menu merges Comment + AI actions into a single floating toolbar on text selection.
 - AI sidebar natively shows selected text context when triggered from the selection menu.
 - New `SelectionMenu` component replaces `CommentBubble` for a unified UX.
+- Version history uses mock data with content snapshots stored in-memory; restore replaces current state client-side.
+- Version history panel lives in the right sidebar slot alongside AI and Comments toggles.

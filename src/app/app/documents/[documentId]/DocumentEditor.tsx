@@ -11,12 +11,13 @@ import {
   PanelRightClose,
   MessageSquare,
   MessageSquareText,
-  Sparkles,
+  History,
 } from "lucide-react";
 import TiptapEditor from "@/components/documents/TiptapEditor";
 import OutlinePanel from "@/components/editor/OutlinePanel";
 import AiPanel from "@/components/ai/AiPanel";
 import CommentSidebar from "@/components/comments/CommentSidebar";
+import VersionHistory from "@/components/editor/VersionHistory";
 import CollaboratorAvatars from "@/components/presence/CollaboratorAvatars";
 import { saveDocument } from "@/server/actions/document";
 import { createComment } from "@/server/actions/comments";
@@ -49,7 +50,7 @@ export default function DocumentEditor({
   const [content, setContent] = useState(initialContent);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(true);
-  const [rightPanel, setRightPanel] = useState<"ai" | "comments" | null>("ai");
+  const [rightPanel, setRightPanel] = useState<"ai" | "comments" | "version" | null>("ai");
   const [outlineOpen, setOutlineOpen] = useState(false);
   const [comments, setComments] = useState(getMockComments(documentId));
   const [selectionContext, setSelectionContext] = useState<AiSelectionContext | null>(null);
@@ -144,6 +145,14 @@ export default function DocumentEditor({
     []
   );
 
+  const handleVersionRestore = useCallback(
+    (restoredContent: string) => {
+      setContent(restoredContent);
+      setSaved(false);
+    },
+    []
+  );
+
   useEffect(() => {
     return () => {
       if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
@@ -201,6 +210,19 @@ export default function DocumentEditor({
         <div className="flex items-center gap-3">
           <CollaboratorAvatars collaborators={collaborators} max={4} size="sm" />
           <span className="text-xs text-text-muted">{onlineCount} online</span>
+          <button
+            type="button"
+            onClick={() => setRightPanel(rightPanel === "version" ? null : "version")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
+              rightPanel === "version"
+                ? "border-accent bg-accent-muted text-accent"
+                : "border-border text-text-secondary hover:bg-surface-secondary"
+            )}
+          >
+            <History className="h-3.5 w-3.5" />
+            History
+          </button>
           <div className="w-px h-5 bg-border" />
           <button
             type="button"
@@ -278,6 +300,16 @@ export default function DocumentEditor({
               documentId={documentId}
               comments={comments}
               onCommentsChange={setComments}
+            />
+          </div>
+        )}
+        {rightPanel === "version" && (
+          <div className="w-80 shrink-0 overflow-y-auto rounded-lg border border-border bg-surface p-4">
+            <VersionHistory
+              documentId={documentId}
+              currentContent={content}
+              currentTitle={title}
+              onRestore={handleVersionRestore}
             />
           </div>
         )}

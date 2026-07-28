@@ -89,12 +89,30 @@ After building any component — update this file with the component name, file 
   - Comments button with unresolved count badge, AI button
   - Passes `selectionContext` to AiPanel when AI triggered from selection
 
+### Version History
+- `src/components/editor/VersionHistory.tsx` — Right sidebar version timeline
+  - Props: `documentId`, `currentContent`, `currentTitle`, `onRestore`
+  - "Save current version" inline input with save/cancel
+  - Lists versions with title, author, timestamp, "Current" badge, "Restore" button
+  - Loading spinner and empty state
+  - Classes: panel `rounded-lg border border-border bg-surface p-4`, version card `rounded-lg border border-border bg-surface p-3`
+  - "Current" badge: `rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent`
+
+### Types
+- `src/types/versions.ts` — `DocumentVersion` type (id, documentId, title, content, createdBy, createdByName, createdAt)
+
+### Server Actions
+- `src/server/actions/versions.ts` — `getVersions`, `createVersion`, `restoreVersion` using mock data
+
+### Mock Data
+- `src/data/mock-versions.ts` — Mock version snapshots for doc-1 with `getMockVersions`, `addMockVersion`, `getMockVersionById`
+
 ### Data
 - `src/data/mock-collaborators.ts` — Mock collaborator data with colors and online status
 
 ### Document Editor (enhanced)
 - `src/app/app/documents/[documentId]/DocumentEditor.tsx` — Full three-zone editor layout
-  - Top action bar: outline toggle, save status, manual save, collaborator avatars, online count, AI toggle
+  - Top action bar: outline toggle, save status, manual save, collaborator avatars, online count, History toggle, Comments toggle, AI toggle
   - Left: outline panel (collapsible, 56-wide)
   - Center: title input + TiptapEditor + metadata footer
-  - Right: AI panel (collapsible, 80-wide)
+  - Right: AI panel, Comments panel, or Version History panel (collapsible, 80-wide)

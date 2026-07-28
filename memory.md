@@ -1,4 +1,4 @@
-# Memory — Phase 2: Comments + Mentions & AI Actions
+# Memory — Phase 2: Version History
 
 Last updated: 2026-07-29
 
@@ -23,6 +23,14 @@ Last updated: 2026-07-29
 - Updated `src/components/ai/AiPanel.tsx` — Added `selectionContext` prop with context banner
 - Updated `src/app/app/documents/[documentId]/DocumentEditor.tsx` — Wired AI selection handler
 
+### Session 3 — Version History (07)
+- `src/types/versions.ts` — `DocumentVersion` type definition
+- `src/data/mock-versions.ts` — Mock version snapshots for doc-1 with CRUD helpers
+- `src/server/actions/versions.ts` — Server actions: `getVersions`, `createVersion`, `restoreVersion`
+- `src/components/editor/VersionHistory.tsx` — Timeline panel with save/restore
+- Updated `src/app/app/documents/[documentId]/DocumentEditor.tsx` — Added History button and panel toggle
+- Updated `src/app/app/documents/[documentId]/DocumentEditor.tsx` — Added version restore handler to update content state
+
 ## Decisions made
 - Selection menu merges Comment + AI into one floating toolbar instead of separate bubbles
 - AI sidebar shows selected text as context when triggered from selection
@@ -30,6 +38,9 @@ Last updated: 2026-07-29
 - BubbleMenu not available in @tiptap/react v3 — custom positioning via DOM coords
 - @ mentions implemented as textarea autocomplete (not rich-text) for simplicity
 - Comment state lifted to DocumentEditor to sync CommentSidebar + CommentMarkers
+- Version history uses mock data with content snapshots stored in-memory
+- Version history panel lives in the right sidebar slot alongside AI and Comments
+- Restore replaces document content client-side via `setContent`
 
 ## Problems solved
 - `BubbleMenu` export missing from @tiptap/react v3 — replaced with custom floating component
@@ -38,12 +49,12 @@ Last updated: 2026-07-29
 - TypeScript `useEffect` cleanup with nullable editor — used local variable pattern
 
 ## Current state
-- Phase 2 items 01-06 complete
+- Phase 2 items 01-07 complete
 - Build compiles and type-checks successfully
-- All features use mock data — no PostgreSQL/Redis wiring yet for comments or AI
+- All features use mock data — no PostgreSQL/Redis wiring yet for versions, comments, or AI
 
 ## Next session starts with
-07 Version history — version timeline, version title/timestamp, restore action
+08 Notifications — notification center, unread count, notification detail rows
 
 ## Open questions
 - Version history persistence strategy: PostgreSQL snapshots vs Yjs document versions?
