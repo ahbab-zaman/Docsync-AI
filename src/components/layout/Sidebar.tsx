@@ -11,6 +11,8 @@ import {
   Bell,
   Users,
   Settings,
+  Menu,
+  X,
 } from "lucide-react";
 import { getUnreadCount } from "@/server/actions/notifications";
 import SearchDialog from "@/components/search/SearchDialog";
@@ -37,6 +39,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [unreadCount, setUnreadCount] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const fetchCount = () => {
@@ -61,55 +64,96 @@ export default function Sidebar() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [searchOpen]);
 
-  return (
-    <>
-      <nav className="w-64 border-r border-border bg-surface-secondary p-4 flex flex-col gap-4 shrink-0 h-screen sticky top-0">
-        <div className="flex items-center gap-2 px-2">
-          <span className="text-lg font-bold text-foreground">Docsync</span>
-        </div>
+  // Close mobile sidebar on navigation
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
-        {/* Search button */}
+  const sidebarContent = (
+    <>
+      <div className="flex items-center justify-between px-2">
+        <span className="text-lg font-bold text-foreground">Docsync</span>
         <button
           type="button"
-          onClick={() => setSearchOpen(true)}
-          className="flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-muted hover:border-border-light hover:text-text-secondary transition-colors"
+          onClick={() => setMobileOpen(false)}
+          className="md:hidden flex items-center justify-center h-8 w-8 rounded-md text-text-secondary hover:bg-surface transition-colors"
         >
-          <Search className="h-4 w-4" />
-          <span className="flex-1 text-left">Search...</span>
-          <kbd className="rounded border border-border bg-surface-secondary px-1.5 py-0.5 text-[10px] text-text-muted">
-            Ctrl+K
-          </kbd>
+          <X className="h-4 w-4" />
         </button>
+      </div>
 
-        <div className="flex flex-col gap-1">
-          {navLinks.map((link) => {
-            const Icon = link.icon;
-            const isActive = pathname === link.href;
-            return (
-              <a
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-accent text-accent-foreground"
-                    : "text-text-secondary hover:bg-surface hover:text-foreground"
-                )}
-              >
-                <span className="flex items-center gap-2">
-                  <Icon className="h-4 w-4" />
-                  <span>{link.label}</span>
+      <button
+        type="button"
+        onClick={() => setSearchOpen(true)}
+        className="flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-muted hover:border-border-light hover:text-text-secondary transition-colors"
+      >
+        <Search className="h-4 w-4 shrink-0" />
+        <span className="flex-1 text-left">Search...</span>
+        <kbd className="hidden sm:inline rounded border border-border bg-surface-secondary px-1.5 py-0.5 text-[10px] text-text-muted">
+          Ctrl+K
+        </kbd>
+      </button>
+
+      <div className="flex flex-col gap-1">
+        {navLinks.map((link) => {
+          const Icon = link.icon;
+          const isActive = pathname === link.href;
+          return (
+            <a
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                isActive
+                  ? "bg-accent text-accent-foreground"
+                  : "text-text-secondary hover:bg-surface hover:text-foreground"
+              )}
+            >
+              <span className="flex items-center gap-2">
+                <Icon className="h-4 w-4" />
+                <span>{link.label}</span>
+              </span>
+              {link.showBadge && unreadCount > 0 && (
+                <span className="inline-flex items-center justify-center rounded-full bg-accent/10 px-1.5 py-0.5 text-xs font-medium text-accent">
+                  {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
-                {link.showBadge && unreadCount > 0 && (
-                  <span className="inline-flex items-center justify-center rounded-full bg-accent/10 px-1.5 py-0.5 text-xs font-medium text-accent">
-                    {unreadCount > 99 ? "99+" : unreadCount}
-                  </span>
-                )}
-              </a>
-            );
-          })}
-        </div>
+              )}
+            </a>
+          );
+        })}
+      </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile hamburger — visible below md */}
+      <button
+        type="button"
+        onClick={() => setMobileOpen(true)}
+        className="md:hidden fixed top-3 left-3 z-40 flex items-center justify-center h-9 w-9 rounded-lg bg-surface border border-border shadow-sm text-text-secondary hover:text-foreground transition-colors"
+        aria-label="Open navigation"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
+      {/* Desktop sidebar — always visible md+ */}
+      <nav className="hidden md:flex w-64 border-r border-border bg-surface-secondary p-4 flex-col gap-4 shrink-0 h-screen sticky top-0">
+        {sidebarContent}
       </nav>
+
+      {/* Mobile sidebar overlay */}
+      {mobileOpen && (
+        <div className="md:hidden fixed inset-0 z-50">
+          <div
+            className="absolute inset-0 bg-overlay/40 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+          />
+          <nav className="relative w-64 h-full bg-surface-secondary border-r border-border p-4 flex flex-col gap-4 overflow-y-auto">
+            {sidebarContent}
+          </nav>
+        </div>
+      )}
 
       <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>

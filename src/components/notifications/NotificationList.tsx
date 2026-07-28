@@ -41,19 +41,19 @@ export default function NotificationList({ initialNotifications }: NotificationL
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start sm:items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Bell className="h-5 w-5 text-foreground" />
-          <h2 className="text-lg font-semibold text-foreground">Notifications</h2>
+          <Bell className="h-5 w-5 text-foreground shrink-0" />
+          <h2 className="text-base sm:text-lg font-semibold text-foreground">Notifications</h2>
           {unreadCount > 0 && (
-            <span className="text-sm font-normal text-text-muted">({unreadCount} unread)</span>
+            <span className="text-xs sm:text-sm font-normal text-text-muted">({unreadCount} unread)</span>
           )}
         </div>
         {unreadCount > 0 && (
           <button
             type="button"
             onClick={handleMarkAllRead}
-            className="text-sm text-accent hover:text-accent-dark transition-colors"
+            className="shrink-0 text-xs sm:text-sm text-accent hover:text-accent-dark transition-colors"
           >
             Mark all as read
           </button>
@@ -76,12 +76,12 @@ export default function NotificationList({ initialNotifications }: NotificationL
               <div
                 key={notif.id}
                 className={cn(
-                  "flex items-start gap-3 p-4 transition-colors",
+                  "flex items-start gap-2 sm:gap-3 p-3 sm:p-4 transition-colors",
                   !notif.read ? "bg-surface-secondary" : "bg-surface"
                 )}
               >
                 <span className={cn(
-                  "mt-0.5 flex h-6 w-6 items-center justify-center rounded-full",
+                  "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
                   !notif.read ? "bg-accent/10 text-accent" : "bg-surface-tertiary text-text-muted"
                 )}>
                   <Icon className="h-3.5 w-3.5" />
@@ -90,7 +90,7 @@ export default function NotificationList({ initialNotifications }: NotificationL
                   <div className="flex items-start justify-between gap-2">
                     <p
                       className={cn(
-                        "text-sm",
+                        "text-xs sm:text-sm",
                         !notif.read ? "font-semibold text-foreground" : "font-medium text-foreground"
                       )}
                     >
@@ -100,14 +100,14 @@ export default function NotificationList({ initialNotifications }: NotificationL
                       <button
                         type="button"
                         onClick={() => handleMarkRead(notif.id)}
-                        className="shrink-0 text-xs text-accent hover:text-accent-dark transition-colors"
+                        className="shrink-0 text-[10px] sm:text-xs text-accent hover:text-accent-dark transition-colors"
                       >
                         Mark read
                       </button>
                     )}
                   </div>
-                  <p className="text-xs text-text-secondary mt-0.5">{notif.description}</p>
-                  <p className="text-xs text-text-muted mt-1">
+                  <p className="text-[11px] sm:text-xs text-text-secondary mt-0.5">{notif.description}</p>
+                  <p className="text-[11px] sm:text-xs text-text-muted mt-1">
                     {new Date(notif.created_at).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",

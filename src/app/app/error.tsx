@@ -1,5 +1,7 @@
 "use client";
 
+import { AlertTriangle } from "lucide-react";
+
 export default function AppError({
   error,
   reset,
@@ -9,7 +11,7 @@ export default function AppError({
 }) {
   return (
     <div className="flex flex-col items-center justify-center p-12 text-center" role="alert">
-      <span className="text-2xl mb-2">⚠</span>
+      <AlertTriangle className="h-8 w-8 text-error mb-2" />
       <h2 className="text-lg font-semibold text-foreground">Something went wrong</h2>
       <p className="text-sm text-text-secondary mt-1 max-w-md">
         {error.message || "An unexpected error occurred. Please try again."}

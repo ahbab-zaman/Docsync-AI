@@ -10,7 +10,7 @@ export default function AppLayout({
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <main className="flex-1 p-6">{children}</main>
+      <main className="flex-1 p-4 md:p-6 pt-14 md:pt-6">{children}</main>
     </div>
   );
 }

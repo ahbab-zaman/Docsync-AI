@@ -89,7 +89,7 @@ export default function TiptapEditor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm max-w-none focus:outline-none min-h-[500px] px-8 py-6 text-text-primary",
+          "prose prose-sm max-w-none focus:outline-none min-h-[300px] sm:min-h-[500px] px-4 sm:px-8 py-4 sm:py-6 text-text-primary",
       },
     },
   });

@@ -23,26 +23,26 @@ export default async function DocumentPage({
 
   return (
     <div className="space-y-4 max-w-4xl mx-auto">
-      <div className="flex items-center gap-2 text-sm text-text-muted mb-1">
-        <Link href="/app/workspaces" className="hover:text-text-secondary transition-colors">
+      <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-text-muted mb-1 flex-wrap">
+        <Link href="/app/workspaces" className="hover:text-text-secondary transition-colors shrink-0">
           Workspaces
         </Link>
-        <span>/</span>
+        <span className="shrink-0">/</span>
         <Link
           href={`/app/workspaces/${workspaceId}`}
-          className="hover:text-text-secondary transition-colors"
+          className="hover:text-text-secondary transition-colors truncate max-w-[120px] sm:max-w-none"
         >
           {workspace?.name ?? "Workspace"}
         </Link>
-        <span>/</span>
+        <span className="shrink-0">/</span>
         <Link
           href={`/app/projects/${document.project_id}`}
-          className="hover:text-text-secondary transition-colors"
+          className="hover:text-text-secondary transition-colors truncate max-w-[120px] sm:max-w-none"
         >
           {project?.name ?? "Project"}
         </Link>
-        <span>/</span>
-        <span className="text-text-secondary">{document.title}</span>
+        <span className="shrink-0">/</span>
+        <span className="text-text-secondary truncate max-w-[120px] sm:max-w-none">{document.title}</span>
       </div>
 
       <DocumentEditor

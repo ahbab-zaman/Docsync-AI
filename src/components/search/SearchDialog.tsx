@@ -171,16 +171,17 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
           {!loading && hasResults && (
             <div className="py-2">
               {(["document", "comment", "activity"] as const).map((type) => {
-                const items = results[type];
+                const key = `${type}s` as keyof SearchResults;
+                const items = results[key];
                 if (items.length === 0) return null;
                 const Icon = typeConfig[type].icon;
-                let globalIndex = 0;
                 // compute starting index for this group
                 const typeOrder = ["document", "comment", "activity"] as const;
                 let groupStart = 0;
                 for (const t of typeOrder) {
                   if (t === type) break;
-                  groupStart += results[t].length;
+                  const tk = `${t}s` as keyof SearchResults;
+                  groupStart += results[tk].length;
                 }
 
                 return (

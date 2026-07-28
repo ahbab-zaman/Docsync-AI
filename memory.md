@@ -1,4 +1,4 @@
-# Memory — Phase 2: Notifications
+# Memory — Phase 2: Complete
 
 Last updated: 2026-07-29
 
@@ -37,6 +37,25 @@ Last updated: 2026-07-29
 - Updated `src/components/notifications/ActivityList.tsx` — Same icon/styling upgrade
 - Updated `src/app/app/notifications/page.tsx` — Separated sections with border divider
 
+### Session 5 — Search (09)
+- `src/types/search.ts` — `SearchResultItem`, `SearchResults`, `SearchResultType` types
+- `src/data/mock-search.ts` — 16 mock results with in-memory token index + relevance scoring
+- `src/server/actions/search.ts` — `search(query)` server action returning grouped results
+- `src/components/search/SearchDialog.tsx` — Cmd+K modal with debounced search, grouped list, keyboard navigation
+- Updated `src/components/layout/Sidebar.tsx` — Added search bar with Ctrl+K badge and global Cmd+K listener
+
+### Session 6 — Polish & Responsiveness (10)
+- Updated `src/components/layout/Sidebar.tsx` — Hamburger menu for mobile, overlay pattern, auto-close on navigation
+- Updated `src/app/app/layout.tsx` — Added mobile padding for hamburger button
+- Updated `src/app/app/documents/[documentId]/DocumentEditor.tsx` — Three-zone layout stacks on mobile, action bar wraps, panels full-width on small screens
+- Updated `src/components/documents/TiptapEditor.tsx` — Responsive min-height (300px mobile / 500px desktop), responsive padding
+- Updated `src/app/app/documents/[documentId]/page.tsx` — Responsive breadcrumb with truncation
+- Updated `src/app/app/notifications/page.tsx` — Responsive spacing and heading sizes
+- Updated `src/components/notifications/NotificationList.tsx` — Responsive text sizes and spacing
+- Updated `src/app/app/page.tsx` — Empty state for no workspaces, responsive grid
+- Updated `src/app/app/workspaces/page.tsx` — Empty state, responsive grid, fixed `bg-accent-soft` class
+- Updated `src/app/app/error.tsx` — Lucide `AlertTriangle` icon instead of emoji
+
 ## Decisions made
 - Selection menu merges Comment + AI into one floating toolbar instead of separate bubbles
 - AI sidebar shows selected text as context when triggered from selection
@@ -49,6 +68,12 @@ Last updated: 2026-07-29
 - Restore replaces document content client-side via `setContent`
 - Notifications use lucide-react icons instead of emoji for consistency with the rest of the UI
 - Sidebar polls unread count on a 30s interval; no WebSocket push yet
+- Search uses a Cmd+K modal (spotlight pattern) rather than a full-page search route
+- Search index is an in-memory Map-based token index with relevance scoring by token frequency and substring matching
+- Search debounces input by 200ms before calling the server action
+- Search dialog handles keyboard navigation (arrow keys, enter, escape)
+- Sidebar uses overlay pattern on mobile with hamburger toggle; auto-closes on route change
+- DocumentEditor panels stack vertically below lg breakpoint; right panels are full-width with capped height
 
 ## Problems solved
 - `BubbleMenu` export missing from @tiptap/react v3 — replaced with custom floating component
@@ -57,14 +82,15 @@ Last updated: 2026-07-29
 - TypeScript `useEffect` cleanup with nullable editor — used local variable pattern
 
 ## Current state
-- Phase 2 items 01-08 complete
+- Phase 2 items 01-10 complete
 - Build compiles and type-checks successfully
 - All features use mock data — no PostgreSQL/Redis wiring yet
 
-## Next session starts with
-09 Search — search documents, search comments, search mentions, search activity events
+## Next phase
+Phase 3 — Real persistence and production wiring (PostgreSQL, Redis, Hocuspocus, Socket.IO, BullMQ, auth)
 
 ## Open questions
 - Version history persistence strategy: PostgreSQL snapshots vs Yjs document versions?
 - How version restore interacts with active Yjs/Hocuspocus collaboration?
 - Notification delivery strategy: Socket.IO push vs polling?
+- Search persistence: PostgreSQL full-text search vs Elasticsearch/Meilisearch?

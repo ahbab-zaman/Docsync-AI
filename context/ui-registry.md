@@ -117,6 +117,30 @@ After building any component — update this file with the component name, file 
   - Classes: `rounded-full bg-surface-tertiary text-text-muted` for icon badges
 - `src/components/layout/Sidebar.tsx` — Nav sidebar with lucide icons, active state via `usePathname`, bell icon with unread badge, 30s polling
   - Classes: active `bg-accent text-accent-foreground`, inactive `text-text-secondary hover:bg-surface hover:text-foreground`
+  - Mobile: hamburger menu (`fixed top-3 left-3 z-40`), overlay sidebar (`bg-overlay/40 backdrop-blur-sm`), auto-closes on pathname change
+
+### Search
+- `src/components/search/SearchDialog.tsx` — Cmd+K modal search dialog
+  - Props: `open`, `onClose`
+  - Search input with debounce (200ms), grouped results (Documents / Comments / Activity)
+  - Keyboard: Arrow keys navigate, Enter opens, Escape closes
+  - Classes: overlay `bg-overlay/40 backdrop-blur-sm`, dialog `rounded-xl border border-border bg-surface shadow-popover`
+  - Group headers: `text-[11px] font-semibold uppercase tracking-wider text-text-muted`
+  - Selected item: `bg-accent-muted`, icon badge `bg-accent/10 text-accent`
+  - Empty states with Search icon
+- `src/components/layout/Sidebar.tsx` — Search bar with Ctrl+K badge, opens SearchDialog
+
+### Types
+- `src/types/search.ts` — `SearchResultType`, `SearchResultItem`, `SearchResults`, `SearchState`
+- `src/types/versions.ts` — `DocumentVersion` type (id, documentId, title, content, createdBy, createdByName, createdAt)
+
+### Server Actions
+- `src/server/actions/versions.ts` — `getVersions`, `createVersion`, `restoreVersion` using mock data
+- `src/server/actions/search.ts` — `search(query)` returns grouped `SearchResults`
+
+### Mock Data
+- `src/data/mock-versions.ts` — Mock version snapshots for doc-1 with `getMockVersions`, `addMockVersion`, `getMockVersionById`
+- `src/data/mock-search.ts` — 16 mock search results across documents/comments/activity with in-memory token index and relevance scoring
 
 ### Data
 - `src/data/mock-collaborators.ts` — Mock collaborator data with colors and online status

@@ -22,8 +22,8 @@
 - [x] 06 AI actions in editor
 - [x] 07 Version history
 - [x] 08 Notifications
-- [ ] 09 Search
-- [ ] 10 Responsive polish
+- [x] 09 Search
+- [x] 10 Responsive polish
 
 ## Decisions Made During Build
 - Use a single-repo modular architecture.
@@ -43,3 +43,9 @@
 - Version history panel lives in the right sidebar slot alongside AI and Comments toggles.
 - Notifications use lucide-react icons in both list views and sidebar badge.
 - Sidebar polls unread count every 30 seconds and shows active state via pathname.
+- Search dialog is a Cmd+K modal with grouped results, keyboard navigation, and debounced input.
+- Search index is an in-memory token map; results are relevance-scored and grouped by type.
+- Sidebar is collapsible on mobile (hamburger menu, overlay, auto-close on nav).
+- DocumentEditor three-zone layout stacks on mobile (panels below editor, max-height capped).
+- All pages use responsive text sizes, spacing, and grid columns.
+- Error page uses lucide `AlertTriangle` icon instead of emoji.
