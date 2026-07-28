@@ -1,49 +1,50 @@
-# Memory — Quality and Polish
+# Memory — Phase 2: Comments + Mentions & AI Actions
 
-Last updated: 2026-07-27
+Last updated: 2026-07-29
 
 ## What was built
 
-**14 Quality and Polish:**
-- `src/components/ui/Skeleton.tsx` — Loading skeleton with `animate-pulse` and `bg-surface-tertiary`
-- `src/components/ui/ConfirmDialog.tsx` — Accessible confirmation dialog with danger/default variants, focus trap, Escape key, backdrop click, ARIA attributes
-- `src/components/ui/EmptyState.tsx` — Reusable empty state with icon, title, description, action slot
-- `src/components/ui/LoadingSpinner.tsx` — Reusable spinner with `role="status"` and `aria-live="polite"`
-- `src/app/app/error.tsx` — Error boundary with reset button
-- `src/app/app/loading.tsx` — App-level loading skeleton
-- `src/app/app/workspaces/loading.tsx` — Workspaces list loading skeleton
-- `src/app/app/workspaces/[workspaceId]/loading.tsx` — Workspace detail loading skeleton
-- `src/app/app/projects/[projectId]/loading.tsx` — Project detail loading skeleton
-- `src/app/app/documents/[documentId]/loading.tsx` — Document editor loading skeleton
-- Updated `src/app/layout.tsx` — Added sonner Toaster with dark theme styling
-- Updated `src/components/members/InviteModal.tsx` — Full accessibility pass: dialog role, aria-modal, focus trap, Escape key, backdrop click, auto-focus, aria-invalid, role="alert"
-- Updated `src/components/members/MemberList.tsx` — Added ConfirmDialog for member removal, toast feedback for all actions, ARIA list roles
-- Updated `src/app/app/documents/[documentId]/DocumentEditor.tsx` — Toast on save, aria-live on save indicator
-- Updated `src/app/app/workspaces/new/page.tsx` — Toast on workspace create, useEffect redirect pattern
-- Updated `src/app/app/projects/new/page.tsx` — Toast on project create, useEffect redirect pattern
-- Updated `src/app/app/documents/new/page.tsx` — Toast on document create, useEffect redirect pattern
-- Installed `sonner` — toast notification library
+### Session 1 — Comments + Mentions (05)
+- `src/components/comments/MentionSuggestions.tsx` — `@` mention autocomplete with keyboard nav
+- `src/components/comments/CommentBubble.tsx` — Floating bubble on text selection (deprecated in session 2)
+- `src/components/comments/CommentMarkers.ts` — ProseMirror decorations for comment highlights
+- Updated `src/types/comments.ts` — Added `CommentRange` type
+- Updated `src/components/documents/TiptapEditor.tsx` — Integrated CommentMarkers extension
+- Updated `src/app/app/documents/[documentId]/DocumentEditor.tsx` — Fixed right-panel toggle, wired comment sidebar
+- Updated `src/components/comments/CommentSidebar.tsx` — Converted to controlled component
+- Updated `src/components/comments/CommentReplyBox.tsx` — Added mention autocomplete
+- Updated `src/app/globals.css` — Added `.comment-marker` styles
+
+### Session 2 — AI Actions in Editor (06)
+- `src/components/editor/SelectionMenu.tsx` — Combined floating toolbar (Comment + AI actions)
+- Updated `src/types/ai.ts` — Added `expand`, `simplify`, `extract` action types + `AiSelectionContext`
+- Updated `src/data/mock-ai.ts` — Added mock responses for new action types + suggestions
+- Updated `src/components/documents/TiptapEditor.tsx` — Replaced CommentBubble with SelectionMenu
+- Updated `src/components/ai/AiPanel.tsx` — Added `selectionContext` prop with context banner
+- Updated `src/app/app/documents/[documentId]/DocumentEditor.tsx` — Wired AI selection handler
 
 ## Decisions made
+- Selection menu merges Comment + AI into one floating toolbar instead of separate bubbles
+- AI sidebar shows selected text as context when triggered from selection
+- CommentMarkers uses `@tiptap/pm/view` (not `@tiptap/pm/state`) for Decoration/DecorationSet
+- BubbleMenu not available in @tiptap/react v3 — custom positioning via DOM coords
+- @ mentions implemented as textarea autocomplete (not rich-text) for simplicity
+- Comment state lifted to DocumentEditor to sync CommentSidebar + CommentMarkers
 
-- Toast library: sonner chosen (lightweight, modern, React 19 compatible, works with Tailwind v4)
-- Skeleton uses `bg-surface-tertiary` with `animate-pulse` (matches design tokens, not hardcoded)
-- Danger buttons use `bg-error` which is properly defined in the theme token system
-- Focus trap implemented manually (no external dependency) to keep the dependency footprint small
-- Redirect pattern changed from render-time `router.push()` to `useEffect` to avoid React lifecycle warnings
+## Problems solved
+- `BubbleMenu` export missing from @tiptap/react v3 — replaced with custom floating component
+- `Decoration`/`DecorationSet` not in `@tiptap/pm/state` — imported from `@tiptap/pm/view` instead
+- DocumentEditor had broken right-panel toggle referencing undefined `aiPanelOpen` — rewired
+- TypeScript `useEffect` cleanup with nullable editor — used local variable pattern
 
 ## Current state
-
-- Build passes cleanly — 15 routes compile
-- All Phase 1 features are complete and marked done
-- Phase 2 is next (requires planning)
+- Phase 2 items 01-06 complete
+- Build compiles and type-checks successfully
+- All features use mock data — no PostgreSQL/Redis wiring yet for comments or AI
 
 ## Next session starts with
-
-Plan Phase 2: collaborative editing, presence syncing, cursor tracking, real-time comments, Yjs/Hocuspocus sync, richer AI orchestration, multi-client collaboration.
+07 Version history — version timeline, version title/timestamp, restore action
 
 ## Open questions
-
-- Session persistence strategy for auth still unresolved
-- Auth route protection middleware not yet implemented
-- Phase 2 scope and build order not yet defined
+- Version history persistence strategy: PostgreSQL snapshots vs Yjs document versions?
+- How version restore interacts with active Yjs/Hocuspocus collaboration?

@@ -2,8 +2,8 @@
 
 ## Current Status
 **Phase:** Phase 2 — Collaboration Layer
-**Last completed:** 05 Comments + mentions
-**Next:** 06 AI actions in editor
+**Last completed:** 06 AI actions in editor
+**Next:** 07 Version history
 
 ## Progress
 
@@ -19,7 +19,7 @@
 - [x] 03 Hocuspocus + Yjs sync
 - [x] 04 Presence + cursors
 - [x] 05 Comments + mentions
-- [ ] 06 AI actions in editor
+- [x] 06 AI actions in editor
 - [ ] 07 Version history
 - [ ] 08 Notifications
 - [ ] 09 Search
@@ -36,3 +36,6 @@
 - Bubble menu for selected-text comment action uses a custom React component instead of `BubbleMenu` (not available in @tiptap/react v3).
 - Mention autocomplete uses a textarea-based `@` trigger with keyboard navigation.
 - Comment state is lifted to `DocumentEditor` so it can sync with both `CommentSidebar` and `CommentMarkers`.
+- Selection menu merges Comment + AI actions into a single floating toolbar on text selection.
+- AI sidebar natively shows selected text context when triggered from the selection menu.
+- New `SelectionMenu` component replaces `CommentBubble` for a unified UX.

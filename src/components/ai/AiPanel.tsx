@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import type { AiActionType, AiResponse as AiResponseType, AiSuggestion } from "@/types/ai";
+import type { AiActionType, AiResponse as AiResponseType, AiSuggestion, AiSelectionContext } from "@/types/ai";
 import { mockSuggestions } from "@/data/mock-ai";
 import { runAiAction } from "@/server/actions/ai";
 import PromptInput from "./PromptInput";
@@ -12,22 +12,25 @@ interface AiPanelProps {
   documentContent: string;
   documentId?: string;
   onInsertContent?: (content: string) => void;
+  selectionContext?: AiSelectionContext | null;
 }
 
-export default function AiPanel({ documentContent, documentId, onInsertContent }: AiPanelProps) {
+export default function AiPanel({ documentContent, documentId, onInsertContent, selectionContext }: AiPanelProps) {
   const [responses, setResponses] = useState<AiResponseType[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const effectiveContent = selectionContext?.text || documentContent;
 
   const handlePrompt = useCallback(
     async (prompt: string, actionType: AiActionType = "custom") => {
       setLoading(true);
-      const { response, error } = await runAiAction(actionType, prompt, documentContent);
+      const { response, error } = await runAiAction(actionType, prompt, effectiveContent);
       setLoading(false);
       if (response) {
         setResponses((prev) => [response, ...prev]);
       }
     },
-    [documentContent]
+    [effectiveContent]
   );
 
   const handleSuggestionSelect = useCallback(
@@ -54,6 +57,14 @@ export default function AiPanel({ documentContent, documentId, onInsertContent }
     <div className="flex h-full flex-col gap-3">
       <div className="shrink-0">
         <h3 className="text-sm font-semibold text-foreground mb-3">AI Assistant</h3>
+
+        {selectionContext && (
+          <div className="mb-3 rounded-lg border border-accent/20 bg-accent-muted p-2">
+            <p className="text-[10px] font-medium text-accent uppercase tracking-wider mb-1">Selected text context</p>
+            <p className="text-xs text-text-secondary line-clamp-2">{selectionContext.text}</p>
+          </div>
+        )}
+
         <div className="space-y-3">
           <PromptInput onSubmit={(p) => handlePrompt(p)} disabled={loading} />
           <SuggestionChips suggestions={mockSuggestions} onSelect={handleSuggestionSelect} disabled={loading} />

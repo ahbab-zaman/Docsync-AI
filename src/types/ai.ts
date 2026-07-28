@@ -1,6 +1,9 @@
 export type AiActionType =
   | "summarize"
   | "rewrite"
+  | "expand"
+  | "simplify"
+  | "extract"
   | "action-items"
   | "project-summary"
   | "suggest-titles"
@@ -31,4 +34,10 @@ export interface AiSuggestion {
   label: string;
   prompt: string;
   actionType: AiActionType;
+}
+
+export interface AiSelectionContext {
+  from: number;
+  to: number;
+  text: string;
 }

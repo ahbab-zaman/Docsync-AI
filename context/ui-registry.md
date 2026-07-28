@@ -62,12 +62,32 @@ After building any component — update this file with the component name, file 
   - Shows avatar + name + email of matching users
   - Inserts `@UserName` into textarea value
 
+### Selection Menu
+- `src/components/editor/SelectionMenu.tsx` — Floating toolbar on text selection in editor
+  - Combines "Comment" button + "AI Actions" dropdown (Summarize, Rewrite, Expand, Simplify, Extract)
+  - Props: `editor`, `onAddComment`, `onAiAction`
+  - Positioning: absolute, relative to editor container, centered on selection
+  - Classes: `rounded-lg border border-border bg-surface shadow-popover`, `text-xs font-medium`
+  - AI dropdown: `rounded-lg border border-border bg-surface shadow-popover`, items with hover state
+
+### AI Panel
+- `src/components/ai/AiPanel.tsx` — Right sidebar AI assistant
+  - Props: `documentContent`, `documentId`, `onInsertContent`, `selectionContext?`
+  - Shows selected text context banner when AI is triggered from selection
+  - Banner: `rounded-lg border border-accent/20 bg-accent-muted p-2`
+- `src/components/ai/AiResponse.tsx` — AI response card with insert/discard actions
+  - Classes: `rounded-lg border border-accent/20 bg-surface-secondary p-3 space-y-2`
+- `src/components/ai/PromptInput.tsx` — Auto-resizing textarea with send button
+  - Classes: `rounded-lg border border-border bg-surface px-3 py-2`, Send: `rounded-lg bg-accent px-4 py-2`
+- `src/components/ai/SuggestionChips.tsx` — Quick action chip buttons
+  - Classes: `rounded-full border border-border bg-surface-secondary px-3 py-1 text-xs font-medium`
+
 ### Editor Shell (updated)
-- `src/components/documents/TiptapEditor.tsx` — Now includes `CommentMarkers` extension and `CommentBubble`
-  - New props: `commentRanges?: CommentRange[]`, `onAddComment?: (from, to, text) => void`
-- `src/app/app/documents/[documentId]/DocumentEditor.tsx` — Now has proper right panel toggle (AI or Comments)
-  - Comments button with unresolved count badge
-  - Both panels rendered conditionally based on `rightPanel` state state
+- `src/components/documents/TiptapEditor.tsx` — Now includes `CommentMarkers` extension and `SelectionMenu`
+  - New props: `commentRanges`, `onAddComment`, `onAiAction`
+- `src/app/app/documents/[documentId]/DocumentEditor.tsx` — Right panel toggle (AI or Comments)
+  - Comments button with unresolved count badge, AI button
+  - Passes `selectionContext` to AiPanel when AI triggered from selection
 
 ### Data
 - `src/data/mock-collaborators.ts` — Mock collaborator data with colors and online status

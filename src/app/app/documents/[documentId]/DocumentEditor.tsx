@@ -20,10 +20,12 @@ import CommentSidebar from "@/components/comments/CommentSidebar";
 import CollaboratorAvatars from "@/components/presence/CollaboratorAvatars";
 import { saveDocument } from "@/server/actions/document";
 import { createComment } from "@/server/actions/comments";
+import { runAiAction } from "@/server/actions/ai";
 import { getAllMockCollaborators } from "@/data/mock-collaborators";
 import { getMockComments } from "@/data/mock-comments";
 import { cn } from "@/lib/utils";
 import type { CommentRange } from "@/types/comments";
+import type { AiActionType, AiSelectionContext } from "@/types/ai";
 
 interface DocumentEditorProps {
   documentId: string;
@@ -50,6 +52,7 @@ export default function DocumentEditor({
   const [rightPanel, setRightPanel] = useState<"ai" | "comments" | null>("ai");
   const [outlineOpen, setOutlineOpen] = useState(false);
   const [comments, setComments] = useState(getMockComments(documentId));
+  const [selectionContext, setSelectionContext] = useState<AiSelectionContext | null>(null);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const collaborators = getAllMockCollaborators();
@@ -127,6 +130,18 @@ export default function DocumentEditor({
       }
     },
     [documentId]
+  );
+
+  const handleAiActionFromSelection = useCallback(
+    async (from: number, to: number, text: string, actionType: AiActionType) => {
+      setSelectionContext({ from, to, text });
+      setRightPanel("ai");
+      const { response } = await runAiAction(actionType, text, text);
+      if (response) {
+        toast.success(`${actionType} complete`);
+      }
+    },
+    []
   );
 
   useEffect(() => {
@@ -246,6 +261,7 @@ export default function DocumentEditor({
               onUpdate={handleContentUpdate}
               commentRanges={commentRanges}
               onAddComment={handleAddCommentFromSelection}
+              onAiAction={handleAiActionFromSelection}
             />
 
             <div className="flex items-center gap-4 text-xs text-text-muted border-t border-border mt-4 pt-3 pb-2">
@@ -271,6 +287,7 @@ export default function DocumentEditor({
               documentContent={content}
               documentId={documentId}
               onInsertContent={handleInsertContent}
+              selectionContext={selectionContext}
             />
           </div>
         )}

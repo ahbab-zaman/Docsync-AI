@@ -18,9 +18,10 @@ import {
   Redo,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import CommentBubble from "@/components/comments/CommentBubble";
+import SelectionMenu from "@/components/editor/SelectionMenu";
 import { CommentMarkers, updateCommentRanges } from "@/components/comments/CommentMarkers";
 import type { CommentRange } from "@/types/comments";
+import type { AiActionType } from "@/types/ai";
 
 interface TiptapEditorProps {
   content: string;
@@ -28,6 +29,7 @@ interface TiptapEditorProps {
   editable?: boolean;
   commentRanges?: CommentRange[];
   onAddComment?: (from: number, to: number, text: string) => void;
+  onAiAction?: (from: number, to: number, text: string, actionType: AiActionType) => void;
 }
 
 interface ToolbarButtonProps {
@@ -68,6 +70,7 @@ export default function TiptapEditor({
   editable = true,
   commentRanges = [],
   onAddComment,
+  onAiAction,
 }: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
@@ -189,7 +192,13 @@ export default function TiptapEditor({
           />
         </div>
       </div>
-      {onAddComment && <CommentBubble editor={editor} onAddComment={onAddComment} />}
+      {(onAddComment || onAiAction) && (
+        <SelectionMenu
+          editor={editor}
+          onAddComment={onAddComment || (() => {})}
+          onAiAction={onAiAction || (() => {})}
+        />
+      )}
       <EditorContent editor={editor} />
     </div>
   );
