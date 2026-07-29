@@ -61,3 +61,43 @@ Every major content section should live inside a card.
 
 ## Design Goal
 The UI should feel premium, clean, bright, uncommon, readable, modern, and product-focused.
+
+# Motion Rules
+
+- Animation Duration
+
+- Hover
+
+- Active
+
+- Focus
+
+- Disabled
+
+- Loading
+
+- Skeleton
+
+- Empty State
+
+- Toast
+
+- Modal
+
+- Drawer
+
+- Table
+
+- Keyboard
+
+- Screen Reader
+
+- Reduced Motion
+
+- High Contrast
+
+- Touch Targets
+
+- Mobile Gestures
+
+- Performance Rules

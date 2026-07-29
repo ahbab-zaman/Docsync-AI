@@ -93,3 +93,76 @@ Define all design tokens in `src/app/globals.css` using the `@theme` directive. 
 - `bg-accent` for primary actions and active navigation
 - `bg-secondary` for AI, online, and collaborative states
 - `bg-highlight` for warm emphasis
+
+# Typography Scale
+
+- xs
+
+- sm
+
+- base
+
+- lg
+
+- xl
+
+- 2xl
+
+- 3xl
+
+# Spacing Scale
+
+- 2
+
+- 4
+
+- 8
+
+- 12
+
+- 16
+
+- 20
+
+- 24
+
+- 32
+
+- 40
+
+- 48
+
+- 64
+
+- 80
+
+- 96
+
+
+- Animation Tokens
+
+- Transition Tokens
+
+- Shadow Tokens
+
+- Blur Tokens
+
+- Opacity Tokens
+
+- Z-index Tokens
+
+- Breakpoint Tokens
+
+- Sidebar Widths
+
+- Container Widths
+
+- Navbar Height
+
+- Modal Sizes
+
+- Drawer Widths
+
+- Toast Positions
+
+- Focus Ring

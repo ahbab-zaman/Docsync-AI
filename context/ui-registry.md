@@ -151,3 +151,235 @@ After building any component — update this file with the component name, file 
   - Left: outline panel (collapsible, 56-wide)
   - Center: title input + TiptapEditor + metadata footer
   - Right: AI panel, Comments panel, or Version History panel (collapsible, 80-wide)
+
+
+---
+
+# Component Metadata
+
+Every component registered in this document must include the metadata below.
+
+This metadata helps AI agents understand the implementation quality, feature completeness, and maintenance requirements of each component.
+
+Whenever a component is created, modified, refactored, or extended, update its metadata immediately.
+
+Never leave metadata outdated.
+
+---
+
+## Required Metadata
+
+### Responsive
+
+Describe how the component behaves across breakpoints.
+
+Include:
+
+- Mobile layout
+- Tablet layout
+- Desktop layout
+- Sidebar collapse behavior (if applicable)
+- Overflow handling
+
+Example
+
+Responsive:
+- Mobile: Full width, stacked layout
+- Tablet: Two-column layout
+- Desktop: Fixed layout with sidebar
+
+---
+
+### Accessibility
+
+Document every accessibility feature implemented.
+
+Include:
+
+- Semantic HTML
+- ARIA attributes
+- Accessible labels
+- Screen reader support
+- Color contrast considerations
+
+Example
+
+Accessibility:
+- Uses semantic `<button>`
+- aria-label provided
+- WCAG AA contrast
+- Screen-reader friendly
+
+---
+
+### Keyboard Support
+
+Describe keyboard interactions.
+
+Include shortcuts and focus behavior.
+
+Example
+
+Keyboard Support:
+- Tab navigation
+- Enter to submit
+- Escape closes dialog
+- Arrow keys navigate list
+- Ctrl+K opens search
+
+---
+
+### Animation
+
+Describe every animation used.
+
+Include
+
+- Transition duration
+- Motion type
+- Hover animation
+- Loading animation
+
+Example
+
+Animation:
+- Fade in (150ms)
+- Scale on hover
+- Slide drawer
+- Spinner while loading
+
+---
+
+### Loading State
+
+Describe how loading is presented.
+
+Examples
+
+- Skeleton
+- Spinner
+- Placeholder
+- Disabled buttons
+
+Never leave users without feedback during async operations.
+
+---
+
+### Error State
+
+Describe how failures are handled.
+
+Include
+
+- Inline validation
+- Error banner
+- Retry action
+- Toast notification
+
+---
+
+### Empty State
+
+Describe what users see when there is no data.
+
+Include
+
+- Illustration
+- Empty message
+- Primary action
+- Secondary action
+
+Every list and table should have an empty state.
+
+---
+
+### Dependencies
+
+List every important dependency.
+
+Examples
+
+- React Hook Form
+- TipTap
+- TanStack Query
+- Socket.IO
+- Yjs
+- Framer Motion
+
+Only include direct dependencies.
+
+---
+
+### Owner
+
+Specify which feature owns this component.
+
+Examples
+
+Owner:
+- Authentication
+- Documents
+- AI
+- Workspace
+- Notifications
+
+Avoid "Shared" unless the component is truly generic.
+
+---
+
+### Last Updated
+
+Record the latest update.
+
+Format
+
+YYYY-MM-DD
+
+Update this whenever
+
+- UI changes
+- Props change
+- Accessibility changes
+- Styling changes
+- Logic changes
+
+---
+
+## Component Lifecycle
+
+Whenever a new component is implemented:
+
+1. Add the component to this registry.
+2. Document its file path.
+3. Describe its purpose in one sentence.
+4. Record all required metadata.
+5. Reference any reusable components it depends on.
+6. Record any shared hooks or utilities used.
+
+Whenever an existing component changes:
+
+- Update its metadata.
+- Update any changed props.
+- Update dependencies if new libraries are introduced.
+- Remove obsolete information.
+
+This registry must always represent the current implementation.
+
+---
+
+## Documentation Rules
+
+Every component entry should answer the following questions:
+
+- What is this component responsible for?
+- Where is it located?
+- Which feature owns it?
+- Is it responsive?
+- Is it accessible?
+- Does it support keyboard navigation?
+- What are its loading, error, and empty states?
+- Which libraries does it depend on?
+- When was it last updated?
+
+If any answer changes, update this registry immediately.
+
