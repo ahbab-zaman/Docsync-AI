@@ -94,75 +94,239 @@ Define all design tokens in `src/app/globals.css` using the `@theme` directive. 
 - `bg-secondary` for AI, online, and collaborative states
 - `bg-highlight` for warm emphasis
 
-# Typography Scale
+# Typography Tokens
 
-- xs
+Define a consistent typography system across the application. Never hardcode font sizes in components. Always use the predefined Tailwind utility classes or CSS variables mapped to these tokens.
 
-- sm
+| Token | Font Size | Usage |
+|--------|----------:|------|
+| xs | 12px | Helper text, badges, captions |
+| sm | 14px | Secondary text, metadata |
+| base | 16px | Default body text |
+| lg | 18px | Large body text |
+| xl | 20px | Card titles |
+| 2xl | 24px | Section headings |
+| 3xl | 32px | Page headings |
+| 4xl | 40px | Hero titles |
 
-- base
+---
 
-- lg
+# Spacing Tokens
 
-- xl
+Use a consistent spacing scale throughout the application. Never use arbitrary values (`p-[13px]`, `mt-[27px]`, etc.) unless absolutely necessary.
 
-- 2xl
+| Token | Value | Usage |
+|--------|------:|------|
+| 2 | 2px | Micro spacing |
+| 4 | 4px | Icons, badges |
+| 8 | 8px | Small gaps |
+| 12 | 12px | Compact spacing |
+| 16 | 16px | Default padding |
+| 20 | 20px | Cards |
+| 24 | 24px | Sections |
+| 32 | 32px | Large spacing |
+| 40 | 40px | Page sections |
+| 48 | 48px | Layout spacing |
+| 64 | 64px | Hero spacing |
+| 80 | 80px | Large layouts |
+| 96 | 96px | Landing page spacing |
 
-- 3xl
+---
 
-# Spacing Scale
+# Animation Tokens
 
-- 2
+Animations should communicate state changes, not distract users.
 
-- 4
+## Duration
 
-- 8
+| Token | Value | Usage |
+|--------|------:|------|
+| fast | 100ms | Hover |
+| normal | 200ms | Buttons, cards |
+| slow | 300ms | Dialogs |
+| page | 500ms | Page transitions |
 
-- 12
+Always use `ease-out` for UI interactions unless another easing is explicitly required.
 
-- 16
+---
 
-- 20
+# Transition Tokens
 
-- 24
+Standardize all transitions across the application.
 
-- 32
+- Button Hover → 150ms
+- Card Hover → 200ms
+- Modal Open → 250ms
+- Drawer Open → 300ms
+- Sidebar Collapse → 250ms
+- Tooltip → 100ms
 
-- 40
+Never animate layout unnecessarily.
 
-- 48
+---
 
-- 64
+# Shadow Tokens
 
-- 80
+Use shadows consistently to establish elevation.
 
-- 96
+| Token | Usage |
+|--------|------|
+| shadow-card | Default cards |
+| shadow-card-hover | Hovered cards |
+| shadow-popover | Dropdowns, popovers, dialogs |
 
+Never create custom shadows inside components.
 
-- Animation Tokens
+---
 
-- Transition Tokens
+# Blur Tokens
 
-- Shadow Tokens
+Blur should only be used for overlays and glass effects.
 
-- Blur Tokens
+| Token | Value | Usage |
+|--------|------:|------|
+| blur-sm | 4px | Small overlays |
+| blur-md | 8px | Dialog backgrounds |
+| blur-lg | 16px | Glass panels |
 
-- Opacity Tokens
+---
 
-- Z-index Tokens
+# Opacity Tokens
 
-- Breakpoint Tokens
+Use predefined opacity values.
 
-- Sidebar Widths
+- 100%
+- 90%
+- 75%
+- 60%
+- 40%
+- 20%
+- 10%
 
-- Container Widths
+Avoid arbitrary opacity values.
 
-- Navbar Height
+---
 
-- Modal Sizes
+# Z-Index Tokens
 
-- Drawer Widths
+Maintain a consistent layering hierarchy.
 
-- Toast Positions
+| Layer | Value |
+|--------|------:|
+| Base | 0 |
+| Dropdown | 20 |
+| Sticky Header | 30 |
+| Sidebar | 40 |
+| Drawer | 50 |
+| Modal | 60 |
+| Popover | 70 |
+| Toast | 80 |
+| Tooltip | 90 |
+| Loading Overlay | 100 |
 
-- Focus Ring
+Never use random z-index values.
+
+---
+
+# Breakpoint Tokens
+
+The application follows a mobile-first responsive approach.
+
+| Breakpoint | Width |
+|------------|------:|
+| sm | 640px |
+| md | 768px |
+| lg | 1024px |
+| xl | 1280px |
+| 2xl | 1536px |
+
+Layouts should adapt progressively between breakpoints.
+
+---
+
+# Layout Tokens
+
+## Sidebar
+
+- Expanded Width → 280px
+- Collapsed Width → 72px
+
+---
+
+## Navigation Bar
+
+- Height → 72px
+
+---
+
+## Container Widths
+
+| Size | Width |
+|------|------:|
+| sm | 640px |
+| md | 768px |
+| lg | 1024px |
+| xl | 1280px |
+| full | 100% |
+
+---
+
+# Modal Tokens
+
+| Size | Max Width |
+|------|----------:|
+| sm | 420px |
+| md | 640px |
+| lg | 860px |
+| xl | 1080px |
+
+Dialogs should remain vertically centered and responsive.
+
+---
+
+# Drawer Tokens
+
+| Position | Width |
+|----------|------:|
+| Left | 320px |
+| Right | 420px |
+
+Drawers should become full-screen on mobile devices.
+
+---
+
+# Toast Tokens
+
+Toast notifications should appear in the top-right corner on desktop and bottom-center on mobile.
+
+Maximum visible toasts: **3**
+
+Auto-dismiss after **4 seconds**, unless marked as persistent.
+
+---
+
+# Focus Ring
+
+Keyboard accessibility is mandatory.
+
+Use a consistent focus ring for all interactive elements.
+
+- Thickness → 2px
+- Offset → 2px
+- Color → `--color-accent`
+
+Never remove the browser focus indicator without replacing it with an accessible alternative.
+
+---
+
+# Token Usage Rules
+
+All components must consume design tokens defined in this document.
+
+The AI agent must:
+
+- Never hardcode colors, spacing, typography, or shadows.
+- Never use raw Tailwind color classes (`bg-blue-500`, `text-gray-700`, etc.).
+- Reuse existing tokens before introducing new ones.
+- Update this file whenever a new global design token is added.
+- Ensure all new UI components remain visually consistent with the existing design system.

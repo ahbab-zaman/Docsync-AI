@@ -2,7 +2,7 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { useCallback, useEffect } from "react";
+import { memo, useCallback, useEffect } from "react";
 import {
   Bold,
   Italic,
@@ -39,11 +39,13 @@ interface ToolbarButtonProps {
   isActive?: boolean;
 }
 
-function ToolbarButton({ icon: Icon, label, action, isActive }: ToolbarButtonProps) {
+const ToolbarButton = memo(function ToolbarButton({ icon: Icon, label, action, isActive }: ToolbarButtonProps) {
   return (
     <button
       type="button"
+      aria-label={label}
       title={label}
+      aria-pressed={isActive}
       onMouseDown={(e) => {
         e.preventDefault();
         action();
@@ -55,10 +57,10 @@ function ToolbarButton({ icon: Icon, label, action, isActive }: ToolbarButtonPro
           : "text-text-secondary hover:bg-surface-tertiary hover:text-foreground"
       )}
     >
-      <Icon className="h-4 w-4" />
+      <Icon className="h-4 w-4" aria-hidden="true" />
     </button>
   );
-}
+});
 
 function ToolbarDivider() {
   return <span className="w-px h-5 bg-border mx-0.5" />;
@@ -116,7 +118,7 @@ export default function TiptapEditor({
 
   return (
     <div className="rounded-lg border border-border bg-surface relative">
-      <div className="flex flex-wrap items-center gap-0.5 border-b border-border px-2 py-1.5 bg-surface-secondary">
+      <div className="flex flex-wrap items-center gap-0.5 border-b border-border px-2 py-1.5 bg-surface-secondary" role="toolbar" aria-label="Text formatting">
         <ToolbarButton
           icon={Bold}
           label="Bold"

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -14,10 +15,6 @@ import {
   History,
 } from "lucide-react";
 import TiptapEditor from "@/components/documents/TiptapEditor";
-import OutlinePanel from "@/components/editor/OutlinePanel";
-import AiPanel from "@/components/ai/AiPanel";
-import CommentSidebar from "@/components/comments/CommentSidebar";
-import VersionHistory from "@/components/editor/VersionHistory";
 import CollaboratorAvatars from "@/components/presence/CollaboratorAvatars";
 import { saveDocument } from "@/server/actions/document";
 import { createComment } from "@/server/actions/comments";
@@ -27,6 +24,11 @@ import { getMockComments } from "@/data/mock-comments";
 import { cn } from "@/lib/utils";
 import type { CommentRange } from "@/types/comments";
 import type { AiActionType, AiSelectionContext } from "@/types/ai";
+
+const OutlinePanel = dynamic(() => import("@/components/editor/OutlinePanel"), { ssr: false });
+const AiPanel = dynamic(() => import("@/components/ai/AiPanel"), { ssr: false });
+const CommentSidebar = dynamic(() => import("@/components/comments/CommentSidebar"), { ssr: false });
+const VersionHistory = dynamic(() => import("@/components/editor/VersionHistory"), { ssr: false });
 
 interface DocumentEditorProps {
   documentId: string;
@@ -56,10 +58,10 @@ export default function DocumentEditor({
   const [selectionContext, setSelectionContext] = useState<AiSelectionContext | null>(null);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const collaborators = getAllMockCollaborators();
-  const onlineCount = collaborators.filter((c) => c.isOnline).length;
+  const collaborators = useMemo(() => getAllMockCollaborators(), []);
+  const onlineCount = useMemo(() => collaborators.filter((c) => c.isOnline).length, [collaborators]);
 
-  const commentRanges: CommentRange[] = comments
+  const commentRanges: CommentRange[] = useMemo(() => comments
     .filter((c) => c.selectionRange)
     .map((c) => ({
       id: c.id,
@@ -67,9 +69,9 @@ export default function DocumentEditor({
       to: c.selectionRange!.to,
       resolved: c.resolved,
       userColor: c.userColor,
-    }));
+    })), [comments]);
 
-  const unresolvedCount = comments.filter((c) => !c.resolved).length;
+  const unresolvedCount = useMemo(() => comments.filter((c) => !c.resolved).length, [comments]);
 
   const handleSave = useCallback(async () => {
     setSaving(true);
@@ -180,6 +182,8 @@ export default function DocumentEditor({
             onClick={() => setOutlineOpen((v) => !v)}
             className="flex items-center justify-center h-8 w-8 rounded-md text-text-secondary hover:bg-surface-secondary hover:text-foreground transition-colors"
             title={outlineOpen ? "Close outline" : "Open outline"}
+            aria-label={outlineOpen ? "Close outline" : "Open outline"}
+            aria-expanded={outlineOpen}
           >
             {outlineOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
           </button>
@@ -200,7 +204,7 @@ export default function DocumentEditor({
                 onClick={handleManualSave}
                 className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:bg-accent-dark transition-colors"
               >
-                <Save className="h-3.5 w-3.5" />
+                <Save className="h-3.5 w-3.5" aria-hidden="true" />
                 Save
               </button>
             )}
@@ -219,8 +223,10 @@ export default function DocumentEditor({
                 ? "border-accent bg-accent-muted text-accent"
                 : "border-border text-text-secondary hover:bg-surface-secondary"
             )}
+            aria-label={rightPanel === "version" ? "Close version history" : "Open version history"}
+            aria-pressed={rightPanel === "version"}
           >
-            <History className="h-3.5 w-3.5" />
+            <History className="h-3.5 w-3.5" aria-hidden="true" />
             <span className="hidden sm:inline">History</span>
           </button>
           <div className="w-px h-5 bg-border" />
@@ -233,8 +239,10 @@ export default function DocumentEditor({
                 ? "border-accent bg-accent-muted text-accent"
                 : "border-border text-text-secondary hover:bg-surface-secondary"
             )}
+            aria-label={rightPanel === "comments" ? "Close comments" : "Open comments"}
+            aria-pressed={rightPanel === "comments"}
           >
-            {rightPanel === "comments" ? <MessageSquareText className="h-3.5 w-3.5" /> : <MessageSquare className="h-3.5 w-3.5" />}
+            {rightPanel === "comments" ? <MessageSquareText className="h-3.5 w-3.5" aria-hidden="true" /> : <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />}
             <span className="hidden sm:inline">Comments</span>
             {unresolvedCount > 0 && (
               <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-highlight px-1 text-[10px] font-medium text-white">
@@ -251,8 +259,10 @@ export default function DocumentEditor({
                 ? "border-accent bg-accent-muted text-accent"
                 : "border-border text-text-secondary hover:bg-surface-secondary"
             )}
+            aria-label={rightPanel === "ai" ? "Close AI panel" : "Open AI panel"}
+            aria-pressed={rightPanel === "ai"}
           >
-            {rightPanel === "ai" ? <PanelRightClose className="h-3.5 w-3.5" /> : <PanelRightOpen className="h-3.5 w-3.5" />}
+            {rightPanel === "ai" ? <PanelRightClose className="h-3.5 w-3.5" aria-hidden="true" /> : <PanelRightOpen className="h-3.5 w-3.5" aria-hidden="true" />}
             <span className="hidden sm:inline">AI</span>
           </button>
         </div>
@@ -276,6 +286,7 @@ export default function DocumentEditor({
               onChange={handleTitleChange}
               className="text-2xl sm:text-3xl font-bold text-foreground bg-transparent border-none focus:outline-none w-full placeholder:text-text-muted mb-4"
               placeholder="Untitled"
+              aria-label="Document title"
             />
 
             <TiptapEditor

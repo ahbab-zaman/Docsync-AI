@@ -150,15 +150,15 @@ export default async function MarketingPage() {
                 </p>
                 <ul className="mt-6 space-y-3">
                   <li className="flex items-center gap-3 text-sm text-text-secondary">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-soft text-xs text-accent">✓</span>
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-soft text-xs text-accent" aria-hidden="true">✓</span>
                     Shared workspaces with member roles
                   </li>
                   <li className="flex items-center gap-3 text-sm text-text-secondary">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-soft text-xs text-accent">✓</span>
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-soft text-xs text-accent" aria-hidden="true">✓</span>
                     Projects that group related documents
                   </li>
                   <li className="flex items-center gap-3 text-sm text-text-secondary">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-soft text-xs text-accent">✓</span>
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-soft text-xs text-accent" aria-hidden="true">✓</span>
                     Activity feeds so everyone stays aligned
                   </li>
                 </ul>
@@ -166,7 +166,7 @@ export default async function MarketingPage() {
               <div className="rounded-xl border border-border bg-surface-secondary p-6">
                 <div className="rounded-lg border border-border bg-surface p-4 space-y-3">
                   <div className="flex items-center gap-2">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-medium text-accent-foreground">A</div>
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-medium text-accent-foreground" aria-hidden="true">A</div>
                     <span className="text-sm font-medium text-foreground">Alex Chen</span>
                     <span className="text-xs text-text-muted ml-auto">editing</span>
                   </div>
@@ -174,12 +174,12 @@ export default async function MarketingPage() {
                   <div className="h-2 w-1/2 rounded bg-surface-tertiary" />
                   <div className="h-2 w-5/6 rounded bg-accent-soft" />
                   <div className="flex items-center gap-2 pt-2 border-t border-border">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-medium text-secondary-foreground">S</div>
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-medium text-secondary-foreground" aria-hidden="true">S</div>
                     <span className="text-sm font-medium text-foreground">Sarah Kim</span>
                     <span className="text-xs text-text-muted ml-auto">viewing</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-warning text-xs font-medium text-black">Y</div>
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-warning text-xs font-medium text-black" aria-hidden="true">Y</div>
                     <span className="text-sm font-medium text-foreground">You</span>
                     <span className="text-xs text-text-muted ml-auto">online</span>
                   </div>
@@ -196,7 +196,7 @@ export default async function MarketingPage() {
                 <div className="rounded-xl border border-border bg-surface-secondary p-6">
                   <div className="rounded-lg border border-border bg-surface p-4 space-y-3">
                     <div className="flex items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent-soft text-xs text-accent">AI</span>
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent-soft text-xs text-accent" aria-hidden="true">AI</span>
                       <span className="text-sm font-semibold text-foreground">AI Assistant</span>
                     </div>
                     <div className="space-y-2">
@@ -229,15 +229,15 @@ export default async function MarketingPage() {
                 </p>
                 <ul className="mt-6 space-y-3">
                   <li className="flex items-center gap-3 text-sm text-text-secondary">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-soft text-xs text-accent">⚡</span>
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-soft text-xs text-accent" aria-hidden="true">⚡</span>
                     Summarize long documents in seconds
                   </li>
                   <li className="flex items-center gap-3 text-sm text-text-secondary">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-soft text-xs text-accent">⚡</span>
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-soft text-xs text-accent" aria-hidden="true">⚡</span>
                     Rewrite and refine with different tones
                   </li>
                   <li className="flex items-center gap-3 text-sm text-text-secondary">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-soft text-xs text-accent">⚡</span>
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-soft text-xs text-accent" aria-hidden="true">⚡</span>
                     Extract action items and project summaries
                   </li>
                 </ul>
@@ -297,12 +297,12 @@ export default async function MarketingPage() {
 
 function FeatureCard({ icon, title, description }: { icon: string; title: string; description: string }) {
   return (
-    <div className="rounded-xl border border-border bg-surface p-6 space-y-3 hover:border-border-strong transition-colors">
-      <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-lg text-accent">
+    <article className="rounded-xl border border-border bg-surface p-6 space-y-3 hover:border-border-strong transition-colors">
+      <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-lg text-accent" aria-hidden="true">
         {icon}
       </span>
       <h3 className="font-semibold text-foreground">{title}</h3>
       <p className="text-sm text-text-secondary leading-relaxed">{description}</p>
-    </div>
+    </article>
   );
 }

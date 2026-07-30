@@ -62,7 +62,7 @@ export default function NotificationList({ initialNotifications }: NotificationL
 
       {notifications.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-border bg-surface p-12 text-center">
-          <Bell className="h-8 w-8 text-text-muted mb-2" />
+          <Bell className="h-8 w-8 text-text-muted mb-2" aria-hidden="true" />
           <p className="text-sm font-medium text-foreground">No notifications yet</p>
           <p className="text-xs text-text-muted mt-1">
             You will see notifications here when something happens in your workspaces.

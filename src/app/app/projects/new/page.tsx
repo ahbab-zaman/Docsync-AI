@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, Suspense, useActionState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { createProject } from "@/server/actions/project";
@@ -28,12 +29,12 @@ function NewProjectForm() {
             Select a workspace first to create a project.
           </p>
         </div>
-        <a
+        <Link
           href="/app/workspaces"
           className="inline-flex rounded-lg bg-accent px-6 py-2 text-sm font-medium text-accent-foreground hover:bg-accent-dark transition-colors"
         >
           Go to workspaces
-        </a>
+        </Link>
       </div>
     );
   }

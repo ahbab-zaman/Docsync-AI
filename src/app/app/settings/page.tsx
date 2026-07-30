@@ -11,16 +11,18 @@ export default function SettingsPage() {
         <div className="rounded-lg border border-border bg-surface p-5 space-y-3">
           <h3 className="font-semibold text-foreground">Profile</h3>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Name</label>
+            <label htmlFor="settings-name" className="text-sm font-medium text-foreground">Name</label>
             <input
+              id="settings-name"
               type="text"
               defaultValue="John Doe"
               className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Email</label>
+            <label htmlFor="settings-email" className="text-sm font-medium text-foreground">Email</label>
             <input
+              id="settings-email"
               type="email"
               defaultValue="john@example.com"
               className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"

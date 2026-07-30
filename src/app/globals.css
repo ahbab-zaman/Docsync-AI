@@ -101,6 +101,12 @@
   --radius-xl: 24px;
   --radius-full: 9999px;
 
+  /* Accent soft (used for subtle accent backgrounds) */
+  --color-accent-soft: #ece9ff;
+
+  /* Border strong (used for hover states) */
+  --color-border-strong: #cdc2b0;
+
   /* Shadows */
   --shadow-card: 0px 10px 30px rgba(21, 19, 26, 0.06);
   --shadow-card-hover: 0px 14px 40px rgba(21, 19, 26, 0.09);
@@ -116,6 +122,17 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .comment-marker {

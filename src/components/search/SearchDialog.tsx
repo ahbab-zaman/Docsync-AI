@@ -123,7 +123,7 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
       />
 
       {/* Dialog */}
-      <div className="relative w-full max-w-[600px] mx-4 rounded-xl border border-border bg-surface shadow-popover overflow-hidden">
+      <div className="relative w-full max-w-[600px] mx-4 rounded-xl border border-border bg-surface shadow-popover overflow-hidden" role="dialog" aria-modal="true" aria-label="Search">
         {/* Search input */}
         <div className="flex items-center gap-3 border-b border-border px-4 py-3">
           <Search className="h-5 w-5 text-text-muted shrink-0" />

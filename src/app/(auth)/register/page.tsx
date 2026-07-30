@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { register } from "@/server/actions/auth";
 
@@ -34,6 +35,7 @@ export default function RegisterPage() {
               type="text"
               placeholder="Your name"
               required
+              autoComplete="name"
               className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
@@ -47,6 +49,7 @@ export default function RegisterPage() {
               type="email"
               placeholder="you@example.com"
               required
+              autoComplete="email"
               className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
@@ -61,6 +64,7 @@ export default function RegisterPage() {
               placeholder="Create a password"
               required
               minLength={8}
+              autoComplete="new-password"
               className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
@@ -77,9 +81,9 @@ export default function RegisterPage() {
         </form>
         <p className="text-center text-sm text-text-secondary">
           Already have an account?{" "}
-          <a href="/login" className="font-medium text-accent hover:text-accent-dark">
+          <Link href="/login" className="font-medium text-accent hover:text-accent-dark">
             Sign in
-          </a>
+          </Link>
         </p>
       </div>
     </div>

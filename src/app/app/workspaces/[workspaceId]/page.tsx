@@ -52,12 +52,12 @@ export default async function WorkspaceOverviewPage({
       <section>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-foreground">Projects</h2>
-          <a
+          <Link
             href={`/app/projects/new?workspaceId=${workspaceId}`}
             className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent-dark transition-colors"
           >
             New project
-          </a>
+          </Link>
         </div>
         {workspace.projects.length === 0 ? (
           <div className="rounded-lg border border-dashed border-border bg-surface-secondary p-8 flex flex-col items-center justify-center text-center">
@@ -69,7 +69,7 @@ export default async function WorkspaceOverviewPage({
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {workspace.projects.map((project) => (
-              <a
+              <Link
                 key={project.id}
                 href={`/app/projects/${project.id}`}
                 className="rounded-lg border border-border bg-surface p-4 space-y-2 hover:border-border-strong transition-colors block"
@@ -81,7 +81,7 @@ export default async function WorkspaceOverviewPage({
                 <span className="inline-flex items-center rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent">
                   {project.document_count} documents
                 </span>
-              </a>
+              </Link>
             ))}
           </div>
         )}
@@ -89,11 +89,12 @@ export default async function WorkspaceOverviewPage({
 
       <section>
         <h2 className="text-lg font-semibold text-foreground mb-4">Members</h2>
-        <div className="rounded-lg border border-border bg-surface divide-y divide-border">
+        <div className="rounded-lg border border-border bg-surface divide-y divide-border" role="list">
           {workspace.members.map((member) => (
             <div
               key={member.id}
               className="flex items-center justify-between p-4"
+              role="listitem"
             >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-accent-soft flex items-center justify-center text-xs font-medium text-accent">

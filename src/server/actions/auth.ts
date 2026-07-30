@@ -2,6 +2,7 @@
 
 import { z, ZodError } from "zod";
 import { registerUser, loginUser, logoutUser } from "@/server/auth";
+import { checkRateLimit } from "@/lib/rate-limiter";
 import type { UserPublic } from "@/types";
 
 const registerSchema = z.object({
@@ -20,6 +21,12 @@ export async function register(
   formData: FormData
 ): Promise<{ error?: string; success?: boolean; user?: UserPublic }> {
   try {
+    const ip = "global";
+    const limit = checkRateLimit(`register:${ip}`, { maxRequests: 5, windowMs: 60_000 });
+    if (!limit.allowed) {
+      return { error: "Too many registration attempts. Please try again later." };
+    }
+
     const data = registerSchema.parse({
       email: formData.get("email"),
       name: formData.get("name"),
@@ -44,6 +51,12 @@ export async function login(
   formData: FormData
 ): Promise<{ error?: string; success?: boolean; user?: UserPublic }> {
   try {
+    const ip = "global";
+    const limit = checkRateLimit(`login:${ip}`, { maxRequests: 10, windowMs: 60_000 });
+    if (!limit.allowed) {
+      return { error: "Too many login attempts. Please try again later." };
+    }
+
     const data = loginSchema.parse({
       email: formData.get("email"),
       password: formData.get("password"),

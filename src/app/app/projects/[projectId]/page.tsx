@@ -64,12 +64,12 @@ export default async function ProjectOverviewPage({
       <section>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-foreground">Documents</h2>
-          <a
+          <Link
             href={`/app/documents/new?projectId=${projectId}`}
             className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent-dark transition-colors"
           >
             New document
-          </a>
+          </Link>
         </div>
         {project.documents.length === 0 ? (
           <div className="rounded-lg border border-dashed border-border bg-surface-secondary p-8 flex flex-col items-center justify-center text-center">
@@ -79,12 +79,13 @@ export default async function ProjectOverviewPage({
             </p>
           </div>
         ) : (
-          <div className="rounded-lg border border-border bg-surface divide-y divide-border">
+          <div className="rounded-lg border border-border bg-surface divide-y divide-border" role="list">
             {project.documents.map((doc) => (
-              <a
+              <Link
                 key={doc.id}
                 href={`/app/documents/${doc.id}`}
                 className="flex items-center justify-between p-4 hover:bg-surface-secondary transition-colors"
+                role="listitem"
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{doc.title}</p>
@@ -96,7 +97,7 @@ export default async function ProjectOverviewPage({
                 <span className="inline-flex items-center rounded-full bg-surface-tertiary px-2 py-0.5 text-xs text-text-muted">
                   {doc.content.substring(0, 40)}...
                 </span>
-              </a>
+              </Link>
             ))}
           </div>
         )}

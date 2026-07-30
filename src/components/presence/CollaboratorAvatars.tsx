@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { cn } from "@/lib/utils";
 
 export interface Collaborator {
@@ -21,7 +22,7 @@ const sizeMap = {
   md: "h-8 w-8 text-sm",
 };
 
-export default function CollaboratorAvatars({
+export default memo(function CollaboratorAvatars({
   collaborators,
   max = 5,
   size = "md",
@@ -75,4 +76,4 @@ export default function CollaboratorAvatars({
       </div>
     </div>
   );
-}
+});

@@ -18,13 +18,13 @@ export default async function WorkspacesPage() {
           href="/app/workspaces/new"
           className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent-dark transition-colors self-start sm:self-auto"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-4 w-4" aria-hidden="true" />
           New workspace
         </Link>
       </div>
       {workspaces.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-border bg-surface p-12 text-center">
-          <Briefcase className="h-8 w-8 text-text-muted mb-2" />
+          <Briefcase className="h-8 w-8 text-text-muted mb-2" aria-hidden="true" />
           <p className="text-sm font-medium text-foreground">No workspaces yet</p>
           <p className="text-xs text-text-muted mt-1">Create your first workspace to get started.</p>
         </div>

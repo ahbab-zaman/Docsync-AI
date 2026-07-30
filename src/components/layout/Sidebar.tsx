@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -15,8 +17,9 @@ import {
   X,
 } from "lucide-react";
 import { getUnreadCount } from "@/server/actions/notifications";
-import SearchDialog from "@/components/search/SearchDialog";
 import { cn } from "@/lib/utils";
+
+const SearchDialog = dynamic(() => import("@/components/search/SearchDialog"), { ssr: false });
 
 interface NavLink {
   href: string;
@@ -73,13 +76,14 @@ export default function Sidebar() {
     <>
       <div className="flex items-center justify-between px-2">
         <span className="text-lg font-bold text-foreground">Docsync</span>
-        <button
-          type="button"
-          onClick={() => setMobileOpen(false)}
-          className="md:hidden flex items-center justify-center h-8 w-8 rounded-md text-text-secondary hover:bg-surface transition-colors"
-        >
-          <X className="h-4 w-4" />
-        </button>
+          <button
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            className="md:hidden flex items-center justify-center h-8 w-8 rounded-md text-text-secondary hover:bg-surface transition-colors"
+            aria-label="Close navigation"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
       </div>
 
       <button
@@ -99,7 +103,7 @@ export default function Sidebar() {
           const Icon = link.icon;
           const isActive = pathname === link.href;
           return (
-            <a
+            <Link
               key={link.href}
               href={link.href}
               className={cn(
@@ -118,7 +122,7 @@ export default function Sidebar() {
                   {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
               )}
-            </a>
+            </Link>
           );
         })}
       </div>
@@ -133,8 +137,9 @@ export default function Sidebar() {
         onClick={() => setMobileOpen(true)}
         className="md:hidden fixed top-3 left-3 z-40 flex items-center justify-center h-9 w-9 rounded-lg bg-surface border border-border shadow-sm text-text-secondary hover:text-foreground transition-colors"
         aria-label="Open navigation"
+        aria-expanded={mobileOpen}
       >
-        <Menu className="h-5 w-5" />
+        <Menu className="h-5 w-5" aria-hidden="true" />
       </button>
 
       {/* Desktop sidebar — always visible md+ */}

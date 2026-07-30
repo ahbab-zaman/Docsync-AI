@@ -62,42 +62,249 @@ Every major content section should live inside a card.
 ## Design Goal
 The UI should feel premium, clean, bright, uncommon, readable, modern, and product-focused.
 
+---
+
 # Motion Rules
 
-- Animation Duration
+Motion should communicate state and improve usability, never distract the user.
 
-- Hover
+- Animation duration:
+  - Micro interactions: `100–150ms`
+  - UI transitions: `200–250ms`
+  - Large panels/modals: `250–350ms`
+- Use smooth easing (`ease-out`) for most UI interactions.
+- Respect `prefers-reduced-motion`; disable non-essential animations.
+- Never animate layout shifts that can cause content jumping.
 
-- Active
+---
 
-- Focus
+# Interaction States
 
-- Disabled
+Every interactive component must support all standard UI states.
 
-- Loading
+## Hover
+- Provide subtle visual feedback.
+- Never rely on hover as the only way to reveal important actions.
 
-- Skeleton
+## Active
+- Clearly indicate pressed or selected state.
+- Keep transitions fast and responsive.
 
-- Empty State
+## Focus
+- Every interactive element must have a visible keyboard focus ring.
+- Never remove browser focus outlines unless replacing them with an accessible alternative.
 
-- Toast
+## Disabled
+- Clearly distinguish disabled elements using reduced opacity and cursor changes.
+- Disabled actions should not trigger events.
 
-- Modal
+---
 
-- Drawer
+# Loading States
 
-- Table
+Every asynchronous action must have a loading state.
 
-- Keyboard
+Examples:
+- Skeleton loaders for page content
+- Spinner for buttons
+- Progress indicators for long-running tasks
 
-- Screen Reader
+Never leave users wondering if the application is working.
 
-- Reduced Motion
+---
 
-- High Contrast
+# Empty States
 
-- Touch Targets
+Every page that can contain no data must include:
 
-- Mobile Gestures
+- Clear explanation
+- Helpful illustration or icon
+- Primary action to help the user continue
 
-- Performance Rules
+Never display an empty white screen.
+
+---
+
+# Error States
+
+Every recoverable error should provide:
+
+- Human-readable message
+- Retry action when possible
+- Clear indication of what failed
+
+Never expose technical error messages or stack traces.
+
+---
+
+# Toast Notifications
+
+Use toast notifications only for temporary feedback.
+
+Use for:
+- Success messages
+- Non-blocking warnings
+- Background task completion
+
+Do not use toasts for critical errors requiring user action.
+
+---
+
+# Modal & Drawer Rules
+
+Use modals only for focused tasks.
+
+Use drawers for contextual editing or secondary workflows.
+
+Requirements:
+- Trap keyboard focus
+- Close with `Esc`
+- Restore focus to the triggering element after closing
+
+---
+
+# Table Rules
+
+Tables should remain usable on every device.
+
+Desktop:
+- Standard table layout
+
+Tablet:
+- Horizontal scrolling if necessary
+
+Mobile:
+- Convert to stacked cards when appropriate
+
+Support:
+- Sorting
+- Filtering
+- Pagination
+- Empty state
+
+---
+
+# Form Rules
+
+Every form must include:
+
+- Label
+- Helper text (when needed)
+- Validation message
+- Required field indicator
+- Loading state
+- Success feedback
+
+Never use placeholders as labels.
+
+---
+
+# Keyboard Accessibility
+
+Every feature must be fully usable using only the keyboard.
+
+Requirements:
+
+- Logical tab order
+- Enter activates buttons
+- Space activates checkboxes
+- Esc closes dialogs
+- Arrow keys work where expected
+- Skip navigation link for large layouts
+
+---
+
+# Screen Reader Support
+
+Use semantic HTML whenever possible.
+
+Requirements:
+
+- Proper heading hierarchy
+- Descriptive button labels
+- Accessible form labels
+- Meaningful alt text
+- ARIA attributes only when necessary
+
+---
+
+# Touch Targets
+
+All interactive elements must be easy to use on touch devices.
+
+Minimum touch target:
+- 44 × 44 px
+
+Provide sufficient spacing between adjacent actions.
+
+---
+
+# Mobile Gestures
+
+Support natural mobile interactions where appropriate.
+
+Examples:
+
+- Swipe to dismiss notifications
+- Pull to refresh (optional)
+- Long press for context menus
+
+Never rely solely on gestures to expose important functionality.
+
+---
+
+# Performance Rules
+
+UI performance is part of the user experience.
+
+Requirements:
+
+- Lazy load heavy components
+- Virtualize long lists
+- Debounce search inputs
+- Throttle scroll listeners
+- Optimize images using `next/image`
+- Avoid unnecessary re-renders
+- Keep animations at 60 FPS whenever possible
+
+---
+
+# Responsive Design Checklist
+
+Every page must be verified on:
+
+- Mobile (320px+)
+- Tablet
+- Laptop
+- Desktop
+- Ultra-wide displays
+
+Check:
+
+- Navigation
+- Typography
+- Forms
+- Tables
+- Modals
+- Drawers
+- Editor
+- AI Panel
+
+No horizontal scrolling should occur unless intentionally required.
+
+---
+
+# Definition of Good UI
+
+A feature is considered complete only if it is:
+
+- Responsive
+- Accessible
+- Performant
+- Readable
+- Consistent with design tokens
+- Keyboard friendly
+- Screen reader compatible
+- Easy to understand
+- Visually polished
+- Free from layout shifts

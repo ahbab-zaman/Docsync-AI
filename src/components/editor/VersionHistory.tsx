@@ -90,7 +90,7 @@ export default function VersionHistory({
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-          <History className="h-4 w-4" />
+          <History className="h-4 w-4" aria-hidden="true" />
           Version History
         </h3>
       </div>
@@ -118,7 +118,7 @@ export default function VersionHistory({
                 disabled={saving}
                 className="flex items-center gap-1 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:bg-accent-dark transition-colors disabled:opacity-50"
               >
-                <Save className="h-3 w-3" />
+                <Save className="h-3 w-3" aria-hidden="true" />
                 {saving ? "Saving..." : "Save"}
               </button>
               <button
@@ -139,7 +139,7 @@ export default function VersionHistory({
             onClick={() => setShowSaveInput(true)}
             className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border bg-surface-secondary px-3 py-2 text-xs font-medium text-text-secondary hover:border-accent hover:text-accent transition-colors"
           >
-            <Save className="h-3.5 w-3.5" />
+            <Save className="h-3.5 w-3.5" aria-hidden="true" />
             Save current version
           </button>
         )}
@@ -153,7 +153,7 @@ export default function VersionHistory({
           </div>
         ) : versions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <Clock className="h-8 w-8 text-text-muted mb-2" />
+            <Clock className="h-8 w-8 text-text-muted mb-2" aria-hidden="true" />
             <p className="text-xs text-text-muted">No versions saved yet</p>
           </div>
         ) : (
@@ -190,7 +190,7 @@ export default function VersionHistory({
                     onClick={() => handleRestore(version.id)}
                     className="mt-2 flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-text-secondary hover:bg-surface-secondary hover:text-foreground transition-colors"
                   >
-                    <RotateCcw className="h-3 w-3" />
+                    <RotateCcw className="h-3 w-3" aria-hidden="true" />
                     Restore
                   </button>
                 )}

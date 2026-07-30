@@ -103,6 +103,8 @@ export default function SelectionMenu({ editor, onAddComment, onAiAction }: Sele
       <div className="relative">
         <button
           type="button"
+          aria-haspopup="true"
+          aria-expanded={showAiMenu}
           onMouseDown={(e) => {
             e.preventDefault();
             setShowAiMenu((v) => !v);
@@ -114,17 +116,18 @@ export default function SelectionMenu({ editor, onAddComment, onAiAction }: Sele
               : "text-text-secondary hover:bg-surface-secondary hover:text-foreground"
           )}
         >
-          <Sparkles className="h-3.5 w-3.5" />
+          <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
           AI
-          <ChevronDown className={cn("h-3 w-3 transition-transform", showAiMenu && "rotate-180")} />
+          <ChevronDown className={cn("h-3 w-3 transition-transform", showAiMenu && "rotate-180")} aria-hidden="true" />
         </button>
 
         {showAiMenu && (
-          <div className="absolute right-0 top-full mt-1 w-40 rounded-lg border border-border bg-surface shadow-popover overflow-hidden">
+          <div className="absolute right-0 top-full mt-1 w-40 rounded-lg border border-border bg-surface shadow-popover overflow-hidden" role="menu" aria-label="AI actions">
             {AI_ACTIONS.map((action) => (
               <button
                 key={action.type}
                 type="button"
+                role="menuitem"
                 onMouseDown={(e) => {
                   e.preventDefault();
                   onAiAction(range.from, range.to, range.text, action.type);
@@ -133,7 +136,7 @@ export default function SelectionMenu({ editor, onAddComment, onAiAction }: Sele
                 }}
                 className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-text-secondary hover:bg-surface-secondary hover:text-foreground transition-colors"
               >
-                <Sparkles className="h-3 w-3 text-accent shrink-0" />
+                <Sparkles className="h-3 w-3 text-accent shrink-0" aria-hidden="true" />
                 {action.label}
               </button>
             ))}
