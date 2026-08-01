@@ -3,6 +3,7 @@ import { join } from "path";
 import { Pool, QueryResult, QueryResultRow } from "pg";
 import { recordMetric } from "@/lib/metrics";
 import { InfrastructureError, ConflictError } from "@/lib/errors";
+import { logger } from "@/lib/logger";
 
 type QueryFn = <T extends QueryResultRow>(
   text: string,
@@ -38,7 +39,7 @@ async function ensureSchema(p: Pool): Promise<void> {
     const schemaPath = join(process.cwd(), "src", "server", "schema.sql");
     const schema = readFileSync(schemaPath, "utf-8");
     await p.query(schema);
-    console.log("[DB] Schema applied");
+    logger.info("DB schema applied", { action: "db:init" });
   }
 }
 
@@ -48,7 +49,7 @@ function createPool(): Pool {
   try {
     url = new URL(rawUrl);
   } catch {
-    console.warn("[DB] Invalid DATABASE_URL, creating fallback pool");
+    logger.warn("Invalid DATABASE_URL, creating fallback pool", { action: "db:init" });
     return new Pool({
       connectionString: rawUrl,
       max: 1,
@@ -70,7 +71,7 @@ export async function ensureConnected(): Promise<boolean> {
 
   const rawUrl = process.env.DATABASE_URL ?? "";
   if (!rawUrl) {
-    console.warn("[DB] No DATABASE_URL configured, using mock/fallback data");
+    logger.warn("No DATABASE_URL configured, using mock/fallback data", { action: "db:init" });
     dbAvailable = false;
     return false;
   }
@@ -84,25 +85,28 @@ export async function ensureConnected(): Promise<boolean> {
 
   try {
     await probePool.query("SELECT 1");
-    console.log("[DB] Connection OK");
+    logger.info("DB connection OK", { action: "db:init" });
     await probePool.end();
     pool = createPool();
     pool.on("error", (err) => {
-      console.error("[DB] Pool error:", err.message);
+      logger.error("DB pool error", { action: "db:pool", message: err.message });
     });
     initPromise = ensureSchema(pool)
       .then(() => {
         dbAvailable = true;
-        console.log("[DB] Database ready");
+        logger.info("DB ready", { action: "db:init" });
       })
       .catch((e) => {
-        console.error("[DB] Schema init failed:", e.message);
+        logger.error("DB schema init failed", {
+          action: "db:init",
+          message: e instanceof Error ? e.message : String(e),
+        });
         dbAvailable = false;
         initPromise = null;
       });
     return true;
   } catch {
-    console.warn("[DB] Database unreachable (3s probe failed), using mock/fallback data");
+    logger.warn("DB unreachable (3s probe failed), using mock/fallback data", { action: "db:init" });
     await probePool.end().catch(() => {});
     dbAvailable = false;
     return false;
@@ -113,16 +117,19 @@ function getPool(): Pool {
   if (!pool) {
     pool = createPool();
     pool.on("error", (err) => {
-      console.error("[DB] Pool error:", err.message);
+      logger.error("DB pool error", { action: "db:pool", message: err.message });
     });
     initPromise = ensureSchema(pool)
       .then(() => {
         dbAvailable = true;
-        console.log("[DB] Database ready");
+        logger.info("DB ready", { action: "db:init" });
       })
       .catch((e) => {
-        console.error("[DB] Schema init failed:", e.message);
-        console.warn("[DB] Database unavailable. App will use mock/fallback data.");
+        logger.error("DB schema init failed", {
+          action: "db:init",
+          message: e instanceof Error ? e.message : String(e),
+        });
+        logger.warn("DB unavailable. App will use mock/fallback data.", { action: "db:init" });
         dbAvailable = false;
         initPromise = null;
       });
@@ -149,7 +156,9 @@ async function withRetry<T>(
   } catch (error) {
     if (isRetryable(error) && attempt < MAX_RETRIES) {
       const delay = BASE_RETRY_MS * Math.pow(2, attempt - 1);
-      console.warn(`[DB] Retrying (attempt ${attempt + 1}/${MAX_RETRIES}) after ${delay}ms`);
+      logger.warn(`DB retrying (attempt ${attempt + 1}/${MAX_RETRIES}) after ${delay}ms`, {
+        action: "db:retry",
+      });
       await new Promise((r) => setTimeout(r, delay));
       return withRetry(fn, attempt + 1);
     }

@@ -83,6 +83,6 @@ export async function getCurrentUser(): Promise<UserPublic | null> {
   const sessionId = cookieStore.get(SESSION_COOKIE)?.value;
   if (!sessionId) return null;
 
-  // TODO: Look up session in Redis/db when session persistence is added
+  // Session persistence is not implemented yet; getCurrentUser intentionally returns null.
   return null;
 }

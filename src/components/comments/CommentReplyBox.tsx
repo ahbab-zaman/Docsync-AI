@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import MentionSuggestions from "./MentionSuggestions";
 import { mockMentionUsers } from "@/data/mock-comments";
-import type { MentionUser } from "@/types/comments";
 
 interface CommentReplyBoxProps {
   onSubmit: (content: string) => void;
@@ -35,17 +34,13 @@ export default function CommentReplyBox({ onSubmit, onCancel }: CommentReplyBoxP
     }
   };
 
-  const handleMention = (user: MentionUser) => {
-    // mention already inserted in value by MentionSuggestions
-  };
-
   return (
     <div className="space-y-2 relative">
       <MentionSuggestions
         users={mockMentionUsers}
         value={content}
         onChange={setContent}
-        onMention={handleMention}
+        onMention={() => {}}
         textareaRef={textareaRef}
       />
       <textarea

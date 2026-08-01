@@ -2,13 +2,11 @@
 
 import { z } from "zod";
 import {
-  getMockComments,
   addMockComment,
   addMockReply,
   resolveMockComment,
-  mockMentionUsers,
 } from "@/data/mock-comments";
-import type { Comment, MentionUser } from "@/types/comments";
+import type { Comment } from "@/types/comments";
 import { logger, runWithRequestContext, generateRequestId } from "@/lib/logger";
 
 const currentUserId = "user-1";
@@ -29,31 +27,6 @@ const addReplySchema = z.object({
   commentId: z.string().min(1),
   content: z.string().min(1, "Reply cannot be empty").max(2000),
 });
-
-export async function getComments(
-  documentId: string
-): Promise<{ comments: Comment[]; error?: string }> {
-  return runWithRequestContext(
-    { requestId: generateRequestId(), action: "getComments" },
-    async () => {
-      try {
-        const comments = getMockComments(documentId);
-        logger.info("Comments loaded", {
-          action: "getComments",
-          status: "success",
-        });
-        return { comments };
-      } catch (error) {
-        logger.error("Failed to load comments", {
-          action: "getComments",
-          message: error instanceof Error ? error.message : "Unknown error",
-          status: "failure",
-        });
-        return { comments: [], error: "Failed to load comments" };
-      }
-    }
-  );
-}
 
 export async function createComment(
   data: { documentId: string; content: string; selectionRange: { from: number; to: number } | null }
@@ -155,8 +128,4 @@ export async function resolveComment(
       }
     }
   );
-}
-
-export async function getMentionUsers(): Promise<{ users: MentionUser[] }> {
-  return { users: mockMentionUsers };
 }

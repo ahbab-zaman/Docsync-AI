@@ -1,8 +1,30 @@
-# Memory — Phase 3: Engineering Excellence (In Progress)
+# Memory — Phase 3: Engineering Excellence (Complete)
 
 Last updated: 2026-08-02
 
-## What was built (Documentation final pass — item 08)
+## What was built (Production Readiness Review — item 11)
+
+- `DocumentEditor.tsx` split: top action bar extracted to new page-local `DocumentActionBar.tsx`; `DocumentEditor.tsx` reduced 314 → 228 lines.
+- Replaced all `console.*` calls in `src/lib/db.ts` with the structured `logger` (only `logger.ts` itself calls console).
+- Deleted dead `src/components/comments/CommentBubble.tsx` (superseded by `SelectionMenu`).
+- Deleted dead repository files `src/server/repositories/{workspace,project,document}.ts` — server actions query PostgreSQL directly via `query()`; only `user.ts` remains (used by `auth.ts`, mocked in `auth.test.ts`).
+- Removed unused exported server actions: `getProjects`/`updateProjectAction`/`archiveProjectAction` (project), `getDocuments` (document), `getComments`/`getMentionUsers` (comments), `saveAiResult` (ai). Also removed `updateProjectSchema` and now-unused cache imports (`invalidateWorkspaceCache`, `setCached` in project kept for createProject).
+- Removed dead `currentTitle` prop from `VersionHistory` (interface, destructure, and the passing site in `DocumentEditor`).
+- Removed unused imports/vars across `TiptapEditor`, `AiPanel`, `ActivityList`, `CommentThread`, `CommentReplyBox`, `MentionSuggestions` (dropped `handleInput` + `setCursorPos` setter), `CommentMarkers`, `DocumentEditor`, `mock-users`, `mock-ai`, `mock-collaborators`.
+- ESLint: added `@typescript-eslint/no-unused-vars` override with `argsIgnorePattern`/`varsIgnorePattern` `^_` to codify the existing underscore convention for signature-matched unused params.
+- Final verification: `tsc --noEmit` clean, ESLint 0 errors / 0 warnings, 92 tests / 20 files passing, `next build` succeeds.
+
+## What was built (Testing — item 08)
+
+- Added `@testing-library/react`, `@testing-library/jest-dom`, `@testing-library/dom`, `@testing-library/user-event`, and `jsdom` (installed with `--legacy-peer-deps` due to the pre-existing `@tiptap/extension-collaboration-cursor` peer conflict).
+- Vitest config now includes `*.{ts,tsx}`, sets `RTL_SKIP_AUTO_CLEANUP`, and loads `src/tests/setup.ts` (jest-dom matchers + RTL cleanup guarded to DOM environments).
+- API route integration tests (real `next/server`, mocked infra): `/api/health`, `/api/metrics`, `/api/checks/database`, `/api/checks/redis`, `/api/checks/socket`.
+- Server action integration test: `createWorkspace` validation + success SQL/cache assertions.
+- Workflow tests: realtime `presence`/`rooms`/`socket-events`, `server/auth` password hash/verify, `lib/cache` Redis-degradation fallback.
+- Component tests (jsdom): `EmptyState`, `LoadingSpinner`, `Skeleton`, `ConfirmDialog`, `CollaboratorAvatars`.
+- Totals now 92 tests / 20 files; `npm test`, `tsc --noEmit`, lint (0 errors), and `next build` all pass.
+
+## What was built (Documentation final pass — item 09)
 
 - Rewrote `context/code-structure.md` to match the real tree (no `(app)` route group, `src/server/actions` + `src/server/repositories`, `src/data`, `src/types`, root `server/`, corrected `src/lib` list).
 - Corrected the `Pages` list in `context/project-overview.md` to the real `/app/*` routes.
@@ -17,13 +39,13 @@ Last updated: 2026-08-02
 - Restructured document sync: provider now created via `useMemo` before `useEditor` (documented TipTap pattern), removing `providerRef` render reads and `any` casts.
 - Removed dead code: `useDocumentSync` hook and `src/lib/hocuspocus.ts` client provider (unused); kept `server/hocuspocus-server.ts`.
 - Removed unused imports (`findUserById` in auth, `getSocket` in useSocket).
-- Final state: `npm run lint` → 0 errors / 19 pre-existing warnings; `npx tsc --noEmit` passes; `npm run build` passes; `npm test` → 42 tests passing.
+- Final state at the time: `npm run lint` → 0 errors / 19 warnings (remaining warnings later eliminated in item 10 via dead-code removal + ESLint `^_` ignore pattern); `npx tsc --noEmit` passes; `npm run build` passes; `npm test` → 42 tests passing.
 
 ## What was built
 
 ### Session 1 — Comments + Mentions (05)
 - `src/components/comments/MentionSuggestions.tsx` — `@` mention autocomplete with keyboard nav
-- `src/components/comments/CommentBubble.tsx` — Floating bubble on text selection (deprecated in session 2)
+- `src/components/comments/CommentBubble.tsx` — Floating bubble on text selection (deprecated in session 2, removed in item 10)
 - `src/components/comments/CommentMarkers.ts` — ProseMirror decorations for comment highlights
 - Updated `src/types/comments.ts` — Added `CommentRange` type
 - Updated `src/components/documents/TiptapEditor.tsx` — Integrated CommentMarkers extension
@@ -101,12 +123,12 @@ Last updated: 2026-08-02
 ## Current state
 - Phase 2 items 01-10 complete
 - Phase 3: accessibility, UX polish, performance, security hardening complete
-- Phase 3: logging & observability, caching, error handling, monitoring, unit testing, and documentation final pass complete
-- Build compiles, type-checks, lints, and `npm test` passes (42 unit tests)
+- Phase 3: logging & observability, caching, error handling, monitoring, unit tests, integration tests, component tests, collaboration/auth workflow tests, and documentation final pass complete
+- Build compiles, type-checks, lints (0 errors / 19 pre-existing warnings), and `npm test` passes (92 tests)
 - PostgreSQL wired; Redis now wired with graceful fallback; BullMQ installed but not yet in use
 
 ## Next steps
-- Remaining Phase 3: integration tests, component tests, collaboration/auth flow verification
+- Phase 3 item 10: Production Readiness Review — final engineering review and Phase 3 completion
 - Phase 4 — Scalability & Infrastructure
 
 ## Open questions

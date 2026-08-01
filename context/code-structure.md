@@ -16,6 +16,7 @@
 │   ├── lib/           → shared utilities and infrastructure
 │   ├── realtime/      → collaboration types and event constants
 │   ├── server/        → server actions, repositories, auth, schema
+│   ├── tests/         → shared test setup (vitest)
 │   └── types/         → shared TypeScript types
 └── ...
 ```
@@ -68,11 +69,13 @@ src/app/
 - documents  → TiptapEditor
 - editor     → OutlinePanel, SelectionMenu, VersionHistory
 - presence   → CollaboratorAvatars
-- comments   → CommentThread, CommentSidebar, CommentReplyBox, CommentBubble (deprecated), CommentMarkers, MentionSuggestions
+- comments   → CommentThread, CommentSidebar, CommentReplyBox, CommentMarkers, MentionSuggestions
 - notifications → NotificationList, ActivityList
 - ai         → AiPanel, AiResponse, PromptInput, SuggestionChips
 - search     → SearchDialog
 - members    → InviteModal, MemberList, RoleSelector
+
+> Page-local components live next to their routes, e.g. `DocumentActionBar` in `src/app/app/documents/[documentId]/`.
 
 ## `src/data`
 - mock-ai.ts
@@ -105,7 +108,7 @@ src/app/
 - utils.ts
 - yjs.ts
 
-> Note: Phase 3 added `cache`, `errors`, `logger`, `metrics`, `rate-limiter`, `redis`, `retry`, and `sanitize`. Each infra module ships a colocated `*.test.ts` (42 unit tests total).
+> Note: Phase 3 added `cache`, `errors`, `logger`, `metrics`, `rate-limiter`, `redis`, `retry`, and `sanitize`. Each infra module ships a colocated `*.test.ts`. Tests live next to the code they cover (`src/**/*.test.{ts,tsx}`) with shared setup in `src/tests/setup.ts`; 92 tests across 20 files.
 
 ## `src/realtime`
 - socket-events.ts
@@ -129,10 +132,7 @@ src/app/
     - search.ts
     - ai.ts
 - repositories/
-    - document.ts
-    - project.ts
     - user.ts
-    - workspace.ts
 
 ## `src/types`
 - ai.ts

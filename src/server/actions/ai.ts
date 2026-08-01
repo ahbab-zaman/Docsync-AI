@@ -34,32 +34,3 @@ export async function runAiAction(
     }
   );
 }
-
-export async function saveAiResult(
-  documentId: string,
-  content: string
-): Promise<{ success: boolean; error?: string }> {
-  return runWithRequestContext(
-    { requestId: generateRequestId(), action: "ai:saveResult" },
-    async () => {
-      try {
-        if (!documentId || !content) {
-          logger.warn("AI result save rejected", { action: "ai:saveResult", status: "failure" });
-          return { success: false, error: "Document ID and content are required." };
-        }
-        logger.info("AI result saved", {
-          action: "ai:saveResult",
-          status: "success",
-        });
-        return { success: true };
-      } catch (error) {
-        logger.error("Failed to save AI result", {
-          action: "ai:saveResult",
-          message: error instanceof Error ? error.message : "Unknown error",
-          status: "failure",
-        });
-        return { success: false, error: "Failed to save AI result. Please try again." };
-      }
-    }
-  );
-}

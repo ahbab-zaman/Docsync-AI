@@ -20,9 +20,7 @@ export const CommentMarkers = Extension.create({
           init() {
             return DecorationSet.empty;
           },
-          apply(tr, set: DecorationSet) {
-            set = set.map(tr.mapping, tr.doc);
-
+          apply(tr) {
             const comments = currentComments;
             if (comments.length === 0) return DecorationSet.empty;
 

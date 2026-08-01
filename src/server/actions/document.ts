@@ -100,43 +100,6 @@ export async function getDocument(
   );
 }
 
-export async function getDocuments(
-  projectId: string
-): Promise<{ documents: DocumentFull[] }> {
-  const start = Date.now();
-  return runWithRequestContext(
-    { requestId: generateRequestId(), action: "getDocuments", workspaceId: projectId },
-    async () => {
-      const cacheKey = CACHE_KEYS.documents(projectId);
-
-      const result = await withCache<{ documents: DocumentFull[] }>(
-        cacheKey,
-        async () => {
-          const result = await query<DocumentRow>(
-            `SELECT d.*, u.name as created_by_name
-             FROM documents d
-             JOIN users u ON u.id = d.created_by
-             WHERE d.project_id = $1
-             ORDER BY d.updated_at DESC`,
-            [projectId]
-          );
-
-          return { documents: result.rows.map(mapDocument) };
-        },
-        { key: cacheKey, ttlSeconds: 15 }
-      );
-
-      logger.info("Documents loaded", {
-        action: "getDocuments",
-        status: "success",
-        durationMs: Date.now() - start,
-      });
-
-      return result;
-    }
-  );
-}
-
 export async function createDocument(
   _prevState: { error?: string; success?: boolean; document?: DocumentFull },
   formData: FormData

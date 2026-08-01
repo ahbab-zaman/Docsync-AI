@@ -16,7 +16,7 @@ interface AiPanelProps {
   selectionContext?: AiSelectionContext | null;
 }
 
-export default function AiPanel({ documentContent, documentId, onInsertContent, selectionContext }: AiPanelProps) {
+export default function AiPanel({ documentContent, onInsertContent, selectionContext }: AiPanelProps) {
   const [responses, setResponses] = useState<AiResponseType[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -2,28 +2,16 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import {
-  Save,
-  PanelLeftOpen,
-  PanelLeftClose,
-  PanelRightOpen,
-  PanelRightClose,
-  MessageSquare,
-  MessageSquareText,
-  History,
-} from "lucide-react";
 import TiptapEditor from "@/components/documents/TiptapEditor";
-import CollaboratorAvatars from "@/components/presence/CollaboratorAvatars";
 import { saveDocument } from "@/server/actions/document";
 import { createComment } from "@/server/actions/comments";
 import { runAiAction } from "@/server/actions/ai";
 import { getAllMockCollaborators } from "@/data/mock-collaborators";
 import { getMockComments } from "@/data/mock-comments";
-import { cn } from "@/lib/utils";
 import type { CommentRange } from "@/types/comments";
 import type { AiActionType, AiSelectionContext } from "@/types/ai";
+import DocumentActionBar from "./DocumentActionBar";
 
 const OutlinePanel = dynamic(() => import("@/components/editor/OutlinePanel"), { ssr: false });
 const AiPanel = dynamic(() => import("@/components/ai/AiPanel"), { ssr: false });
@@ -47,7 +35,6 @@ export default function DocumentEditor({
   updatedAt,
   createdByName,
 }: DocumentEditorProps) {
-  const router = useRouter();
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
   const [saving, setSaving] = useState(false);
@@ -155,6 +142,13 @@ export default function DocumentEditor({
     []
   );
 
+  const handleTogglePanel = useCallback(
+    (panel: Exclude<"ai" | "comments" | "version" | null, null>) => {
+      setRightPanel((current) => (current === panel ? null : panel));
+    },
+    []
+  );
+
   useEffect(() => {
     return () => {
       if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
@@ -175,98 +169,18 @@ export default function DocumentEditor({
   return (
     <div className="flex flex-col h-[calc(100vh-3rem)]">
       {/* Top action bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between shrink-0 mb-3 gap-2">
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            type="button"
-            onClick={() => setOutlineOpen((v) => !v)}
-            className="flex items-center justify-center h-8 w-8 rounded-md text-text-secondary hover:bg-surface-secondary hover:text-foreground transition-colors"
-            title={outlineOpen ? "Close outline" : "Open outline"}
-            aria-label={outlineOpen ? "Close outline" : "Open outline"}
-            aria-expanded={outlineOpen}
-          >
-            {outlineOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
-          </button>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <span
-              className={cn(
-                "text-xs font-medium",
-                saving ? "text-text-muted" : saved ? "text-success" : "text-highlight"
-              )}
-              role="status"
-              aria-live="polite"
-            >
-              {saving ? "Saving..." : saved ? "All changes saved" : "Unsaved changes"}
-            </span>
-            {!saved && (
-              <button
-                type="button"
-                onClick={handleManualSave}
-                className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:bg-accent-dark transition-colors"
-              >
-                <Save className="h-3.5 w-3.5" aria-hidden="true" />
-                Save
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-          <CollaboratorAvatars collaborators={collaborators} max={4} size="sm" />
-          <span className="text-xs text-text-muted hidden sm:inline">{onlineCount} online</span>
-          <button
-            type="button"
-            onClick={() => setRightPanel(rightPanel === "version" ? null : "version")}
-            className={cn(
-              "flex items-center gap-1.5 rounded-lg border px-2 sm:px-3 py-1.5 text-xs font-medium transition-colors",
-              rightPanel === "version"
-                ? "border-accent bg-accent-muted text-accent"
-                : "border-border text-text-secondary hover:bg-surface-secondary"
-            )}
-            aria-label={rightPanel === "version" ? "Close version history" : "Open version history"}
-            aria-pressed={rightPanel === "version"}
-          >
-            <History className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="hidden sm:inline">History</span>
-          </button>
-          <div className="w-px h-5 bg-border" />
-          <button
-            type="button"
-            onClick={() => setRightPanel(rightPanel === "comments" ? null : "comments")}
-            className={cn(
-              "flex items-center gap-1.5 rounded-lg border px-2 sm:px-3 py-1.5 text-xs font-medium transition-colors",
-              rightPanel === "comments"
-                ? "border-accent bg-accent-muted text-accent"
-                : "border-border text-text-secondary hover:bg-surface-secondary"
-            )}
-            aria-label={rightPanel === "comments" ? "Close comments" : "Open comments"}
-            aria-pressed={rightPanel === "comments"}
-          >
-            {rightPanel === "comments" ? <MessageSquareText className="h-3.5 w-3.5" aria-hidden="true" /> : <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />}
-            <span className="hidden sm:inline">Comments</span>
-            {unresolvedCount > 0 && (
-              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-highlight px-1 text-[10px] font-medium text-white">
-                {unresolvedCount}
-              </span>
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => setRightPanel(rightPanel === "ai" ? null : "ai")}
-            className={cn(
-              "flex items-center gap-1.5 rounded-lg border px-2 sm:px-3 py-1.5 text-xs font-medium transition-colors",
-              rightPanel === "ai"
-                ? "border-accent bg-accent-muted text-accent"
-                : "border-border text-text-secondary hover:bg-surface-secondary"
-            )}
-            aria-label={rightPanel === "ai" ? "Close AI panel" : "Open AI panel"}
-            aria-pressed={rightPanel === "ai"}
-          >
-            {rightPanel === "ai" ? <PanelRightClose className="h-3.5 w-3.5" aria-hidden="true" /> : <PanelRightOpen className="h-3.5 w-3.5" aria-hidden="true" />}
-            <span className="hidden sm:inline">AI</span>
-          </button>
-        </div>
-      </div>
+      <DocumentActionBar
+        saving={saving}
+        saved={saved}
+        outlineOpen={outlineOpen}
+        onToggleOutline={() => setOutlineOpen((v) => !v)}
+        rightPanel={rightPanel}
+        onTogglePanel={handleTogglePanel}
+        collaborators={collaborators}
+        onlineCount={onlineCount}
+        unresolvedCount={unresolvedCount}
+        onManualSave={handleManualSave}
+      />
 
       {/* Three-zone layout */}
       <div className="flex flex-col lg:flex-row flex-1 gap-4 overflow-hidden">
@@ -318,7 +232,6 @@ export default function DocumentEditor({
               <VersionHistory
                 documentId={documentId}
                 currentContent={content}
-                currentTitle={title}
                 onRestore={handleVersionRestore}
               />
             )}

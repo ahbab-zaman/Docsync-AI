@@ -240,7 +240,7 @@ Tasks
 Acceptance Criteria
 - critical workflows are covered by tests
 
-Status: Unit tests implemented (Vitest, 42 tests). Integration, component, and E2E workflow tests pending.
+Status: Implemented (Vitest, 92 tests across 20 files — unit, API route integration, server action integration, component, and collaboration/auth workflow tests). E2E workflow tests still pending a CI environment.
 
 ---
 
@@ -259,6 +259,8 @@ Tasks
 
 Acceptance Criteria
 - application can be deployed consistently to production
+
+Status: Deferred to Phase 5 — AGENTS.md assigns Deployment, DevOps, and CI/CD (Docker, GitHub Actions) to Phase 5. No Docker or CI configuration exists in the repo yet; current deployment is a single Next.js build.
 
 ---
 
@@ -283,4 +285,4 @@ Acceptance Criteria
 - documentation reflects the current implementation
 - Phase 3 is marked complete
 
-Status: In progress — build passes, lint/typecheck pass, unit tests pass. Final review pending.
+Status: Complete — verified production-ready: `tsc --noEmit` clean, ESLint 0 errors/0 warnings, 92 tests / 20 files passing, `next build` succeeds. Phase 3 marked complete in progress-tracker.

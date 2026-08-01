@@ -2,7 +2,7 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { memo, useCallback, useEffect } from "react";
+import { memo, useEffect } from "react";
 import {
   Bold,
   Italic,

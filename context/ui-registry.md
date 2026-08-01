@@ -50,7 +50,7 @@ After building any component — update this file with the component name, file 
 - `src/components/comments/CommentReplyBox.tsx` — Reply textarea with mention autocomplete
   - Props: `onSubmit`, `onCancel`
   - Uses `MentionSuggestions` for `@` mentions
-- `src/components/comments/CommentBubble.tsx` — DEPRECATED. Superseded by `SelectionMenu` (unified Comment + AI floating toolbar). No longer imported or rendered; kept only for reference.
+- `src/components/comments/CommentBubble.tsx` — REMOVED. Was superseded by `SelectionMenu` (unified Comment + AI floating toolbar); deleted during the Phase 3 production-readiness pass. Selection-based commenting is handled by `SelectionMenu` + `CommentMarkers`.
 - `src/components/comments/CommentMarkers.ts` — ProseMirror decorations extension for comment highlights
   - Highlights text ranges with comment color and bottom border
   - Exports `updateCommentRanges()` to update decorations reactively
@@ -85,10 +85,12 @@ After building any component — update this file with the component name, file 
 - `src/app/app/documents/[documentId]/DocumentEditor.tsx` — Right panel toggle (AI or Comments)
   - Comments button with unresolved count badge, AI button
   - Passes `selectionContext` to AiPanel when AI triggered from selection
+- `src/app/app/documents/[documentId]/DocumentActionBar.tsx` — Top action bar extracted from `DocumentEditor`
+  - Save status, outline toggle, collaborator avatars, History/Comments/AI panel buttons
 
 ### Version History
 - `src/components/editor/VersionHistory.tsx` — Right sidebar version timeline
-  - Props: `documentId`, `currentContent`, `currentTitle`, `onRestore`
+  - Props: `documentId`, `currentContent`, `onRestore`
   - "Save current version" inline input with save/cancel
   - Lists versions with title, author, timestamp, "Current" badge, "Restore" button
   - Loading spinner and empty state

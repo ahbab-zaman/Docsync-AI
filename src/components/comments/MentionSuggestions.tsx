@@ -21,7 +21,7 @@ export default function MentionSuggestions({
 }: MentionSuggestionsProps) {
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [mentionIndex, setMentionIndex] = useState(0);
-  const [cursorPos, setCursorPos] = useState(0);
+  const [cursorPos] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const filtered = mentionQuery
@@ -29,25 +29,6 @@ export default function MentionSuggestions({
         u.name.toLowerCase().includes(mentionQuery.toLowerCase())
       )
     : users;
-
-  const handleInput = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const val = e.target.value;
-      const pos = e.target.selectionStart;
-      onChange(val);
-      setCursorPos(pos);
-
-      const textBefore = val.slice(0, pos);
-      const atMatch = textBefore.match(/@(\w*)$/);
-      if (atMatch) {
-        setMentionQuery(atMatch[1]);
-        setMentionIndex(0);
-      } else {
-        setMentionQuery(null);
-      }
-    },
-    [onChange]
-  );
 
   const insertMention = useCallback(
     (user: MentionUser) => {

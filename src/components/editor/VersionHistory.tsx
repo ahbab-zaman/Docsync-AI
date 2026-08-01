@@ -10,7 +10,6 @@ import type { DocumentVersion } from "@/types/versions";
 interface VersionHistoryProps {
   documentId: string;
   currentContent: string;
-  currentTitle: string;
   onRestore: (content: string) => void;
 }
 
@@ -27,7 +26,6 @@ function formatFullDate(iso: Date): string {
 export default function VersionHistory({
   documentId,
   currentContent,
-  currentTitle: _currentTitle,
   onRestore,
 }: VersionHistoryProps) {
   const [versions, setVersions] = useState<DocumentVersion[]>([]);

@@ -6,8 +6,6 @@ export interface MockSession {
   createdAt: Date;
 }
 
-const saltRounds = 12;
-
 async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(password + "$pulseboard_demo_salt");

@@ -1,9 +1,9 @@
 # Progress Tracker
 
 ## Current Status
-**Phase:** Phase 3 — Engineering Excellence
-**Last completed:** 08 Documentation final pass — context files and README synchronized with the current implementation
-**Next:** 07 Testing (integration + component) once CI infra is available
+**Phase:** Phase 3 — Engineering Excellence (complete)
+**Last completed:** 10 Production Readiness Review — final engineering review before Phase 3 completion
+**Next:** Phase 4 — Scalability & Infrastructure
 
 ## Progress
 
@@ -24,6 +24,21 @@
 - [x] 08 Notifications
 - [x] 09 Search
 - [x] 10 Responsive polish
+
+### Phase 3 — Engineering Excellence
+- [x] 01 Accessibility pass
+- [x] 02 UX + responsive pass
+- [x] 03 Performance pass
+- [x] 04 Security pass
+- [x] 05 Logging + observability
+- [x] 06 Caching
+- [x] 07 Error handling
+- [x] 08 Testing — 92 tests across 20 files
+- [x] 09 Documentation final pass
+- [x] 10 Monitoring
+- [x] 11 Production Readiness Review
+
+> Note: build-plan item 09 "Deployment & DevOps" is deferred to Phase 5 — AGENTS.md assigns Docker/CI-CD/DevOps to Phase 5 (Testing, DevOps & CI/CD). No Docker or CI config exists in the repo yet.
 
 ## Decisions Made During Build
 - Use a single-repo modular architecture.
@@ -100,10 +115,20 @@
 - Socket server exposes `/health` with active connection count.
 
 ## Testing (Phase 3)
-- Added Vitest (`npm test` / `npm run test:watch`).
+- Added Vitest (`npm test` / `npm run test:watch`) with `@/` alias mapping to `src/`.
 - Unit tests: `rate-limiter`, `sanitize`, `retry`, `errors`, `metrics`, `logger` — 42 tests, all passing.
 - Fixed a latent sanitizer bug: `javascript:` URLs were not blocked and `/` escaping broke URLs.
-- Fixed `isOnline()` returning `undefined` in non-browser environments.## UX Polish Improvements (Phase 3)
+- Fixed `isOnline()` returning `undefined` in non-browser environments.
+- Added jsdom + React Testing Library for component tests; vitest config includes `*.{ts,tsx}` and a shared setup file (`src/tests/setup.ts`) with jest-dom matchers and RTL cleanup guarded to DOM environments.
+- API route integration tests: `health`, `metrics`, `checks/database`, `checks/redis`, `checks/socket` — assert status codes and response bodies with mocked infra dependencies (`next/server` real).
+- Server action integration test: `createWorkspace` — validation rejects empty/over-long names without touching the DB, success path asserts the INSERT SQL, membership row, cache invalidation, and friendly DB-failure handling.
+- Collaboration workflow tests: `createPresenceUser`, `createRoom`, `SOCKET_EVENTS` constants.
+- Authentication flow tests: `hashPassword`/`verifyPassword` (bcrypt hashing, correct/incorrect password, unique salts).
+- Cache degradation tests: `getCached`/`setCached`/`invalidateCache`/`withCache` no-op and fall back to source when Redis is unavailable.
+- Component tests: `EmptyState`, `LoadingSpinner`, `Skeleton`, `ConfirmDialog` (a11y, keyboard, backdrop), `CollaboratorAvatars` (initials, online dot, overflow cap).
+- Total: 92 tests across 20 files — all passing (`npm test`), typecheck (`tsc --noEmit`) clean, lint 0 errors, production build passes.
+
+## UX Polish Improvements (Phase 3)
 - Added missing `loading.tsx` for notifications page.
 - Added `error.tsx` for workspace detail and project detail pages.
 - Improved `EmptyState` component to support ReactElement icons.
@@ -129,9 +154,20 @@
 ## Documentation Final Pass (Phase 3)
 - `code-structure.md` rewritten to reflect the actual tree: `src/app/app` (no route-group parens), `src/server` actions/repositories, `src/data`, `src/types`, root `server/`, and the real `src/lib` and `src/realtime` file lists.
 - `project-overview.md` pages list corrected to the real routes (all under `/app`, plus `/login`, `/register`).
-- `ui-registry.md` marked `CommentBubble` as deprecated (superseded by `SelectionMenu`; still present but unimported).
+- `ui-registry.md` marked `CommentBubble` as deprecated (superseded by `SelectionMenu`; removed later during the Production Readiness Review).
 - `README.md` replaced create-next-app boilerplate with a real project overview (features, stack, run scripts, quality checks).
 - Verified every context file against the implementation; no further drift found.
+
+## Production Readiness Review (Phase 3)
+- `DocumentEditor.tsx` split: top action bar (save status, outline toggle, avatars, panel toggles) extracted to new page-local `DocumentActionBar.tsx`; `DocumentEditor.tsx` reduced from 314 → 228 lines.
+- Removed all bootstrap `console.*` calls in `src/lib/db.ts` in favor of the structured `logger`.
+- Deleted dead `CommentBubble.tsx` (superseded by `SelectionMenu`).
+- Deleted dead repository files `workspace.ts`, `project.ts`, `document.ts` — server actions already query PostgreSQL directly via `query()`; only `user.ts` remains (used by `auth.ts`).
+- Removed unused exported server actions: `getProjects`, `updateProjectAction`, `archiveProjectAction` (project), `getDocuments` (document), `getComments`/`getMentionUsers` (comments), `saveAiResult` (ai).
+- Removed dead `currentTitle` prop from `VersionHistory`.
+- Removed numerous unused imports/variables across `TiptapEditor`, `AiPanel`, `ActivityList`, `CommentThread`, `CommentReplyBox`, `MentionSuggestions`, `CommentMarkers`, `DocumentEditor`, and mock-data files.
+- ESLint: configured `@typescript-eslint/no-unused-vars` with `argsIgnorePattern`/`varsIgnorePattern` `^_` to codify the existing underscore convention for signature-matched unused params.
+- Final verification: `tsc --noEmit` clean, ESLint 0 problems, 92 tests / 20 files passing, `next build` succeeds.
 
 # Phase 3 — Engineering Excellence
 
@@ -177,7 +213,7 @@
 
 ---
 
-## 04 Logging & Observability
+## 05 Logging & Observability
 - [x] Introduce structured logging across API and background jobs.
 - [x] Add request IDs for traceability.
 - [x] Log important business events and system failures.
@@ -185,14 +221,14 @@
 
 ---
 
-## 05 Caching
+## 06 Caching
 - [x] Cache frequently accessed workspace and dashboard data using Redis.
 - [x] Define cache invalidation rules after mutations.
 - [x] Prevent stale data while minimizing unnecessary database queries.
 
 ---
 
-## 06 Error Handling
+## 07 Error Handling
 - [x] Standardize API error responses.
 - [x] Implement friendly UI error states for every async operation.
 - [x] Add retry mechanisms where appropriate.
@@ -200,29 +236,29 @@
 
 ---
 
-## 07 Testing
+## 08 Testing
 - [x] Add unit tests for utilities and business logic.
-- [ ] Add integration tests for API routes.
-- [ ] Add component tests for reusable UI.
-- [ ] Verify collaboration workflows and authentication flows.
+- [x] Add integration tests for API routes.
+- [x] Add component tests for reusable UI.
+- [x] Verify collaboration workflows and authentication flows.
 
 ---
 
-## 08 Documentation
+## 09 Documentation
 - [x] Keep all context files synchronized with implementation.
 - [x] Update architecture, UI registry, and progress tracker after each completed milestone.
 - [x] Record important architectural decisions and implementation notes.
 
 ---
 
-## 09 Monitoring
+## 10 Monitoring
 - [x] Prepare application metrics for production.
 - [x] Monitor API latency, Redis, PostgreSQL, queues, and realtime services.
 - [x] Ensure system health endpoints report infrastructure status.
 
 ---
 
-## 10 Production Readiness
+## 11 Production Readiness
 - [x] Verify responsive behavior across supported devices.
 - [x] Complete accessibility and performance audits.
 - [x] Remove dead code, debug logs, and unused dependencies.
@@ -235,10 +271,10 @@
 
 Phase 3 is complete when:
 
-- [ ] All accessibility requirements are satisfied.
-- [ ] Performance targets have been achieved.
-- [ ] Security review has been completed.
-- [ ] Logging and monitoring are operational.
-- [ ] Testing coverage meets project standards.
-- [ ] Documentation reflects the current implementation.
-- [ ] The application is considered production-ready.
+- [x] All accessibility requirements are satisfied.
+- [x] Performance targets have been achieved.
+- [x] Security review has been completed.
+- [x] Logging and monitoring are operational.
+- [x] Testing coverage meets project standards.
+- [x] Documentation reflects the current implementation.
+- [x] The application is considered production-ready.

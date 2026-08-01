@@ -1,7 +1,6 @@
 "use client";
 
 import { Activity, UserPlus, UserMinus, ShieldCheck, FileEdit, Share2, UserCheck, FolderPlus, Settings } from "lucide-react";
-import { cn } from "@/lib/utils";
 import type { ActivityEvent } from "@/types/notifications";
 
 interface ActivityListProps {

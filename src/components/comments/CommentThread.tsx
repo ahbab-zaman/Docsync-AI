@@ -14,7 +14,6 @@ interface CommentThreadProps {
 
 export default function CommentThread({ comment, onReply, onResolve }: CommentThreadProps) {
   const [showReply, setShowReply] = useState(false);
-  const isCurrentUser = comment.userId === "user-1";
 
   const formatTime = (date: Date) => {
     const d = new Date(date);
