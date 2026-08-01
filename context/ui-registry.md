@@ -19,7 +19,6 @@ After building any component — update this file with the component name, file 
 
 ### Hooks
 - `src/hooks/useSocket.ts` — Socket.IO connection hook with presence and cursor events
-- `src/hooks/useDocumentSync.ts` — Yjs/Hocuspocus/TipTap collaboration hook
 - `src/hooks/usePresence.ts` — Presence management hook
 
 ### Server

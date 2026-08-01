@@ -1,9 +1,26 @@
-import { createServer } from "http";
+import { createServer, IncomingMessage, ServerResponse } from "http";
 import { Server as SocketIOServer } from "socket.io";
+import { logger } from "../src/lib/logger";
 
 const SOCKET_PORT = parseInt(process.env.SOCKET_PORT ?? "3002", 10);
 
-const httpServer = createServer();
+const httpServer = createServer((req: IncomingMessage, res: ServerResponse) => {
+  if (req.url === "/health") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(
+      JSON.stringify({
+        status: "ok",
+        service: "socket",
+        connections: io.engine.clientsCount,
+        timestamp: new Date().toISOString(),
+      })
+    );
+    return;
+  }
+  res.writeHead(404);
+  res.end();
+});
+
 const io = new SocketIOServer(httpServer, {
   cors: {
     origin: process.env.CORS_ORIGIN ?? "http://localhost:3000",
@@ -27,6 +44,10 @@ io.on("connection", (socket) => {
   };
 
   if (!userId || !roomId) {
+    logger.warn("[Socket] Connection rejected: missing auth", {
+      action: "socket:connection",
+      status: "failure",
+    });
     socket.disconnect();
     return;
   }
@@ -45,6 +66,13 @@ io.on("connection", (socket) => {
     joinedAt: new Date(),
   };
   room.set(socket.id, user);
+
+  logger.info("[Socket] User connected", {
+    action: "socket:connection",
+    userId,
+    workspaceId: roomId,
+    status: "success",
+  });
 
   const presenceList = Array.from(room.values()).map((u) => ({
     userId: u.userId,
@@ -115,6 +143,12 @@ io.on("connection", (socket) => {
     const userData = room.get(socket.id);
     room.delete(socket.id);
     if (userData) {
+      logger.info("[Socket] User disconnected", {
+        action: "socket:disconnect",
+        userId: userData.userId,
+        workspaceId: roomId,
+        status: "success",
+      });
       io.to(roomId).emit("presence:update", {
         userId: userData.userId,
         name: userData.name,
@@ -130,5 +164,8 @@ io.on("connection", (socket) => {
 });
 
 httpServer.listen(SOCKET_PORT, () => {
-  console.log(`[Socket.IO] Server listening on port ${SOCKET_PORT}`);
+  logger.info("[Socket] Server listening", {
+    action: "socket:listen",
+    status: "success",
+  });
 });

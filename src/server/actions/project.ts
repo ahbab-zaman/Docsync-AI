@@ -3,6 +3,14 @@
 import { z, ZodError } from "zod";
 import { query } from "@/lib/db";
 import { getDevUserId } from "@/lib/auth-helpers";
+import { logger, runWithRequestContext, generateRequestId } from "@/lib/logger";
+import {
+  CACHE_KEYS,
+  invalidateProjectCache,
+  invalidateWorkspaceCache,
+  setCached,
+  withCache,
+} from "@/lib/cache";
 
 interface ProjectFull {
   id: string;
@@ -33,84 +41,154 @@ const updateProjectSchema = z.object({
   description: z.string().max(500, "Description is too long").nullable().optional(),
 });
 
+interface ProjectRow {
+  id: string;
+  name: string;
+  description: string | null;
+  workspace_id: string;
+  created_by: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+interface DocumentSummaryRow {
+  id: string;
+  title: string;
+  content: string;
+  created_by_name: string;
+  updated_at: Date;
+}
+
 export async function getProjects(
   workspaceId: string
 ): Promise<{ projects: ProjectFull[] }> {
-  const result = await query(
-    "SELECT * FROM projects WHERE workspace_id = $1 ORDER BY created_at DESC",
-    [workspaceId]
-  );
+  const start = Date.now();
+  return runWithRequestContext(
+    { requestId: generateRequestId(), action: "getProjects", workspaceId },
+    async () => {
+      const cacheKey = CACHE_KEYS.projects(workspaceId);
 
-  const rows: any[] = result.rows;
-  const projects: ProjectFull[] = await Promise.all(
-    rows.map(async (p) => {
-      const docResult = await query(
-        `SELECT d.id, d.title, d.content, d.updated_at, u.name as created_by_name
-         FROM documents d JOIN users u ON u.id = d.created_by
-         WHERE d.project_id = $1 ORDER BY d.updated_at DESC`,
-        [p.id]
+      const result = await withCache<{ projects: ProjectFull[] }>(
+        cacheKey,
+        async () => {
+          const result = await query<ProjectRow>(
+            "SELECT * FROM projects WHERE workspace_id = $1 ORDER BY created_at DESC",
+            [workspaceId]
+          );
+
+          const rows = result.rows;
+          const projects: ProjectFull[] = await Promise.all(
+            rows.map(async (p) => {
+              const docResult = await query<DocumentSummaryRow>(
+                `SELECT d.id, d.title, d.content, d.updated_at, u.name as created_by_name
+                 FROM documents d JOIN users u ON u.id = d.created_by
+                 WHERE d.project_id = $1 ORDER BY d.updated_at DESC`,
+                [p.id]
+              );
+              const docs: ProjectFull["documents"] = docResult.rows.map((d) => ({
+                id: d.id,
+                title: d.title,
+                content: d.content,
+                created_by_name: d.created_by_name,
+                updated_at: d.updated_at,
+              }));
+              return {
+                id: p.id,
+                name: p.name,
+                description: p.description,
+                workspace_id: p.workspace_id,
+                created_by: p.created_by,
+                created_at: p.created_at,
+                updated_at: p.updated_at,
+                document_count: docResult.rows.length,
+                documents: docs,
+              };
+            })
+          );
+
+          return { projects };
+        },
+        { key: cacheKey, ttlSeconds: 30 }
       );
-      const docs: ProjectFull["documents"] = docResult.rows.map((d: any) => ({
-        id: d.id,
-        title: d.title,
-        content: d.content,
-        created_by_name: d.created_by_name,
-        updated_at: d.updated_at,
-      }));
-      return {
-        id: p.id,
-        name: p.name,
-        description: p.description,
-        workspace_id: p.workspace_id,
-        created_by: p.created_by,
-        created_at: p.created_at,
-        updated_at: p.updated_at,
-        document_count: docResult.rows.length,
-        documents: docs,
-      };
-    })
-  );
 
-  return { projects };
+      logger.info("Projects loaded", {
+        action: "getProjects",
+        workspaceId,
+        durationMs: Date.now() - start,
+        status: "success",
+      });
+
+      return result;
+    }
+  );
 }
 
 export async function getProject(
   id: string
 ): Promise<{ project?: ProjectFull; error?: string }> {
-  const result = await query("SELECT * FROM projects WHERE id = $1", [id]);
+  const start = Date.now();
+  return runWithRequestContext(
+    { requestId: generateRequestId(), action: "getProject", workspaceId: id },
+    async () => {
+      const cacheKey = CACHE_KEYS.project(id);
 
-  if (result.rows.length === 0) {
-    return { error: "Project not found" };
-  }
+      const project = await withCache<ProjectFull | null>(
+        cacheKey,
+        async () => {
+          const result = await query<ProjectRow>("SELECT * FROM projects WHERE id = $1", [id]);
 
-  const p: any = result.rows[0];
+          if (result.rows.length === 0) {
+            return null;
+          }
 
-  const docResult = await query(
-    `SELECT d.id, d.title, d.content, d.updated_at, u.name as created_by_name
-     FROM documents d JOIN users u ON u.id = d.created_by
-     WHERE d.project_id = $1 ORDER BY d.updated_at DESC`,
-    [p.id]
+          const p = result.rows[0];
+
+          const docResult = await query<DocumentSummaryRow>(
+            `SELECT d.id, d.title, d.content, d.updated_at, u.name as created_by_name
+             FROM documents d JOIN users u ON u.id = d.created_by
+             WHERE d.project_id = $1 ORDER BY d.updated_at DESC`,
+            [p.id]
+          );
+
+          return {
+            id: p.id,
+            name: p.name,
+            description: p.description,
+            workspace_id: p.workspace_id,
+            created_by: p.created_by,
+            created_at: p.created_at,
+            updated_at: p.updated_at,
+            document_count: docResult.rows.length,
+            documents: docResult.rows.map((d) => ({
+              id: d.id,
+              title: d.title,
+              content: d.content,
+              created_by_name: d.created_by_name,
+              updated_at: d.updated_at,
+            })),
+          };
+        },
+        { key: cacheKey, ttlSeconds: 30 }
+      );
+
+      if (!project) {
+        logger.warn("Project not found", {
+          action: "getProject",
+          status: "failure",
+          durationMs: Date.now() - start,
+        });
+        return { error: "Project not found" };
+      }
+
+      logger.info("Project loaded", {
+        action: "getProject",
+        status: "success",
+        durationMs: Date.now() - start,
+      });
+
+      return { project };
+    }
   );
-
-  const project: ProjectFull = {
-    id: p.id,
-    name: p.name,
-    description: p.description,
-    workspace_id: p.workspace_id,
-    created_by: p.created_by,
-    created_at: p.created_at,
-    updated_at: p.updated_at,
-    document_count: docResult.rows.length,
-    documents: docResult.rows.map((d: any) => ({
-      id: d.id,
-      title: d.title,
-      content: d.content,
-      created_by_name: d.created_by_name,
-      updated_at: d.updated_at,
-    })),
-  };
-
-  return { project };
 }
 
 export async function createProject(
@@ -126,13 +204,13 @@ export async function createProject(
       workspaceId: formData.get("workspaceId"),
     });
 
-    const result = await query(
+    const result = await query<ProjectRow>(
       `INSERT INTO projects (name, description, workspace_id, created_by)
        VALUES ($1, $2, $3, $4) RETURNING *`,
       [data.name, data.description ?? null, data.workspaceId, currentUserId]
     );
 
-    const r: any = result.rows[0];
+    const r = result.rows[0];
     const project: ProjectFull = {
       id: r.id,
       name: r.name,
@@ -145,12 +223,28 @@ export async function createProject(
       documents: [],
     };
 
+    logger.info("Project created", {
+      action: "createProject",
+      userId: currentUserId,
+      workspaceId: data.workspaceId,
+      status: "success",
+    });
+
+    await setCached(CACHE_KEYS.project(r.id), project, 30);
+    await invalidateProjectCache(r.id, data.workspaceId);
+
     return { success: true, project };
   } catch (error) {
     if (error instanceof ZodError) {
+      logger.warn("Project validation failed", { action: "createProject", status: "failure" });
       return { error: error.issues[0]?.message ?? "Validation failed" };
     }
     if (error instanceof Error) {
+      logger.error("Failed to create project", {
+        action: "createProject",
+        message: error.message,
+        status: "failure",
+      });
       return { error: error.message };
     }
     return { error: "Failed to create project" };
@@ -193,15 +287,29 @@ export async function updateProjectAction(
     );
 
     if (result.rows.length === 0) {
+      logger.warn("Project not found for update", { action: "updateProjectAction", status: "failure" });
       return { error: "Project not found" };
     }
+
+    logger.info("Project updated", {
+      action: "updateProjectAction",
+      status: "success",
+    });
+
+    await invalidateProjectCache(id);
 
     return { success: true };
   } catch (error) {
     if (error instanceof ZodError) {
+      logger.warn("Project update validation failed", { action: "updateProjectAction", status: "failure" });
       return { error: error.issues[0]?.message ?? "Validation failed" };
     }
     if (error instanceof Error) {
+      logger.error("Failed to update project", {
+        action: "updateProjectAction",
+        message: error.message,
+        status: "failure",
+      });
       return { error: error.message };
     }
     return { error: "Failed to update project" };
@@ -212,9 +320,24 @@ export async function archiveProjectAction(
   id: string
 ): Promise<{ success?: boolean; error?: string }> {
   try {
+    const result = await query(
+      "SELECT workspace_id FROM projects WHERE id = $1",
+      [id]
+    );
     await query("DELETE FROM projects WHERE id = $1", [id]);
+    const workspaceId = result.rows[0]?.workspace_id as string | undefined;
+    await invalidateProjectCache(id, workspaceId);
+    if (workspaceId) {
+      await invalidateWorkspaceCache(workspaceId);
+    }
+    logger.info("Project archived", { action: "archiveProjectAction", status: "success" });
     return { success: true };
-  } catch {
+  } catch (error) {
+    logger.error("Failed to archive project", {
+      action: "archiveProjectAction",
+      message: error instanceof Error ? error.message : "Unknown error",
+      status: "failure",
+    });
     return { error: "Failed to delete project" };
   }
 }

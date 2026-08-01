@@ -3,6 +3,8 @@
 import { z, ZodError } from "zod";
 import { query } from "@/lib/db";
 import { getDevUserId } from "@/lib/auth-helpers";
+import { logger } from "@/lib/logger";
+import { invalidateCache, CACHE_KEYS } from "@/lib/cache";
 
 interface Member {
   id: string;
@@ -71,12 +73,27 @@ export async function inviteMember(
       [data.workspaceId, userId, data.role]
     );
 
+    logger.info("Member invited", {
+      action: "inviteMember",
+      userId: await getDevUserId(),
+      workspaceId: data.workspaceId,
+      status: "success",
+    });
+
+    await invalidateCache(CACHE_KEYS.workspace(data.workspaceId));
+
     return { success: true };
   } catch (error) {
     if (error instanceof ZodError) {
+      logger.warn("Invite validation failed", { action: "inviteMember", status: "failure" });
       return { error: error.issues[0]?.message ?? "Validation failed" };
     }
     if (error instanceof Error) {
+      logger.error("Failed to invite member", {
+        action: "inviteMember",
+        message: error.message,
+        status: "failure",
+      });
       return { error: error.message };
     }
     return { error: "Failed to invite member." };
@@ -107,8 +124,20 @@ export async function changeRole(
       "UPDATE workspace_members SET role = $1 WHERE workspace_id = $2 AND user_id = $3 AND role != 'owner'",
       [role, workspaceId, userId]
     );
+    logger.info("Member role changed", {
+      action: "changeRole",
+      workspaceId,
+      status: "success",
+    });
+    await invalidateCache(CACHE_KEYS.workspace(workspaceId));
     return { success: true };
-  } catch {
+  } catch (error) {
+    logger.error("Failed to change role", {
+      action: "changeRole",
+      workspaceId,
+      message: error instanceof Error ? error.message : "Unknown error",
+      status: "failure",
+    });
     return { error: "Failed to change role." };
   }
 }
@@ -122,8 +151,20 @@ export async function removeMember(
       "DELETE FROM workspace_members WHERE workspace_id = $1 AND user_id = $2 AND role != 'owner'",
       [workspaceId, userId]
     );
+    logger.info("Member removed", {
+      action: "removeMember",
+      workspaceId,
+      status: "success",
+    });
+    await invalidateCache(CACHE_KEYS.workspace(workspaceId));
     return { success: true };
-  } catch {
+  } catch (error) {
+    logger.error("Failed to remove member", {
+      action: "removeMember",
+      workspaceId,
+      message: error instanceof Error ? error.message : "Unknown error",
+      status: "failure",
+    });
     return { error: "Failed to remove member." };
   }
 }

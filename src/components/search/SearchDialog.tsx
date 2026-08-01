@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Search, FileText, MessageSquare, Activity } from "lucide-react";
 import { search } from "@/server/actions/search";
@@ -33,20 +33,26 @@ export default function SearchDialog({ open, onClose }: SearchDialogProps) {
   });
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [prevOpen, setPrevOpen] = useState(open);
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const flatResults = [
-    ...results.documents,
-    ...results.comments,
-    ...results.activity,
-  ];
-
-  useEffect(() => {
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setQuery("");
       setResults({ documents: [], comments: [], activity: [] });
       setSelectedIndex(0);
+    }
+  }
+
+  const flatResults = useMemo(
+    () => [...results.documents, ...results.comments, ...results.activity],
+    [results]
+  );
+
+  useEffect(() => {
+    if (open) {
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [open]);

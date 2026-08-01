@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
-import { createUser, findUserByEmail, findUserById } from "@/server/repositories/user";
+import { createUser, findUserByEmail } from "@/server/repositories/user";
 import type { UserPublic } from "@/types";
 
 const SESSION_COOKIE = "pulseboard_session";

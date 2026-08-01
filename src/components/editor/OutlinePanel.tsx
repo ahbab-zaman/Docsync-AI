@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 interface HeadingItem {
@@ -30,12 +30,9 @@ function parseHeadings(html: string): HeadingItem[] {
 }
 
 export default function OutlinePanel({ content, onNavigate }: OutlinePanelProps) {
-  const [headings, setHeadings] = useState<HeadingItem[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  useEffect(() => {
-    setHeadings(parseHeadings(content));
-  }, [content]);
+  const headings = useMemo(() => parseHeadings(content), [content]);
 
   const handleClick = useCallback(
     (id: string) => {

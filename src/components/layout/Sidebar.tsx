@@ -43,6 +43,12 @@ export default function Sidebar() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [prevPathname, setPrevPathname] = useState(pathname);
+
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
+    setMobileOpen(false);
+  }
 
   useEffect(() => {
     const fetchCount = () => {
@@ -66,11 +72,6 @@ export default function Sidebar() {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [searchOpen]);
-
-  // Close mobile sidebar on navigation
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
 
   const sidebarContent = (
     <>

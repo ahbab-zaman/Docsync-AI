@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Socket } from "socket.io-client";
-import { getSocket, connectSocket, disconnectSocket } from "@/lib/socket";
+import { connectSocket, disconnectSocket } from "@/lib/socket";
 import { SOCKET_EVENTS } from "@/realtime/socket-events";
 import type { PresenceUser } from "@/realtime/presence";
 import type { CursorData } from "@/realtime/cursor";

@@ -3,6 +3,8 @@
 import { z, ZodError } from "zod";
 import { query } from "@/lib/db";
 import { getDevUserId, getDevUserName } from "@/lib/auth-helpers";
+import { logger, runWithRequestContext, generateRequestId } from "@/lib/logger";
+import { CACHE_KEYS, invalidateCache, invalidateProjectCache, withCache } from "@/lib/cache";
 
 interface DocumentFull {
   id: string;
@@ -25,7 +27,18 @@ const saveDocumentSchema = z.object({
   content: z.string().optional(),
 });
 
-function mapDocument(row: any): DocumentFull {
+interface DocumentRow {
+  id: string;
+  title: string;
+  content: string;
+  project_id: string;
+  created_by: string;
+  created_by_name?: string | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+function mapDocument(row: DocumentRow): DocumentFull {
   return {
     id: row.id,
     title: row.title,
@@ -41,34 +54,87 @@ function mapDocument(row: any): DocumentFull {
 export async function getDocument(
   id: string
 ): Promise<{ document?: DocumentFull; error?: string }> {
-  const result = await query(
-    `SELECT d.*, u.name as created_by_name
-     FROM documents d
-     JOIN users u ON u.id = d.created_by
-     WHERE d.id = $1`,
-    [id]
+  const start = Date.now();
+  return runWithRequestContext(
+    { requestId: generateRequestId(), action: "getDocument" },
+    async () => {
+      const cacheKey = CACHE_KEYS.document(id);
+
+      const document = await withCache<DocumentFull | null>(
+        cacheKey,
+        async () => {
+          const result = await query<DocumentRow>(
+            `SELECT d.*, u.name as created_by_name
+             FROM documents d
+             JOIN users u ON u.id = d.created_by
+             WHERE d.id = $1`,
+            [id]
+          );
+
+          if (result.rows.length === 0) {
+            return null;
+          }
+
+          return mapDocument(result.rows[0]);
+        },
+        { key: cacheKey, ttlSeconds: 15 }
+      );
+
+      if (!document) {
+        logger.warn("Document not found", {
+          action: "getDocument",
+          status: "failure",
+          durationMs: Date.now() - start,
+        });
+        return { error: "Document not found" };
+      }
+
+      logger.info("Document loaded", {
+        action: "getDocument",
+        status: "success",
+        durationMs: Date.now() - start,
+      });
+
+      return { document };
+    }
   );
-
-  if (result.rows.length === 0) {
-    return { error: "Document not found" };
-  }
-
-  return { document: mapDocument(result.rows[0]) };
 }
 
 export async function getDocuments(
   projectId: string
 ): Promise<{ documents: DocumentFull[] }> {
-  const result = await query(
-    `SELECT d.*, u.name as created_by_name
-     FROM documents d
-     JOIN users u ON u.id = d.created_by
-     WHERE d.project_id = $1
-     ORDER BY d.updated_at DESC`,
-    [projectId]
-  );
+  const start = Date.now();
+  return runWithRequestContext(
+    { requestId: generateRequestId(), action: "getDocuments", workspaceId: projectId },
+    async () => {
+      const cacheKey = CACHE_KEYS.documents(projectId);
 
-  return { documents: result.rows.map(mapDocument) };
+      const result = await withCache<{ documents: DocumentFull[] }>(
+        cacheKey,
+        async () => {
+          const result = await query<DocumentRow>(
+            `SELECT d.*, u.name as created_by_name
+             FROM documents d
+             JOIN users u ON u.id = d.created_by
+             WHERE d.project_id = $1
+             ORDER BY d.updated_at DESC`,
+            [projectId]
+          );
+
+          return { documents: result.rows.map(mapDocument) };
+        },
+        { key: cacheKey, ttlSeconds: 15 }
+      );
+
+      logger.info("Documents loaded", {
+        action: "getDocuments",
+        status: "success",
+        durationMs: Date.now() - start,
+      });
+
+      return result;
+    }
+  );
 }
 
 export async function createDocument(
@@ -84,19 +150,34 @@ export async function createDocument(
       projectId: formData.get("projectId"),
     });
 
-    const result = await query(
+    const result = await query<DocumentRow>(
       `INSERT INTO documents (title, content, project_id, created_by)
        VALUES ($1, '', $2, $3) RETURNING *`,
       [data.title, data.projectId, currentUserId]
     );
 
     const doc = mapDocument({ ...result.rows[0], created_by_name: currentUserName });
+
+    logger.info("Document created", {
+      action: "createDocument",
+      userId: currentUserId,
+      status: "success",
+    });
+
+    await invalidateProjectCache(data.projectId);
+
     return { success: true, document: doc };
   } catch (error) {
     if (error instanceof ZodError) {
+      logger.warn("Document validation failed", { action: "createDocument", status: "failure" });
       return { error: error.issues[0]?.message ?? "Validation failed" };
     }
     if (error instanceof Error) {
+      logger.error("Failed to create document", {
+        action: "createDocument",
+        message: error.message,
+        status: "failure",
+      });
       return { error: error.message };
     }
     return { error: "Failed to create document" };
@@ -133,15 +214,30 @@ export async function saveDocument(
     );
 
     if (result.rows.length === 0) {
+      logger.warn("Document not found for save", { action: "saveDocument", status: "failure" });
       return { error: "Document not found" };
     }
+
+    logger.info("Document saved", {
+      action: "saveDocument",
+      status: "success",
+      fields: fields.length,
+    });
+
+    await invalidateCache(CACHE_KEYS.document(id));
 
     return { success: true };
   } catch (error) {
     if (error instanceof ZodError) {
+      logger.warn("Document save validation failed", { action: "saveDocument", status: "failure" });
       return { error: error.issues[0]?.message ?? "Validation failed" };
     }
     if (error instanceof Error) {
+      logger.error("Failed to save document", {
+        action: "saveDocument",
+        message: error.message,
+        status: "failure",
+      });
       return { error: error.message };
     }
     return { error: "Failed to save document" };

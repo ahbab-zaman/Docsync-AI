@@ -1,6 +1,8 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 import { Pool, QueryResult, QueryResultRow } from "pg";
+import { recordMetric } from "@/lib/metrics";
+import { InfrastructureError, ConflictError } from "@/lib/errors";
 
 type QueryFn = <T extends QueryResultRow>(
   text: string,
@@ -151,8 +153,25 @@ async function withRetry<T>(
       await new Promise((r) => setTimeout(r, delay));
       return withRetry(fn, attempt + 1);
     }
-    throw error;
+    throw toDbError(error);
   }
+}
+
+function toDbError(error: unknown): Error {
+  if (error instanceof InfrastructureError || error instanceof ConflictError) {
+    return error;
+  }
+  if (error instanceof Error) {
+    const code = (error as { code?: string }).code;
+    if (code === "23505") {
+      return new ConflictError();
+    }
+    if (isRetryable(error)) {
+      return new InfrastructureError();
+    }
+    return error;
+  }
+  return new InfrastructureError();
 }
 
 export async function query<T extends QueryResultRow>(
@@ -164,9 +183,18 @@ export async function query<T extends QueryResultRow>(
     throw new Error("Database unavailable");
   }
   const client = getPool();
+  const start = Date.now();
   return withRetry(async () => {
     return await client.query<T>(text, params);
-  });
+  })
+    .then((result) => {
+      recordMetric("db:query", Date.now() - start, "success");
+      return result;
+    })
+    .catch((error) => {
+      recordMetric("db:query", Date.now() - start, "failure");
+      throw error;
+    });
 }
 
 export async function transaction<T>(
@@ -177,6 +205,7 @@ export async function transaction<T>(
     throw new Error("Database unavailable");
   }
   const client = getPool();
+  const start = Date.now();
   return withRetry(async () => {
     const conn = await client.connect();
     try {
@@ -196,7 +225,15 @@ export async function transaction<T>(
     } finally {
       conn.release();
     }
-  });
+  })
+    .then((result) => {
+      recordMetric("db:transaction", Date.now() - start, "success");
+      return result;
+    })
+    .catch((error) => {
+      recordMetric("db:transaction", Date.now() - start, "failure");
+      throw error;
+    });
 }
 
 export async function closePool(): Promise<void> {

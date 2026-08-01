@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import type { AiActionType, AiResponse as AiResponseType, AiSuggestion, AiSelectionContext } from "@/types/ai";
 import { mockSuggestions } from "@/data/mock-ai";
 import { runAiAction } from "@/server/actions/ai";
+import { withRetry, isOnline, safeErrorMessage } from "@/lib/retry";
 import PromptInput from "./PromptInput";
 import SuggestionChips from "./SuggestionChips";
 import AiResponseView from "./AiResponse";
@@ -18,16 +19,32 @@ interface AiPanelProps {
 export default function AiPanel({ documentContent, documentId, onInsertContent, selectionContext }: AiPanelProps) {
   const [responses, setResponses] = useState<AiResponseType[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const effectiveContent = selectionContext?.text || documentContent;
 
   const handlePrompt = useCallback(
     async (prompt: string, actionType: AiActionType = "custom") => {
+      if (!isOnline()) {
+        setError("You appear to be offline. Please check your connection and try again.");
+        return;
+      }
       setLoading(true);
-      const { response, error } = await runAiAction(actionType, prompt, effectiveContent);
-      setLoading(false);
-      if (response) {
-        setResponses((prev) => [response, ...prev]);
+      setError(null);
+      try {
+        const { response, error } = await withRetry(
+          () => runAiAction(actionType, prompt, effectiveContent),
+          { maxRetries: 1 }
+        );
+        if (response) {
+          setResponses((prev) => [response, ...prev]);
+        } else if (error) {
+          setError(error);
+        }
+      } catch (err) {
+        setError(safeErrorMessage(err, "AI generation failed. Please try again."));
+      } finally {
+        setLoading(false);
       }
     },
     [effectiveContent]
@@ -75,6 +92,12 @@ export default function AiPanel({ documentContent, documentId, onInsertContent, 
         <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-secondary p-3">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent" />
           <span className="text-xs text-text-muted">AI is thinking...</span>
+        </div>
+      )}
+
+      {error && !loading && (
+        <div className="rounded-lg border border-red-300 bg-red-50 p-3" role="alert">
+          <p className="text-xs text-red-700">{error}</p>
         </div>
       )}
 

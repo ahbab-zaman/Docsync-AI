@@ -180,6 +180,8 @@ Tasks
 Acceptance Criteria
 - caching improves performance without affecting data consistency
 
+Status: Implemented (Redis client + cache helper + invalidation wired into workspace/project/document/member actions)
+
 ---
 
 ## 06 Logging & Error Handling
@@ -197,6 +199,8 @@ Tasks
 Acceptance Criteria
 - errors are traceable
 - logs provide useful debugging information
+
+Status: Implemented (structured logger, request IDs, typed error classes, retry helper)
 
 ---
 
@@ -216,6 +220,8 @@ Tasks
 Acceptance Criteria
 - application health can be monitored in production
 
+Status: Implemented (health endpoints, metrics endpoint, socket health, in-memory counters)
+
 ---
 
 ## 08 Testing
@@ -233,6 +239,8 @@ Tasks
 
 Acceptance Criteria
 - critical workflows are covered by tests
+
+Status: Unit tests implemented (Vitest, 42 tests). Integration, component, and E2E workflow tests pending.
 
 ---
 
@@ -274,3 +282,5 @@ Acceptance Criteria
 - project is production-ready
 - documentation reflects the current implementation
 - Phase 3 is marked complete
+
+Status: In progress — build passes, lint/typecheck pass, unit tests pass. Final review pending.

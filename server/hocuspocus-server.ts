@@ -1,4 +1,5 @@
 import { Server } from "@hocuspocus/server";
+import { logger } from "../src/lib/logger";
 
 const HOCUSPOCUS_PORT = parseInt(process.env.HOCUSPOCUS_PORT ?? "3001", 10);
 
@@ -7,25 +8,40 @@ const server = new Server({
   name: "pulseboard-collaboration",
   timeout: 30000,
 
-  async onConnect({ documentName }) {
-    console.log(`[Hocuspocus] Connected to document: ${documentName}`);
+  async onConnect() {
+    logger.info("[Hocuspocus] Document connected", {
+      action: "hocuspocus:connect",
+      status: "success",
+    });
     return {};
   },
 
-  async onDisconnect({ documentName }) {
-    console.log(`[Hocuspocus] Disconnected from document: ${documentName}`);
+  async onDisconnect() {
+    logger.info("[Hocuspocus] Document disconnected", {
+      action: "hocuspocus:disconnect",
+      status: "success",
+    });
   },
 
-  async onStoreDocument({ documentName }) {
-    console.log(`[Hocuspocus] Storing document: ${documentName}`);
+  async onStoreDocument() {
+    logger.info("[Hocuspocus] Document stored", {
+      action: "hocuspocus:store",
+      status: "success",
+    });
   },
 
-  async onLoadDocument({ documentName }) {
-    console.log(`[Hocuspocus] Loading document: ${documentName}`);
+  async onLoadDocument() {
+    logger.info("[Hocuspocus] Document loaded", {
+      action: "hocuspocus:load",
+      status: "success",
+    });
     return {};
   },
 });
 
 server.listen().then(() => {
-  console.log(`[Hocuspocus] Server listening on port ${HOCUSPOCUS_PORT}`);
+  logger.info("[Hocuspocus] Server listening", {
+    action: "hocuspocus:listen",
+    status: "success",
+  });
 });

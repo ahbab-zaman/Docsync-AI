@@ -4,8 +4,8 @@
 ## System Architecture
 
 > Version: Phase 3
-> Status: Phase 1 & Phase 2 Completed
-> Current Phase: Engineering Excellence
+> Status: Phase 1, Phase 2, and Phase 3 Engineering Milestones Implemented
+> Current Phase: Engineering Excellence (logging, observability, caching, error handling, monitoring, testing)
 
 ---
 
@@ -2919,6 +2919,66 @@ Developer Friendly
 for many years.
 
 Every engineering decision should move the project closer to that goal.
+
+---
+
+# Phase 3 Implementation Status
+
+This section records what has actually been implemented during Phase 3 engineering milestones. It supplements the design above with concrete implementation notes.
+
+## Logging
+
+Implemented: `src/lib/logger.ts`
+
+- Structured JSON log output with levels (debug/info/warn/error) and `LOG_LEVEL` env override.
+- `AsyncLocalStorage` request context (`runWithRequestContext`, `getRequestContext`).
+- `generateRequestId()` produces unique request IDs attached to every scoped log.
+- Every server action and both realtime servers (`server/socket-server.ts`, `server/hocuspocus-server.ts`) emit structured logs.
+- Business events logged: workspace/project/document/member creation, auth login/register, AI requests, comments, versions, notifications, search.
+
+## Health Checks
+
+Implemented: Next.js route handlers
+
+- `/api/health` — aggregate status of database + redis.
+- `/api/checks/database` — PostgreSQL probe.
+- `/api/checks/redis` — Redis ping.
+- `/api/checks/socket` — probes the Socket.IO server `/health` endpoint.
+- Health endpoints require no authentication.
+
+## Caching
+
+Implemented: `src/lib/redis.ts`, `src/lib/cache.ts`
+
+- Redis client built on ioredis with graceful degradation — when `REDIS_URL` is unset or Redis is unreachable, cache helpers return `null`/no-op so the database remains the source of truth.
+- Cache keys follow `cache:<entity>:<id>` (workspaces, workspace, projects, project, documents, document, dashboard).
+- `withCache` reads then writes with a TTL; short TTLs (15–30s) prevent stale reads on frequently mutating entities.
+- Invalidation is triggered inside server actions after mutations (create/update/archive of workspaces, projects, documents; member role changes).
+
+## Error Handling
+
+Implemented: `src/lib/errors.ts`, `src/lib/retry.ts`
+
+- Typed error classes map to HTTP status codes and friendly user messages.
+- DB layer converts unique violations → `ConflictError` and retryable failures → `InfrastructureError`.
+- Client-side `withRetry` retries only transient network/offline failures.
+- Raw error messages are never exposed to users.
+
+## Metrics
+
+Implemented: `src/lib/metrics.ts`
+
+- In-memory counters record call counts, average duration, and last error time.
+- The database query/transaction layer records `db:query` and `db:transaction` metrics.
+- `/api/metrics` exposes the snapshot. Suitable for development; Phase 4 introduces a production metrics backend.
+
+## Testing
+
+Implemented: Vitest (`npm test`)
+
+- Test config in `vitest.config.ts` with `@/` alias to `src/`.
+- Unit tests: rate-limiter, sanitize, retry, errors, metrics, logger (42 tests passing).
+- Testing uncovered and fixed a sanitizer bug (`javascript:` URLs were not blocked) and an `isOnline()` edge case in non-browser environments.
 
 ---
 

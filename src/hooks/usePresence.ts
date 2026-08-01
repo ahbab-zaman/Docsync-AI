@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useSocket } from "./useSocket";
 import type { Collaborator } from "@/components/presence/CollaboratorAvatars";
 import { getAllMockCollaborators } from "@/data/mock-collaborators";
@@ -12,18 +12,15 @@ interface UsePresenceOptions {
 }
 
 export function usePresence({ documentId, userId, enabled = true }: UsePresenceOptions) {
-  const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
+  const [collaborators] = useState<Collaborator[]>(() =>
+    enabled ? getAllMockCollaborators() : []
+  );
 
-  const { connected, presenceList, emitTyping } = useSocket({
+  const { connected, emitTyping } = useSocket({
     userId,
     roomId: `document:${documentId}`,
     enabled,
   });
-
-  useEffect(() => {
-    if (!enabled) return;
-    setCollaborators(getAllMockCollaborators());
-  }, [enabled]);
 
   const onlineCount = collaborators.filter((c) => c.isOnline).length;
 

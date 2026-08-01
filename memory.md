@@ -1,6 +1,15 @@
-# Memory — Phase 2: Complete
+# Memory — Phase 3: Engineering Excellence (In Progress)
 
-Last updated: 2026-07-29
+Last updated: 2026-08-02
+
+## What was built (Phase 3 — logging, observability, caching, errors, monitoring, testing)
+
+### Production readiness cleanup
+- Fixed all React 19 lint errors (set-state-in-effect, refs-during-render) in Sidebar, SearchDialog, usePresence, OutlinePanel, useDocumentSync.
+- Restructured document sync: provider now created via `useMemo` before `useEditor` (documented TipTap pattern), removing `providerRef` render reads and `any` casts.
+- Removed dead code: `useDocumentSync` hook and `src/lib/hocuspocus.ts` client provider (unused); kept `server/hocuspocus-server.ts`.
+- Removed unused imports (`findUserById` in auth, `getSocket` in useSocket).
+- Final state: `npm run lint` → 0 errors / 19 pre-existing warnings; `npx tsc --noEmit` passes; `npm run build` passes; `npm test` → 42 tests passing.
 
 ## What was built
 
@@ -83,11 +92,14 @@ Last updated: 2026-07-29
 
 ## Current state
 - Phase 2 items 01-10 complete
-- Build compiles and type-checks successfully
-- All features use mock data — no PostgreSQL/Redis wiring yet
+- Phase 3: accessibility, UX polish, performance, security hardening complete
+- Phase 3: logging & observability, caching, error handling, monitoring, and unit testing complete
+- Build compiles, type-checks, lints, and `npm test` passes (42 unit tests)
+- PostgreSQL wired; Redis now wired with graceful fallback; BullMQ installed but not yet in use
 
-## Next phase
-Phase 3 — Real persistence and production wiring (PostgreSQL, Redis, Hocuspocus, Socket.IO, BullMQ, auth)
+## Next steps
+- Remaining Phase 3: integration tests, component tests, collaboration/auth flow verification
+- Phase 4 — Scalability & Infrastructure
 
 ## Open questions
 - Version history persistence strategy: PostgreSQL snapshots vs Yjs document versions?

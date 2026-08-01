@@ -39,6 +39,12 @@ src/app/
 │   ├── notifications/page.tsx
 │   └── settings/page.tsx
 └── api/
+    ├── health/
+    ├── metrics/
+    ├── checks/
+    │   ├── database/
+    │   ├── redis/
+    │   └── socket/
     ├── documents/
     ├── comments/
     ├── notifications/
@@ -46,6 +52,8 @@ src/app/
     ├── ai/
     └── realtime/
 ```
+
+> Note: Phase 3 added `/api/health`, `/api/metrics`, and `/api/checks/*` route handlers. The feature API folders (`documents`, `comments`, etc.) are listed for future REST expansion; current features use server actions under `src/server/actions`.
 
 ## `src/components`
 - ui
@@ -74,6 +82,11 @@ src/app/
 - query.ts
 - utils.ts
 - constants.ts
+- logger.ts
+- cache.ts
+- errors.ts
+- metrics.ts
+- retry.ts
 
 ## `src/actions`
 - documents.ts

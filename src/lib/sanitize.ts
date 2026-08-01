@@ -4,11 +4,14 @@ const ENTITY_MAP: Record<string, string> = {
   ">": "&gt;",
   '"': "&quot;",
   "'": "&#x27;",
-  "/": "&#x2F;",
 };
 
 export function escapeHtml(value: string): string {
-  return value.replace(/[&<>"'/]/g, (char) => ENTITY_MAP[char] || char);
+  return value.replace(/[&<>"']/g, (char) => ENTITY_MAP[char] || char);
+}
+
+function escapeAttr(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 }
 
 const ALLOWED_TAGS = new Set([
@@ -17,6 +20,16 @@ const ALLOWED_TAGS = new Set([
 ]);
 
 const ALLOWED_ATTRS = new Set(["href", "src", "alt", "title", "target", "rel"]);
+
+const SAFE_PROTOCOLS = new Set(["http", "https", "mailto"]);
+
+function isSafeUrl(value: string): boolean {
+  const trimmed = value.trim().toLowerCase();
+  if (!trimmed) return true;
+  const protocol = trimmed.split(":")[0];
+  if (!trimmed.includes(":")) return true;
+  return SAFE_PROTOCOLS.has(protocol);
+}
 
 export function sanitizeHtml(html: string): string {
   return html.replace(/<[^>]*>/g, (tag) => {
@@ -27,20 +40,18 @@ export function sanitizeHtml(html: string): string {
     }
     const attrs = tag.match(/(\w+)=["']([^"']*)["']/g) || [];
     const safeAttrs = attrs
-      .filter((attr) => {
-        const name = attr.split("=")[0].toLowerCase();
-        return ALLOWED_ATTRS.has(name);
-      })
       .map((attr) => {
         const [, name, value] = attr.match(/(\w+)=["']([^"']*)["']/) || [];
-        if (name === "href" || name === "src") {
-          const protocol = value.toLowerCase().split(":")[0];
-          if (!["http", "https", "mailto"].includes(protocol)) {
-            return `${name}="${escapeHtml(value)}"`;
-          }
+        const attrName = name?.toLowerCase() ?? "";
+        if (!ALLOWED_ATTRS.has(attrName)) {
+          return "";
         }
-        return `${name}="${escapeHtml(value)}"`;
+        if ((attrName === "href" || attrName === "src") && !isSafeUrl(value)) {
+          return "";
+        }
+        return `${attrName}="${escapeAttr(value)}"`;
       })
+      .filter(Boolean)
       .join(" ");
     const isClosing = tag.startsWith("</");
     return isClosing ? `</${tagName}>` : `<${tagName}${safeAttrs ? ` ${safeAttrs}` : ""}>`;
