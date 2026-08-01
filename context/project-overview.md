@@ -3,7 +3,7 @@
 ## About the Project
 This project is a real-time AI collaboration workspace. Teams use it to write documents together, leave comments, see live presence, and trigger AI actions without leaving the editor.
 
-Phase 1 established the application foundation. Phase 2 introduces the collaboration layer:
+Phase 1 established the application foundation. Phase 2 introduced the collaboration layer:
 - live editor sync
 - presence and cursors
 - comments and mentions
@@ -12,17 +12,24 @@ Phase 1 established the application foundation. Phase 2 introduces the collabora
 - notifications
 - search across collaboration content
 
+Phase 3 (in progress) upgrades the application to production quality: accessibility, UX polish, performance, security, logging, observability, caching, error handling, monitoring, and unit testing are complete. Integration/component testing and a final production-readiness review remain.
+
 ## Pages
 ```text
-/                         → Landing
-/login                    → Authentication
-/dashboard                → Workspace overview
-/workspaces               → Workspace list
-/workspaces/[workspaceId] → Workspace overview
-/projects/[projectId]     → Project overview
-/documents/[documentId]   → Collaborative editor
-/notifications            → Notification center
-/settings                 → Preferences
+/                             → Landing
+/login, /register             → Authentication
+/app                          → Dashboard (workspace overview)
+/app/workspaces               → Workspace list
+/app/workspaces/new           → Create workspace
+/app/workspaces/[workspaceId] → Workspace overview
+/app/projects/new             → Create project
+/app/projects/[projectId]     → Project overview
+/app/documents/new            → Create document
+/app/documents/[documentId]   → Collaborative editor
+/app/ai                       → AI assistant
+/app/members                  → Member management
+/app/notifications            → Notification center
+/app/settings                 → Preferences
 ```
 
 ## Core User Flow

@@ -50,9 +50,7 @@ After building any component — update this file with the component name, file 
 - `src/components/comments/CommentReplyBox.tsx` — Reply textarea with mention autocomplete
   - Props: `onSubmit`, `onCancel`
   - Uses `MentionSuggestions` for `@` mentions
-- `src/components/comments/CommentBubble.tsx` — TipTap BubbleMenu that appears on text selection
-  - Shows "Comment" button to create comment anchored to selected text
-  - Uses `@tiptap/react` BubbleMenu
+- `src/components/comments/CommentBubble.tsx` — DEPRECATED. Superseded by `SelectionMenu` (unified Comment + AI floating toolbar). No longer imported or rendered; kept only for reference.
 - `src/components/comments/CommentMarkers.ts` — ProseMirror decorations extension for comment highlights
   - Highlights text ranges with comment color and bottom border
   - Exports `updateCommentRanges()` to update decorations reactively

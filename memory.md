@@ -2,6 +2,14 @@
 
 Last updated: 2026-08-02
 
+## What was built (Documentation final pass — item 08)
+
+- Rewrote `context/code-structure.md` to match the real tree (no `(app)` route group, `src/server/actions` + `src/server/repositories`, `src/data`, `src/types`, root `server/`, corrected `src/lib` list).
+- Corrected the `Pages` list in `context/project-overview.md` to the real `/app/*` routes.
+- Marked `CommentBubble` deprecated in `context/ui-registry.md` (superseded by `SelectionMenu`, unimported).
+- Replaced the create-next-app boilerplate `README.md` with a real project overview (features, stack, run scripts incl. `dev:hocuspocus`/`dev:socket`/`dev:all`, quality checks).
+- Confirmed `architecture.md`, `library-docs.md`, `ui-rules.md`, and `ui-tokens.md` need no changes; no doc drift remains.
+
 ## What was built (Phase 3 — logging, observability, caching, errors, monitoring, testing)
 
 ### Production readiness cleanup
@@ -93,7 +101,7 @@ Last updated: 2026-08-02
 ## Current state
 - Phase 2 items 01-10 complete
 - Phase 3: accessibility, UX polish, performance, security hardening complete
-- Phase 3: logging & observability, caching, error handling, monitoring, and unit testing complete
+- Phase 3: logging & observability, caching, error handling, monitoring, unit testing, and documentation final pass complete
 - Build compiles, type-checks, lints, and `npm test` passes (42 unit tests)
 - PostgreSQL wired; Redis now wired with graceful fallback; BullMQ installed but not yet in use
 

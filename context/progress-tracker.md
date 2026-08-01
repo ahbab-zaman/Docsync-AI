@@ -2,8 +2,8 @@
 
 ## Current Status
 **Phase:** Phase 3 — Engineering Excellence
-**Last completed:** 07 Logging, Observability, Caching, Error Handling, Monitoring, Testing + 10 Production Readiness cleanup
-**Next:** 08 Documentation final pass → 07 Testing (integration/component) once CI infra is available
+**Last completed:** 08 Documentation final pass — context files and README synchronized with the current implementation
+**Next:** 07 Testing (integration + component) once CI infra is available
 
 ## Progress
 
@@ -125,6 +125,13 @@
 - Missing CSS tokens added: `accent-soft`, `border-strong`.
 - Replaced `<a>` with `<Link>` from Next.js in app pages for proper SPA navigation.
 - Added `role="list"`/`role="listitem"` to member and document lists.
+
+## Documentation Final Pass (Phase 3)
+- `code-structure.md` rewritten to reflect the actual tree: `src/app/app` (no route-group parens), `src/server` actions/repositories, `src/data`, `src/types`, root `server/`, and the real `src/lib` and `src/realtime` file lists.
+- `project-overview.md` pages list corrected to the real routes (all under `/app`, plus `/login`, `/register`).
+- `ui-registry.md` marked `CommentBubble` as deprecated (superseded by `SelectionMenu`; still present but unimported).
+- `README.md` replaced create-next-app boilerplate with a real project overview (features, stack, run scripts, quality checks).
+- Verified every context file against the implementation; no further drift found.
 
 # Phase 3 — Engineering Excellence
 

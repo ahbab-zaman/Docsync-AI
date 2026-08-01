@@ -1,22 +1,22 @@
-# Code Structure — Phase 2
+# Code Structure — Phase 3
 
 ## Root Structure
 
 ```text
 /
 ├── AGENTS.md
-├── .agent/
-├── context/
+├── .agent/            → agent workflow files (architecture, imprint, recover, remember, review)
+├── context/           → source-of-truth documentation
+├── server/            → standalone realtime servers (Hocuspocus, Socket.IO, migrate)
 ├── src/
-│   ├── app/
-│   ├── components/
-│   ├── lib/
-│   ├── hooks/
-│   ├── types/
-│   ├── actions/
-│   ├── repositories/
-│   ├── realtime/
-│   └── styles/
+│   ├── app/           → Next.js App Router pages, layouts, and API route handlers
+│   ├── components/    → reusable UI components
+│   ├── data/          → mock data modules
+│   ├── hooks/         → reusable React hooks
+│   ├── lib/           → shared utilities and infrastructure
+│   ├── realtime/      → collaboration types and event constants
+│   ├── server/        → server actions, repositories, auth, schema
+│   └── types/         → shared TypeScript types
 └── ...
 ```
 
@@ -25,94 +25,127 @@
 ```text
 src/app/
 ├── layout.tsx
-├── page.tsx
+├── page.tsx                          → Landing page
+├── globals.css                       → design tokens (@theme)
 ├── (auth)/
 │   ├── login/page.tsx
 │   └── register/page.tsx
-├── (app)/
-│   ├── layout.tsx
-│   ├── dashboard/page.tsx
-│   ├── workspaces/page.tsx
-│   ├── workspaces/[workspaceId]/page.tsx
-│   ├── projects/[projectId]/page.tsx
-│   ├── documents/[documentId]/page.tsx
+├── app/                              → authenticated app area
+│   ├── layout.tsx                    → sidebar + main content shell
+│   ├── page.tsx                      → Dashboard (workspace overview)
+│   ├── loading.tsx
+│   ├── error.tsx
+│   ├── ai/page.tsx
+│   ├── members/page.tsx
 │   ├── notifications/page.tsx
-│   └── settings/page.tsx
+│   ├── notifications/loading.tsx
+│   ├── settings/page.tsx
+│   ├── workspaces/
+│   │   ├── page.tsx
+│   │   ├── loading.tsx
+│   │   ├── new/page.tsx
+│   │   └── [workspaceId]/page.tsx    (+ error.tsx, loading.tsx)
+│   ├── projects/
+│   │   ├── new/page.tsx
+│   │   └── [projectId]/page.tsx      (+ error.tsx, loading.tsx)
+│   └── documents/
+│       ├── new/page.tsx
+│       └── [documentId]/page.tsx     (+ loading.tsx, DocumentEditor.tsx)
 └── api/
-    ├── health/
-    ├── metrics/
-    ├── checks/
-    │   ├── database/
-    │   ├── redis/
-    │   └── socket/
-    ├── documents/
-    ├── comments/
-    ├── notifications/
-    ├── search/
-    ├── ai/
-    └── realtime/
+    ├── health/route.ts
+    ├── metrics/route.ts
+    └── checks/
+        ├── database/route.ts
+        ├── redis/route.ts
+        └── socket/route.ts
 ```
 
-> Note: Phase 3 added `/api/health`, `/api/metrics`, and `/api/checks/*` route handlers. The feature API folders (`documents`, `comments`, etc.) are listed for future REST expansion; current features use server actions under `src/server/actions`.
+> Note: Feature behavior is implemented through server actions under `src/server/actions`, not REST route handlers. The only API route handlers are the health, metrics, and infrastructure check endpoints. A REST API layer may be added in a later phase.
 
 ## `src/components`
-- ui
-- layout
-- navigation
-- dashboard
-- workspaces
-- projects
-- documents
-- editor
-- presence
-- comments
-- notifications
-- ai
-- search
-- shared
+- ui         → primitives (EmptyState, LoadingSpinner, Skeleton, ConfirmDialog)
+- layout     → Sidebar
+- documents  → TiptapEditor
+- editor     → OutlinePanel, SelectionMenu, VersionHistory
+- presence   → CollaboratorAvatars
+- comments   → CommentThread, CommentSidebar, CommentReplyBox, CommentBubble (deprecated), CommentMarkers, MentionSuggestions
+- notifications → NotificationList, ActivityList
+- ai         → AiPanel, AiResponse, PromptInput, SuggestionChips
+- search     → SearchDialog
+- members    → InviteModal, MemberList, RoleSelector
+
+## `src/data`
+- mock-ai.ts
+- mock-collaborators.ts
+- mock-comments.ts
+- mock-documents.ts
+- mock-notifications.ts
+- mock-projects.ts
+- mock-search.ts
+- mock-users.ts
+- mock-versions.ts
+- mock-workspaces.ts
+
+## `src/hooks`
+- useSocket.ts
+- usePresence.ts
 
 ## `src/lib`
-- api-client.ts
-- auth-client.ts
-- socket.ts
-- yjs.ts
-- hocuspocus.ts
-- redis.ts
-- pg.ts
-- query.ts
-- utils.ts
-- constants.ts
-- logger.ts
+- auth-helpers.ts
 - cache.ts
+- db.ts
 - errors.ts
+- logger.ts
 - metrics.ts
+- rate-limiter.ts
+- redis.ts
 - retry.ts
+- sanitize.ts
+- socket.ts
+- utils.ts
+- yjs.ts
 
-## `src/actions`
-- documents.ts
-- comments.ts
-- notifications.ts
-- ai.ts
-- search.ts
-- presence.ts
-
-## `src/repositories`
-- documents.repository.ts
-- comments.repository.ts
-- notifications.repository.ts
-- workspaces.repository.ts
-- projects.repository.ts
-- versions.repository.ts
-- ai.repository.ts
-- search.repository.ts
+> Note: Phase 3 added `cache`, `errors`, `logger`, `metrics`, `rate-limiter`, `redis`, `retry`, and `sanitize`. Each infra module ships a colocated `*.test.ts` (42 unit tests total).
 
 ## `src/realtime`
 - socket-events.ts
 - presence.ts
 - cursor.ts
 - rooms.ts
-- document-sync.ts
 - notification-events.ts
+
+## `src/server`
+- auth.ts
+- schema.sql
+- actions/
+    - auth.ts
+    - workspace.ts
+    - project.ts
+    - document.ts
+    - comments.ts
+    - members.ts
+    - notifications.ts
+    - versions.ts
+    - search.ts
+    - ai.ts
+- repositories/
+    - document.ts
+    - project.ts
+    - user.ts
+    - workspace.ts
+
+## `src/types`
+- ai.ts
+- comments.ts
+- notifications.ts
+- search.ts
+- versions.ts
+- index.ts
+
+## `server` (root — standalone servers)
+- hocuspocus-server.ts
+- socket-server.ts
+- migrate.ts
 
 
 ---
