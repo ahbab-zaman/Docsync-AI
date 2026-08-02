@@ -100,7 +100,6 @@ src/app/
 
 ## `src/lib`
 - appearance.ts
-- auth-helpers.ts
 - cache.ts
 - db.ts
 - email.ts
@@ -120,7 +119,7 @@ src/app/
     - openrouter.ts
     - sanitize.ts
 
-> Note: Phase 3 added `cache`, `errors`, `logger`, `metrics`, `rate-limiter`, `redis`, `retry`, and `sanitize`. The Invite & Email Workflow added `email` (Resend REST + SMTP/nodemailer fallback) and `invite-utils` (token/expiry/URL). Each infra module ships a colocated `*.test.ts`. Tests live next to the code they cover (`src/**/*.test.{ts,tsx}`) with shared setup in `src/tests/setup.ts`; 118 tests across 23 files.
+> Note: Phase 3 added `cache`, `errors`, `logger`, `metrics`, `rate-limiter`, `redis`, `retry`, and `sanitize`. The Invite & Email Workflow added `email` (Resend REST + SMTP/nodemailer fallback) and `invite-utils` (token/expiry/URL). Each infra module ships a colocated `*.test.ts`. Tests live next to the code they cover (`src/**/*.test.{ts,tsx}`) with shared setup in `src/tests/setup.ts`; 123 tests across 23 files.
 
 ## `src/realtime`
 - socket-events.ts
@@ -130,6 +129,7 @@ src/app/
 - notification-events.ts
 
 ## `src/server`
+- access.ts
 - auth.ts
 - schema.sql
 - actions/

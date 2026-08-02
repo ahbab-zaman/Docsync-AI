@@ -2,7 +2,7 @@
 
 import { z, ZodError } from "zod";
 import { query } from "@/lib/db";
-import { getDevUserId } from "@/lib/auth-helpers";
+import { getCurrentUserId } from "@/server/access";
 import { hashPassword, verifyPassword } from "@/server/auth";
 import {
   findUserByIdWithHash,
@@ -25,7 +25,10 @@ export interface ProfileData {
 }
 
 export async function getProfile(): Promise<{ profile?: ProfileData; error?: string }> {
-  const currentUserId = await getDevUserId();
+  const currentUserId = await getCurrentUserId();
+  if (!currentUserId) {
+    return { error: "Please sign in to continue." };
+  }
   const user = await findUserByIdWithHash(currentUserId);
   if (!user) {
     return { error: "User not found." };
@@ -57,7 +60,10 @@ export async function updateProfile(
     { requestId: generateRequestId(), action: "updateProfile" },
     async () => {
       try {
-        const currentUserId = await getDevUserId();
+        const currentUserId = await getCurrentUserId();
+        if (!currentUserId) {
+          return { error: "Please sign in to continue." };
+        }
         const data = profileSchema.parse({
           name: formData.get("name"),
           email: formData.get("email"),
@@ -119,7 +125,10 @@ export async function changePassword(
     { requestId: generateRequestId(), action: "changePassword" },
     async () => {
       try {
-        const currentUserId = await getDevUserId();
+        const currentUserId = await getCurrentUserId();
+        if (!currentUserId) {
+          return { error: "Please sign in to continue." };
+        }
         const data = passwordSchema.parse({
           currentPassword: formData.get("currentPassword"),
           newPassword: formData.get("newPassword"),
@@ -189,7 +198,10 @@ export async function updateAppearance(
     { requestId: generateRequestId(), action: "updateAppearance" },
     async () => {
       try {
-        const currentUserId = await getDevUserId();
+        const currentUserId = await getCurrentUserId();
+        if (!currentUserId) {
+          return { error: "Please sign in to continue." };
+        }
         const data = appearanceSchema.parse({
           theme: formData.get("theme"),
           reducedMotion: formData.get("reducedMotion") === "on" || formData.get("reducedMotion") === "true",

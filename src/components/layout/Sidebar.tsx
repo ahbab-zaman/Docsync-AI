@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -76,8 +77,14 @@ export default function Sidebar() {
   const sidebarContent = (
     <>
       <div className="flex items-center justify-between px-2">
-        <Link href="/" className="text-lg font-bold text-foreground hover:text-accent transition-colors">
-          Docsync
+        <Link href="/" className="inline-flex items-center" aria-label="Docsync home">
+          <Image
+            src="/DocSync.png"
+            alt="Docsync"
+            width={500}
+            height={500}
+            className="h-8 w-auto"
+          />
         </Link>
           <button
             type="button"

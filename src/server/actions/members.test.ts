@@ -1,12 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { inviteMember, getInviteByToken, acceptInviteByToken } from "@/server/actions/members";
+import {
+  inviteMember,
+  getInviteByToken,
+  acceptInviteByToken,
+  changeRole,
+  removeMember,
+} from "@/server/actions/members";
 
 vi.mock("@/lib/db", () => ({
   query: vi.fn(),
 }));
 
-vi.mock("@/lib/auth-helpers", () => ({
-  getDevUserId: vi.fn(),
+vi.mock("@/server/access", () => ({
+  getCurrentUserId: vi.fn(),
+  getCurrentUserInfo: vi.fn(),
+  requireWorkspaceAccess: vi.fn(),
+  ANY_MEMBER: ["owner", "admin", "member"],
+  ADMIN_ROLES: ["owner", "admin"],
 }));
 
 vi.mock("@/server/auth", () => ({
@@ -51,7 +61,7 @@ vi.mock("@/server/repositories/user", () => ({
 }));
 
 import { query } from "@/lib/db";
-import { getDevUserId } from "@/lib/auth-helpers";
+import { requireWorkspaceAccess } from "@/server/access";
 import { getCurrentUser } from "@/server/auth";
 import { sendInviteEmail } from "@/lib/email";
 import { findUserByEmail } from "@/server/repositories/user";
@@ -66,7 +76,11 @@ function buildForm(entries: Record<string, string>): FormData {
 
 describe("members invite actions", () => {
   beforeEach(() => {
-    vi.mocked(getDevUserId).mockResolvedValue("user-1");
+    vi.mocked(requireWorkspaceAccess).mockResolvedValue({
+      ok: true,
+      userId: "user-1",
+      role: "owner",
+    });
     vi.mocked(query).mockReset();
     vi.mocked(sendInviteEmail).mockClear();
     vi.mocked(findUserByEmail).mockClear();
@@ -149,6 +163,73 @@ describe("members invite actions", () => {
       );
 
       expect(result.error).toBe("Invalid email address");
+      expect(query).not.toHaveBeenCalled();
+    });
+
+    it("rejects non-admin callers", async () => {
+      vi.mocked(requireWorkspaceAccess).mockResolvedValue({
+        ok: false,
+        error: "You do not have permission to do this.",
+      });
+
+      const result = await inviteMember(
+        {},
+        buildForm({
+          workspaceId: "ws-1",
+          email: "friend@example.com",
+          role: "member",
+        })
+      );
+
+      expect(result.error).toBe("You do not have permission to do this.");
+      expect(query).not.toHaveBeenCalled();
+      expect(sendInviteEmail).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("changeRole", () => {
+    it("denies non-admin callers", async () => {
+      vi.mocked(requireWorkspaceAccess).mockResolvedValue({
+        ok: false,
+        error: "You do not have permission to do this.",
+      });
+
+      const result = await changeRole("ws-1", "user-2", "member");
+
+      expect(result.error).toBe("You do not have permission to do this.");
+      expect(query).not.toHaveBeenCalled();
+    });
+
+    it("updates the role when the caller is an admin", async () => {
+      vi.mocked(requireWorkspaceAccess).mockResolvedValue({
+        ok: true,
+        userId: "user-1",
+        role: "admin",
+      });
+      vi.mocked(query).mockResolvedValueOnce({ rows: [] } as never);
+      vi.mocked(query).mockResolvedValueOnce({ rows: [] } as never);
+
+      const result = await changeRole("ws-1", "user-2", "member");
+
+      expect(result.success).toBe(true);
+      const update = vi.mocked(query).mock.calls.find(([sql]) =>
+        sql.includes("UPDATE workspace_members SET role")
+      );
+      expect(update).toBeDefined();
+      expect(update![1]).toEqual(["member", "ws-1", "user-2"]);
+    });
+  });
+
+  describe("removeMember", () => {
+    it("denies non-admin callers", async () => {
+      vi.mocked(requireWorkspaceAccess).mockResolvedValue({
+        ok: false,
+        error: "You do not have permission to do this.",
+      });
+
+      const result = await removeMember("ws-1", "user-2");
+
+      expect(result.error).toBe("You do not have permission to do this.");
       expect(query).not.toHaveBeenCalled();
     });
   });

@@ -2,7 +2,12 @@
 
 import { z, ZodError } from "zod";
 import { query } from "@/lib/db";
-import { getDevUserId, getDevUserName } from "@/lib/auth-helpers";
+import {
+  getCurrentUserInfo,
+  requireWorkspaceAccess,
+  resolveDocumentWorkspaceId,
+  ANY_MEMBER,
+} from "@/server/access";
 import { logger, runWithRequestContext, generateRequestId } from "@/lib/logger";
 import { CACHE_KEYS, invalidateCache, invalidateProjectCache, withCache } from "@/lib/cache";
 import {
@@ -63,6 +68,20 @@ export async function getDocument(
   return runWithRequestContext(
     { requestId: generateRequestId(), action: "getDocument" },
     async () => {
+      const workspaceId = await resolveDocumentWorkspaceId(id);
+      if (!workspaceId) {
+        return { error: "Document not found" };
+      }
+      const access = await requireWorkspaceAccess(workspaceId, ANY_MEMBER);
+      if (!access.ok) {
+        logger.warn("Document access denied", {
+          action: "getDocument",
+          documentId: id,
+          status: "failure",
+        });
+        return { error: access.error };
+      }
+
       const cacheKey = CACHE_KEYS.document(id);
 
       const document = await withCache<DocumentFull | null>(
@@ -110,13 +129,32 @@ export async function createDocument(
   formData: FormData
 ): Promise<{ error?: string; success?: boolean; document?: DocumentFull }> {
   try {
-    const currentUserId = await getDevUserId();
-    const currentUserName = await getDevUserName();
-
     const data = createDocumentSchema.parse({
       title: formData.get("title"),
       projectId: formData.get("projectId"),
     });
+
+    const projectResult = await query<{ workspace_id: string }>(
+      "SELECT workspace_id FROM projects WHERE id = $1",
+      [data.projectId]
+    );
+    const workspaceId = projectResult.rows[0]?.workspace_id;
+    if (!workspaceId) {
+      return { error: "Project not found." };
+    }
+
+    const access = await requireWorkspaceAccess(workspaceId, ANY_MEMBER);
+    if (!access.ok) {
+      logger.warn("Document create denied", {
+        action: "createDocument",
+        projectId: data.projectId,
+        status: "failure",
+      });
+      return { error: access.error };
+    }
+    const currentUser = await getCurrentUserInfo();
+    const currentUserId = access.userId;
+    const currentUserName = currentUser?.name ?? "";
 
     const result = await query<DocumentRow>(
       `INSERT INTO documents (title, content, project_id, created_by)
@@ -127,12 +165,6 @@ export async function createDocument(
     const doc = mapDocument({ ...result.rows[0], created_by_name: currentUserName });
 
     await invalidateProjectCache(data.projectId);
-
-    const projectResult = await query<{ workspace_id: string }>(
-      "SELECT workspace_id FROM projects WHERE id = $1",
-      [data.projectId]
-    );
-    const workspaceId = projectResult.rows[0]?.workspace_id;
 
     if (workspaceId) {
       await Promise.all([
@@ -182,6 +214,20 @@ export async function saveDocument(
   data: { title?: string; content?: string }
 ): Promise<{ success?: boolean; error?: string }> {
   try {
+    const workspaceId = await resolveDocumentWorkspaceId(id);
+    if (!workspaceId) {
+      return { error: "Document not found" };
+    }
+    const access = await requireWorkspaceAccess(workspaceId, ANY_MEMBER);
+    if (!access.ok) {
+      logger.warn("Document save denied", {
+        action: "saveDocument",
+        documentId: id,
+        status: "failure",
+      });
+      return { error: access.error };
+    }
+
     const parsed = saveDocumentSchema.parse(data);
     const fields: string[] = [];
     const values: unknown[] = [];
@@ -219,20 +265,11 @@ export async function saveDocument(
 
     await invalidateCache(CACHE_KEYS.document(id));
 
-    const projectResult = await query<{ workspace_id: string }>(
-      `SELECT p.workspace_id FROM projects p
-       JOIN documents d ON d.project_id = p.id
-       WHERE d.id = $1`,
-      [id]
-    );
-    const workspaceId = projectResult.rows[0]?.workspace_id;
-
     if (workspaceId) {
-      const currentUserId = await getDevUserId();
       await createThrottledDocumentUpdatedActivity({
         workspaceId,
         description: `A document was updated in this workspace.`,
-        createdBy: currentUserId,
+        createdBy: access.userId,
       });
     }
 
@@ -258,14 +295,28 @@ export async function deleteDocument(
   id: string
 ): Promise<{ success?: boolean; error?: string }> {
   try {
-    const currentUserId = await getDevUserId();
+    const workspaceId = await resolveDocumentWorkspaceId(id);
+    if (!workspaceId) {
+      return { error: "Document not found or you do not have permission to delete it." };
+    }
+    const access = await requireWorkspaceAccess(workspaceId, ANY_MEMBER);
+    if (!access.ok) {
+      logger.warn("Document delete denied", {
+        action: "deleteDocument",
+        documentId: id,
+        status: "failure",
+      });
+      return { error: access.error };
+    }
+    const currentUserId = access.userId;
 
-    const docResult = await query<{ project_id: string }>(
-      "SELECT project_id FROM documents WHERE id = $1 AND created_by = $2",
-      [id, currentUserId]
+    const docResult = await query<{ project_id: string; created_by: string }>(
+      "SELECT project_id, created_by FROM documents WHERE id = $1",
+      [id]
     );
+    const doc = docResult.rows[0];
 
-    if (docResult.rows.length === 0) {
+    if (!doc) {
       logger.warn("Document delete denied or not found", {
         action: "deleteDocument",
         status: "failure",
@@ -273,7 +324,17 @@ export async function deleteDocument(
       return { error: "Document not found or you do not have permission to delete it." };
     }
 
-    const { project_id: projectId } = docResult.rows[0];
+    const isOwner = access.role === "owner";
+    const isAdmin = access.role === "admin";
+    const isCreator = doc.created_by === currentUserId;
+    if (!isOwner && !isAdmin && !isCreator) {
+      logger.warn("Document delete denied (not creator or admin)", {
+        action: "deleteDocument",
+        documentId: id,
+        status: "failure",
+      });
+      return { error: "You do not have permission to delete this document." };
+    }
 
     const result = await query(
       "DELETE FROM documents WHERE id = $1 RETURNING id",
@@ -285,7 +346,7 @@ export async function deleteDocument(
     }
 
     await invalidateCache(CACHE_KEYS.document(id));
-    await invalidateProjectCache(projectId);
+    await invalidateProjectCache(doc.project_id);
 
     logger.info("Document deleted", {
       action: "deleteDocument",

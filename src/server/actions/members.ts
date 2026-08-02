@@ -2,7 +2,11 @@
 
 import { z, ZodError } from "zod";
 import { query } from "@/lib/db";
-import { getDevUserId } from "@/lib/auth-helpers";
+import {
+  requireWorkspaceAccess,
+  ANY_MEMBER,
+  ADMIN_ROLES,
+} from "@/server/access";
 import { getCurrentUser } from "@/server/auth";
 import { logger, runWithRequestContext, generateRequestId } from "@/lib/logger";
 import { invalidateCache, CACHE_KEYS } from "@/lib/cache";
@@ -75,6 +79,16 @@ export async function getMembers(
   return runWithRequestContext(
     { requestId: generateRequestId(), action: "getMembers", workspaceId },
     async () => {
+      const access = await requireWorkspaceAccess(workspaceId, ANY_MEMBER);
+      if (!access.ok) {
+        logger.warn("Members access denied", {
+          action: "getMembers",
+          workspaceId,
+          status: "failure",
+        });
+        return { members: [], pendingInvites: [] };
+      }
+
       await expireStaleInvites();
 
       const memberResult = await query<MemberRow>(
@@ -122,7 +136,18 @@ export async function inviteMember(
     { requestId: generateRequestId(), action: "inviteMember" },
     async () => {
       try {
-        const currentUserId = await getDevUserId();
+        const access = await requireWorkspaceAccess(
+          (formData.get("workspaceId") as string) ?? "",
+          ADMIN_ROLES
+        );
+        if (!access.ok) {
+          logger.warn("Invite denied: caller lacks admin role", {
+            action: "inviteMember",
+            status: "failure",
+          });
+          return { error: access.error };
+        }
+        const currentUserId = access.userId;
 
         const limit = checkRateLimit(`invite:${currentUserId}`, {
           maxRequests: 10,
@@ -447,7 +472,16 @@ export async function resendInvite(
     { requestId: generateRequestId(), action: "resendInvite", workspaceId },
     async () => {
       try {
-        const currentUserId = await getDevUserId();
+        const access = await requireWorkspaceAccess(workspaceId, ADMIN_ROLES);
+        if (!access.ok) {
+          logger.warn("Invite resend denied", {
+            action: "resendInvite",
+            workspaceId,
+            status: "failure",
+          });
+          return { error: access.error };
+        }
+        const currentUserId = access.userId;
 
         const inviteResult = await query<{
           id: string;
@@ -536,6 +570,16 @@ export async function cancelInvite(
   inviteId: string
 ): Promise<{ success?: boolean; error?: string }> {
   try {
+    const access = await requireWorkspaceAccess(workspaceId, ADMIN_ROLES);
+    if (!access.ok) {
+      logger.warn("Invite cancel denied", {
+        action: "cancelInvite",
+        workspaceId,
+        status: "failure",
+      });
+      return { error: access.error };
+    }
+
     const result = await query(
       "DELETE FROM workspace_invites WHERE id = $1 AND workspace_id = $2 RETURNING id",
       [inviteId, workspaceId]
@@ -571,7 +615,16 @@ export async function changeRole(
   role: "admin" | "member"
 ): Promise<{ success?: boolean; error?: string }> {
   try {
-    const currentUserId = await getDevUserId();
+    const access = await requireWorkspaceAccess(workspaceId, ADMIN_ROLES);
+    if (!access.ok) {
+      logger.warn("Role change denied", {
+        action: "changeRole",
+        workspaceId,
+        status: "failure",
+      });
+      return { error: access.error };
+    }
+    const currentUserId = access.userId;
     await query(
       "UPDATE workspace_members SET role = $1 WHERE workspace_id = $2 AND user_id = $3 AND role != 'owner'",
       [role, workspaceId, userId]
@@ -612,7 +665,16 @@ export async function removeMember(
   userId: string
 ): Promise<{ success?: boolean; error?: string }> {
   try {
-    const currentUserId = await getDevUserId();
+    const access = await requireWorkspaceAccess(workspaceId, ADMIN_ROLES);
+    if (!access.ok) {
+      logger.warn("Member removal denied", {
+        action: "removeMember",
+        workspaceId,
+        status: "failure",
+      });
+      return { error: access.error };
+    }
+    const currentUserId = access.userId;
 
     const memberResult = await query<{ name: string }>(
       "SELECT u.name FROM workspace_members wm JOIN users u ON u.id = wm.user_id WHERE wm.workspace_id = $1 AND wm.user_id = $2",

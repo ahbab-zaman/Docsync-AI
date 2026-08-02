@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { LayoutDashboard, LogOut, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { UserPublic } from "@/types";
@@ -73,7 +74,15 @@ export default function MarketingMobileMenu({
         className="animate-menu-fade-in relative flex h-full w-72 max-w-[85vw] flex-col gap-4 overflow-y-auto border-r border-border bg-surface p-4"
       >
         <div className="flex items-center justify-between">
-          <span className="text-lg font-bold text-foreground tracking-tight">Docsync</span>
+          <span className="inline-flex items-center">
+            <Image
+              src="/DocSync.png"
+              alt="Docsync"
+              width={500}
+              height={500}
+              className="h-8 w-auto"
+            />
+          </span>
           <button
             type="button"
             onClick={onClose}

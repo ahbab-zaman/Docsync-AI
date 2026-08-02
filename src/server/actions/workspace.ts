@@ -2,7 +2,13 @@
 
 import { z, ZodError } from "zod";
 import { query } from "@/lib/db";
-import { getDevUserId, getDevUserName } from "@/lib/auth-helpers";
+import {
+  getCurrentUserId,
+  getCurrentUserInfo,
+  requireWorkspaceAccess,
+  ANY_MEMBER,
+  ADMIN_ROLES,
+} from "@/server/access";
 import { logger, runWithRequestContext, generateRequestId } from "@/lib/logger";
 import {
   CACHE_KEYS,
@@ -58,7 +64,14 @@ export async function getWorkspaces(): Promise<{ workspaces: WorkspaceWithCounts
   return runWithRequestContext(
     { requestId: generateRequestId(), action: "getWorkspaces" },
     async () => {
-      const currentUserId = await getDevUserId();
+      const currentUserId = await getCurrentUserId();
+      if (!currentUserId) {
+        logger.warn("Workspaces load denied (unauthenticated)", {
+          action: "getWorkspaces",
+          status: "failure",
+        });
+        return { workspaces: [] };
+      }
       const cacheKey = CACHE_KEYS.workspaces(currentUserId);
 
       const result = await withCache<{ workspaces: WorkspaceWithCounts[] }>(
@@ -115,6 +128,16 @@ export async function getWorkspace(
   return runWithRequestContext(
     { requestId: generateRequestId(), action: "getWorkspace", workspaceId: id },
     async () => {
+      const access = await requireWorkspaceAccess(id, ANY_MEMBER);
+      if (!access.ok) {
+        logger.warn("Workspace access denied", {
+          action: "getWorkspace",
+          workspaceId: id,
+          status: "failure",
+        });
+        return { error: access.error };
+      }
+
       const wsResult = await query<WorkspaceRow>("SELECT * FROM workspaces WHERE id = $1", [id]);
 
       if (wsResult.rows.length === 0) {
@@ -198,8 +221,12 @@ export async function createWorkspace(
   formData: FormData
 ): Promise<{ error?: string; success?: boolean; workspace?: WorkspaceWithCounts }> {
   try {
-    const currentUserId = await getDevUserId();
-    const currentUserName = await getDevUserName();
+    const currentUser = await getCurrentUserInfo();
+    if (!currentUser) {
+      return { error: "Please sign in to create a workspace." };
+    }
+    const currentUserId = currentUser.id;
+    const currentUserName = currentUser.name;
 
     const data = createWorkspaceSchema.parse({
       name: formData.get("name"),
@@ -231,7 +258,7 @@ export async function createWorkspace(
       member_count: 1,
       project_count: 0,
       projects: [],
-      members: [{ id: currentUserId, name: currentUserName, email: "dev@docsync.dev", avatar_url: null, role: "owner" }],
+      members: [{ id: currentUserId, name: currentUserName, email: currentUser.email, avatar_url: null, role: "owner" }],
     };
 
     await createActivityEvent({
@@ -283,7 +310,17 @@ export async function updateWorkspace(
   data: { name?: string; description?: string | null }
 ): Promise<{ success?: boolean; error?: string }> {
   try {
-    const currentUserId = await getDevUserId();
+    const access = await requireWorkspaceAccess(id, ADMIN_ROLES);
+    if (!access.ok) {
+      logger.warn("Workspace update denied", {
+        action: "updateWorkspace",
+        workspaceId: id,
+        status: "failure",
+      });
+      return { error: access.error };
+    }
+    const currentUserId = access.userId;
+
     const parsed = updateWorkspaceSchema.parse(data);
 
     const fields: string[] = [];
@@ -354,11 +391,20 @@ export async function deleteWorkspace(
   id: string
 ): Promise<{ success?: boolean; error?: string }> {
   try {
-    const currentUserId = await getDevUserId();
+    const access = await requireWorkspaceAccess(id, ["owner"]);
+    if (!access.ok) {
+      logger.warn("Workspace delete denied", {
+        action: "deleteWorkspace",
+        workspaceId: id,
+        status: "failure",
+      });
+      return { error: access.error };
+    }
+    const currentUserId = access.userId;
 
     const result = await query(
-      "DELETE FROM workspaces WHERE id = $1 AND owner_id = $2 RETURNING id",
-      [id, currentUserId]
+      "DELETE FROM workspaces WHERE id = $1 RETURNING id",
+      [id]
     );
 
     if (result.rows.length === 0) {

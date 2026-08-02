@@ -12,11 +12,13 @@ Phase 1 established the application foundation. Phase 2 introduced the collabora
 - notifications
 - search across collaboration content
 
-Phase 3 (complete) upgraded the application to production quality: accessibility, UX polish, performance, security, logging, observability, caching, error handling, monitoring, testing (118 tests across 23 files), a documentation pass, and a final production-readiness review are all complete. Deployment & DevOps (Docker/CI-CD) is deferred to Phase 5.
+Phase 3 (complete) upgraded the application to production quality: accessibility, UX polish, performance, security, logging, observability, caching, error handling, monitoring, testing (123 tests across 23 files), a documentation pass, and a final production-readiness review are all complete. Deployment & DevOps (Docker/CI-CD) is deferred to Phase 5.
 
 Following Phase 3, a Dynamic Backend Data milestone converted every app section (AI, Documents, Members, Notifications, Settings, Workspaces) from mock data to PostgreSQL-backed server actions: new `workspace_invites`, `notifications`, `activity_events`, and `ai_runs` tables plus a `users.preferences` JSONB column; real OpenRouter AI completions with a mock fallback; DB-backed invites/member management; settings with profile, password, and appearance (theme/density/reduced-motion). No mock data remains for notifications or workspaces.
 
 An Invite & Email Workflow then upgraded invites to a real, invitee-driven flow: token-based email invitations (Resend when configured, logged fallback in dev), a public `/invite/[token]` accept/decline page, status tracking (pending/accepted/declined/expired), resend, expiry reconciliation, and `?next=` auth redirects so guests sign in and land back on their invitation.
+
+A Role-Based Authorization pass then enforced the model server-side: all server actions resolve the real session user (the hardcoded dev identity was removed), `/app` redirects unauthenticated visitors to login, and `src/server/access.ts` gates every workspace-scoped action. Members can view and create projects/documents, edit documents, and use AI; admins additionally invite members, change roles, remove members, edit the workspace, and delete any document; owners alone can delete the workspace. Document deletion also allows its creator. The invite role a guest accepts now actually constrains what they can do.
 
 ## Pages
 ```text

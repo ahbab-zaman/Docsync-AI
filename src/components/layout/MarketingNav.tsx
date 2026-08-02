@@ -2,6 +2,7 @@
 
 import { useRef, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -206,8 +207,15 @@ export default function MarketingNav({ user }: MarketingNavProps) {
     <header className="border-b border-border">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <div className="flex items-center gap-8">
-          <Link href="/" className="text-lg font-bold text-foreground tracking-tight">
-            Docsync
+          <Link href="/" className="inline-flex items-center" aria-label="Docsync home">
+            <Image
+              src="/DocSync.png"
+              alt="Docsync"
+              width={500}
+              height={500}
+              className="h-8 w-auto"
+              priority
+            />
           </Link>
           <nav className="hidden md:flex items-center gap-6" aria-label="Primary navigation">
             {sectionLinks.map((link) => (

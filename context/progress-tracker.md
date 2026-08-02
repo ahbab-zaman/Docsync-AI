@@ -33,7 +33,7 @@
 - [x] 05 Logging + observability
 - [x] 06 Caching
 - [x] 07 Error handling
-- [x] 08 Testing — 118 tests across 23 files
+- [x] 08 Testing — 123 tests across 23 files
 - [x] 09 Documentation final pass
 - [x] 10 Monitoring
 - [x] 11 Production Readiness Review
@@ -104,7 +104,20 @@
 - `MemberList` shows per-invite status badges with Resend (pending) and Cancel (pending/expired) actions instead of admin-side accept.
 - Notification type union extended with `invite_sent` and `invite_declined`; both list components map them to Mail/XCircle icons.
 - `.env.template` documents `RESEND_API_KEY` and `RESEND_FROM_EMAIL`.
-- Final verification: `tsc --noEmit` clean, ESLint 0 problems, 118 tests / 23 files passing, `next build` succeeds including the new `/invite/[token]` route, schema migration applied to PostgreSQL.
+- Final verification: `tsc --noEmit` clean, ESLint 0 problems, 123 tests / 23 files passing, `next build` succeeds including the new `/invite/[token]` route, schema migration applied to PostgreSQL.
+
+## Role-Based Authorization (post-Phase 3)
+- New `src/server/access.ts` — session-based identity + permission helpers: `getCurrentUserId`, `getCurrentUserInfo`, `getWorkspaceRole`, `requireWorkspaceAccess(workspaceId, allowedRoles)`, `resolveDocumentWorkspaceId`; constants `ANY_MEMBER` (`owner|admin|member`) and `ADMIN_ROLES` (`owner|admin`).
+- Deleted `src/lib/auth-helpers.ts` (`getDevUserId`/`getDevUserName` hardcoded dev identity) — all server actions now resolve the real logged-in user from the session cookie.
+- `/app` layout (`src/app/app/layout.tsx`) now guards the whole app shell: unauthenticated users redirect to `/login`.
+- Permission model enforced server-side (previously UI-only):
+  - member: view workspace/projects/documents/members, create projects & documents, edit documents, run AI.
+  - admin: member + invite/resend/cancel invites, change roles, remove members, edit workspace, delete any document.
+  - owner: admin + delete workspace.
+- Gate changes: `getWorkspace`/`getProject`/`getDocument`/`getMembers` require membership; `updateWorkspace`/`inviteMember`/`resendInvite`/`cancelInvite`/`changeRole`/`removeMember` require owner/admin; `deleteWorkspace` owner-only; `deleteDocument` creator-or-admin; `runAiAction` member (document workspace checked when a document is passed); `createWorkspace` any signed-in user.
+- Account actions (`getProfile`, `updateProfile`, `changePassword`, `updateAppearance`) and notifications/activity/read-counts now run against the session user instead of the dev user, returning empty results or a sign-in error when unauthenticated.
+- Tests updated: `workspace.test.ts` and `members.test.ts` mock `@/server/access`; added tests for unauthenticated creation, non-admin invite denial, role-change admin denial/allowance, and member-removal denial. 123 tests total.
+- Verified: `tsc --noEmit` clean, ESLint 0 problems, 123 tests / 23 files passing, `next build` succeeds.
 - Converted all six app sections to DB-backed server actions and verified at runtime:
   - AI (`/app/ai`) — OpenRouter completion with mock fallback, persisted runs, document selector.
   - Documents (`/app/documents/[documentId]`) — create/save/delete against PostgreSQL.
@@ -113,7 +126,7 @@
   - Settings (`/app/settings`) — profile, password change (bcrypt), appearance (theme/density/reduced-motion).
   - Workspaces (`/app/workspaces`, `/[workspaceId]`) — create/read/update/delete with activity events.
 - Activity events are fired from workspace create/update, project create, document create/save, invite, accept, role change, and member removal actions.
-- Final verification: `tsc --noEmit` clean, ESLint 0 problems, 118 tests / 23 files passing, `next build` succeeds (all 11 app routes dynamic), DB health check returns ok, and every app page returns HTTP 200 with real DB content.
+- Final verification: `tsc --noEmit` clean, ESLint 0 problems, 123 tests / 23 files passing, `next build` succeeds (all 11 app routes dynamic), DB health check returns ok, and every app page returns HTTP 200 with real DB content.
 
 ## Landing Navbar (Dynamic Auth)
 - `src/components/layout/MarketingNav.tsx` — client navbar on the landing page. When signed out it shows "Sign in" + "Get started"; when signed in it shows an animated user dropdown (avatar, name, email) listing every DB-backed app section (Dashboard, Workspaces, AI, Notifications, Members, Settings) plus Log out. Middle nav keeps only the section anchor links (Features / Collaboration / AI).
@@ -171,7 +184,7 @@
 - Authentication flow tests: `hashPassword`/`verifyPassword` (bcrypt hashing, correct/incorrect password, unique salts).
 - Cache degradation tests: `getCached`/`setCached`/`invalidateCache`/`withCache` no-op and fall back to source when Redis is unavailable.
 - Component tests: `EmptyState`, `LoadingSpinner`, `Skeleton`, `ConfirmDialog` (a11y, keyboard, backdrop), `CollaboratorAvatars` (initials, online dot, overflow cap).
-- Total: 118 tests across 23 files — all passing (`npm test`), typecheck (`tsc --noEmit`) clean, lint 0 errors, production build passes.
+- Total: 123 tests across 23 files — all passing (`npm test`), typecheck (`tsc --noEmit`) clean, lint 0 errors, production build passes.
 
 ## UX Polish Improvements (Phase 3)
 - Added missing `loading.tsx` for notifications page.
@@ -212,7 +225,7 @@
 - Removed dead `currentTitle` prop from `VersionHistory`.
 - Removed numerous unused imports/variables across `TiptapEditor`, `AiPanel`, `ActivityList`, `CommentThread`, `CommentReplyBox`, `MentionSuggestions`, `CommentMarkers`, `DocumentEditor`, and mock-data files.
 - ESLint: configured `@typescript-eslint/no-unused-vars` with `argsIgnorePattern`/`varsIgnorePattern` `^_` to codify the existing underscore convention for signature-matched unused params.
-- Final verification: `tsc --noEmit` clean, ESLint 0 problems, 118 tests / 23 files passing, `next build` succeeds.
+- Final verification: `tsc --noEmit` clean, ESLint 0 problems, 123 tests / 23 files passing, `next build` succeeds.
 
 # Phase 3 — Engineering Excellence
 

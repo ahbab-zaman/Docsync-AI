@@ -1,6 +1,6 @@
 import { getMembers } from "@/server/actions/members";
 import { getWorkspaces } from "@/server/actions/workspace";
-import { getDevUserId } from "@/lib/auth-helpers";
+import { getCurrentUserId } from "@/server/access";
 import MemberList from "@/components/members/MemberList";
 import WorkspaceSwitcher from "@/components/members/WorkspaceSwitcher";
 
@@ -12,7 +12,7 @@ export default async function MembersPage({
   const { workspace: workspaceParam } = await searchParams;
   const [{ workspaces }, currentUserId] = await Promise.all([
     getWorkspaces(),
-    getDevUserId(),
+    getCurrentUserId(),
   ]);
 
   const activeWorkspace =
@@ -51,7 +51,7 @@ export default async function MembersPage({
           workspaceId={activeWorkspace.id}
           initialMembers={members}
           initialInvites={pendingInvites}
-          currentUserId={currentUserId}
+          currentUserId={currentUserId ?? ""}
         />
       )}
     </div>

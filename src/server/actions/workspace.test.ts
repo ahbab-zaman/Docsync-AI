@@ -5,9 +5,12 @@ vi.mock("@/lib/db", () => ({
   query: vi.fn(),
 }));
 
-vi.mock("@/lib/auth-helpers", () => ({
-  getDevUserId: vi.fn(),
-  getDevUserName: vi.fn(),
+vi.mock("@/server/access", () => ({
+  getCurrentUserId: vi.fn(),
+  getCurrentUserInfo: vi.fn(),
+  requireWorkspaceAccess: vi.fn(),
+  ANY_MEMBER: ["owner", "admin", "member"],
+  ADMIN_ROLES: ["owner", "admin"],
 }));
 
 vi.mock("@/lib/cache", () => ({
@@ -27,7 +30,7 @@ vi.mock("@/lib/logger", () => ({
 }));
 
 import { query } from "@/lib/db";
-import { getDevUserId, getDevUserName } from "@/lib/auth-helpers";
+import { getCurrentUserId, getCurrentUserInfo } from "@/server/access";
 import { setCached, invalidateCache } from "@/lib/cache";
 
 function buildForm(entries: Record<string, string>): FormData {
@@ -49,8 +52,12 @@ const workspaceRow = {
 
 describe("createWorkspace server action", () => {
   beforeEach(() => {
-    vi.mocked(getDevUserId).mockResolvedValue("user-1");
-    vi.mocked(getDevUserName).mockResolvedValue("Dev User");
+    vi.mocked(getCurrentUserId).mockResolvedValue("user-1");
+    vi.mocked(getCurrentUserInfo).mockResolvedValue({
+      id: "user-1",
+      name: "Dev User",
+      email: "dev@docsync.dev",
+    });
     vi.mocked(query).mockReset();
     vi.mocked(setCached).mockClear();
     vi.mocked(invalidateCache).mockClear();
@@ -89,6 +96,18 @@ describe("createWorkspace server action", () => {
     );
     expect(setCached).toHaveBeenCalledWith("cache:workspace:ws-1", expect.anything(), 30);
     expect(invalidateCache).toHaveBeenCalledWith("cache:workspaces:user-1");
+  });
+
+  it("rejects an unauthenticated user", async () => {
+    vi.mocked(getCurrentUserInfo).mockResolvedValue(null);
+
+    const result = await createWorkspace(
+      {},
+      buildForm({ name: "Alpha" })
+    );
+
+    expect(result.error).toBe("Please sign in to create a workspace.");
+    expect(query).not.toHaveBeenCalled();
   });
 
   it("rejects an empty workspace name without touching the database", async () => {

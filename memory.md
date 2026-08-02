@@ -2,6 +2,14 @@
 
 Last updated: 2026-08-03
 
+## What was built (Role-Based Authorization)
+
+- New `src/server/access.ts` — session identity + permissions: `getCurrentUserId`, `getCurrentUserInfo`, `getWorkspaceRole`, `requireWorkspaceAccess(workspaceId, allowedRoles)`, `resolveDocumentWorkspaceId`; `ANY_MEMBER`/`ADMIN_ROLES` role sets.
+- Deleted `src/lib/auth-helpers.ts` (hardcoded dev identity `getDevUserId`/`getDevUserName`). All server actions resolve the real session user now; `/app` layout redirects unauthenticated users to `/login`.
+- Server-enforced permission model (was UI-only): members can view + create projects/documents + edit + AI; admins additionally invite/change roles/remove members/edit workspace/delete any document; owners additionally delete the workspace. `deleteDocument` = creator-or-admin; `deleteWorkspace` = owner only.
+- Account + notification actions now use the session user (empty results / sign-in error when unauthenticated).
+- Tests updated/mocked around `@/server/access`; added authorization tests. 123 tests / 23 files.
+
 ## What was built (Invite & Email Workflow)
 
 - `workspace_invites` extended with unique `token`, `status` (`pending`/`accepted`/`declined`/`expired`), 7-day `expires_at`, and `accepted_at`; backfill migration generates tokens for existing rows.
@@ -12,7 +20,7 @@ Last updated: 2026-08-03
 - `MemberList` shows per-invite status badges with Resend (pending) and Cancel (pending/expired) actions instead of admin-side accept.
 - Notification type union extended with `invite_sent` and `invite_declined`; icons added in `NotificationList`/`ActivityList`.
 - `.env.template` documents `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, and the `SMTP_*` fallback variables.
-- Final verification: `tsc --noEmit` clean, ESLint 0 problems, 118 tests / 23 files passing, `next build` succeeds, schema migration applied to PostgreSQL.
+- Final verification: `tsc --noEmit` clean, ESLint 0 problems, 123 tests / 23 files passing, `next build` succeeds, schema migration applied to PostgreSQL.
 
 ## What was built (Production Readiness Review — item 11)
 

@@ -3,7 +3,12 @@
 import type { AiActionType, AiResponse } from "@/types/ai";
 import { getMockAiResponse } from "@/data/mock-ai";
 import { query } from "@/lib/db";
-import { getDevUserId } from "@/lib/auth-helpers";
+import {
+  getCurrentUserId,
+  requireWorkspaceAccess,
+  resolveDocumentWorkspaceId,
+  ANY_MEMBER,
+} from "@/server/access";
 import { logger, runWithRequestContext, generateRequestId } from "@/lib/logger";
 import { runAiCompletion, isAiConfigured } from "@/lib/ai/openrouter";
 import { sanitizeHtml } from "@/lib/ai/sanitize";
@@ -32,7 +37,10 @@ export interface AiDocumentOption {
 }
 
 export async function getAiDocuments(): Promise<{ documents: AiDocumentOption[] }> {
-  const currentUserId = await getDevUserId();
+  const currentUserId = await getCurrentUserId();
+  if (!currentUserId) {
+    return { documents: [] };
+  }
   const result = await query<AiDocumentOption>(
     `SELECT d.id, d.title, d.content, p.name AS project_name, w.name AS workspace_name
      FROM documents d
@@ -58,7 +66,25 @@ export async function runAiAction(
     { requestId: generateRequestId(), action: `ai:${actionType}` },
     async () => {
       try {
-        const currentUserId = await getDevUserId();
+        const currentUserId = await getCurrentUserId();
+        if (!currentUserId) {
+          return { error: "Please sign in to continue." };
+        }
+
+        if (documentId) {
+          const workspaceId = await resolveDocumentWorkspaceId(documentId);
+          if (!workspaceId) {
+            return { error: "Document not found." };
+          }
+          const access = await requireWorkspaceAccess(workspaceId, ANY_MEMBER);
+          if (!access.ok) {
+            logger.warn("AI request denied: not a workspace member", {
+              action: `ai:${actionType}`,
+              status: "failure",
+            });
+            return { error: access.error };
+          }
+        }
 
         let content: string;
         if (isAiConfigured()) {

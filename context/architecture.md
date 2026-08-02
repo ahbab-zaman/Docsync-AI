@@ -1316,12 +1316,26 @@ Business Service
 
 ## Roles
 
-Phase 3 assumes the following roles.
+The implemented schema (`src/server/schema.sql`) uses three roles.
 
 - Owner
 - Admin
-- Editor
-- Viewer
+- Member
+
+Editors/viewers are not implemented; invite roles are `admin | member`.
+
+## Permission Rules (implemented)
+
+Enforced server-side by `src/server/access.ts` (`requireWorkspaceAccess(workspaceId, allowedRoles)`, resolved against the real session user) at the top of every workspace-scoped server action:
+
+- **member** — view workspace/projects/documents/members; create projects & documents; edit documents; run AI.
+- **admin** — member capabilities, plus invite/resend/cancel invites, change roles, remove members, edit the workspace, and delete any document.
+- **owner** — admin capabilities, plus delete the workspace.
+- `deleteDocument` — the document creator OR an admin/owner.
+- `createWorkspace` — any signed-in user.
+- Account actions (profile, password, appearance) and notifications/activity operate on the session user only.
+
+Authentication: session cookie `pulseboard_session` resolved by `getCurrentUser()` (`src/server/auth.ts`); unauthenticated users hitting `/app/*` are redirected to `/login` by the app layout. Identity flows into actions via `getCurrentUserId`/`getCurrentUserInfo` — no hardcoded dev identity remains.
 
 Later phases may introduce
 

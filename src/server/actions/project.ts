@@ -2,7 +2,10 @@
 
 import { z, ZodError } from "zod";
 import { query } from "@/lib/db";
-import { getDevUserId } from "@/lib/auth-helpers";
+import {
+  requireWorkspaceAccess,
+  ANY_MEMBER,
+} from "@/server/access";
 import { logger, runWithRequestContext, generateRequestId } from "@/lib/logger";
 import {
   CACHE_KEYS,
@@ -54,6 +57,27 @@ interface DocumentSummaryRow {
   updated_at: Date;
 }
 
+async function requireProjectAccess(
+  projectId: string
+): Promise<
+  | { ok: true; workspaceId: string; userId: string }
+  | { ok: false; error: string }
+> {
+  const result = await query<{ workspace_id: string }>(
+    "SELECT workspace_id FROM projects WHERE id = $1",
+    [projectId]
+  );
+  const workspaceId = result.rows[0]?.workspace_id;
+  if (!workspaceId) {
+    return { ok: false, error: "Project not found" };
+  }
+  const access = await requireWorkspaceAccess(workspaceId, ANY_MEMBER);
+  if (!access.ok) {
+    return { ok: false, error: access.error };
+  }
+  return { ok: true, workspaceId, userId: access.userId };
+}
+
 export async function getProject(
   id: string
 ): Promise<{ project?: ProjectFull; error?: string }> {
@@ -61,6 +85,16 @@ export async function getProject(
   return runWithRequestContext(
     { requestId: generateRequestId(), action: "getProject", workspaceId: id },
     async () => {
+      const access = await requireProjectAccess(id);
+      if (!access.ok) {
+        logger.warn("Project access denied", {
+          action: "getProject",
+          projectId: id,
+          status: "failure",
+        });
+        return { error: access.error };
+      }
+
       const cacheKey = CACHE_KEYS.project(id);
 
       const project = await withCache<ProjectFull | null>(
@@ -127,13 +161,22 @@ export async function createProject(
   formData: FormData
 ): Promise<{ error?: string; success?: boolean; project?: ProjectFull }> {
   try {
-    const currentUserId = await getDevUserId();
-
     const data = createProjectSchema.parse({
       name: formData.get("name"),
       description: formData.get("description") || undefined,
       workspaceId: formData.get("workspaceId"),
     });
+
+    const access = await requireWorkspaceAccess(data.workspaceId, ANY_MEMBER);
+    if (!access.ok) {
+      logger.warn("Project create denied", {
+        action: "createProject",
+        workspaceId: data.workspaceId,
+        status: "failure",
+      });
+      return { error: access.error };
+    }
+    const currentUserId = access.userId;
 
     const result = await query<ProjectRow>(
       `INSERT INTO projects (name, description, workspace_id, created_by)

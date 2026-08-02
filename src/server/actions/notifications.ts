@@ -1,7 +1,7 @@
 "use server";
 
 import { query } from "@/lib/db";
-import { getDevUserId } from "@/lib/auth-helpers";
+import { getCurrentUserId } from "@/server/access";
 import { logger, runWithRequestContext, generateRequestId } from "@/lib/logger";
 import type { Notification, ActivityEvent } from "@/types/notifications";
 
@@ -17,7 +17,10 @@ export async function getNotifications(): Promise<{ notifications: Notification[
   return runWithRequestContext(
     { requestId: generateRequestId(), action: "getNotifications" },
     async () => {
-      const currentUserId = await getDevUserId();
+      const currentUserId = await getCurrentUserId();
+      if (!currentUserId) {
+        return { notifications: [] };
+      }
       const result = await query<NotificationRow>(
         `SELECT n.*, COALESCE(u.name, '') AS created_by_name
          FROM notifications n
@@ -55,7 +58,10 @@ export async function getActivity(): Promise<{ activity: ActivityEvent[] }> {
   return runWithRequestContext(
     { requestId: generateRequestId(), action: "getActivity" },
     async () => {
-      const currentUserId = await getDevUserId();
+      const currentUserId = await getCurrentUserId();
+      if (!currentUserId) {
+        return { activity: [] };
+      }
       const result = await query<ActivityRow>(
         `SELECT a.*, COALESCE(u.name, '') AS created_by_name,
                 COALESCE(w.name, '') AS workspace_name
@@ -96,7 +102,10 @@ export async function getUnreadCount(): Promise<{ count: number }> {
   return runWithRequestContext(
     { requestId: generateRequestId(), action: "getUnreadCount" },
     async () => {
-      const currentUserId = await getDevUserId();
+      const currentUserId = await getCurrentUserId();
+      if (!currentUserId) {
+        return { count: 0 };
+      }
       const result = await query<{ count: string }>(
         "SELECT COUNT(*) as count FROM notifications WHERE user_id = $1 AND read = FALSE",
         [currentUserId]
@@ -113,7 +122,10 @@ export async function markAsRead(
     { requestId: generateRequestId(), action: "markAsRead" },
     async () => {
       try {
-        const currentUserId = await getDevUserId();
+        const currentUserId = await getCurrentUserId();
+        if (!currentUserId) {
+          return { error: "Please sign in to continue." };
+        }
         const result = await query(
           "UPDATE notifications SET read = TRUE WHERE id = $1 AND user_id = $2 RETURNING id",
           [notificationId, currentUserId]
@@ -145,7 +157,10 @@ export async function markAllAsRead(): Promise<{ success?: boolean; error?: stri
     { requestId: generateRequestId(), action: "markAllAsRead" },
     async () => {
       try {
-        const currentUserId = await getDevUserId();
+        const currentUserId = await getCurrentUserId();
+        if (!currentUserId) {
+          return { error: "Please sign in to continue." };
+        }
         await query(
           "UPDATE notifications SET read = TRUE WHERE user_id = $1 AND read = FALSE",
           [currentUserId]

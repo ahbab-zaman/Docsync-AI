@@ -1,5 +1,5 @@
 import { getWorkspace } from "@/server/actions/workspace";
-import { getDevUserId } from "@/lib/auth-helpers";
+import { getCurrentUserId } from "@/server/access";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import WorkspaceSettings from "./WorkspaceSettings";
@@ -12,7 +12,7 @@ export default async function WorkspaceOverviewPage({
   const { workspaceId } = await params;
   const [{ workspace, error }, currentUserId] = await Promise.all([
     getWorkspace(workspaceId),
-    getDevUserId(),
+    getCurrentUserId(),
   ]);
 
   if (error || !workspace) {
@@ -20,7 +20,8 @@ export default async function WorkspaceOverviewPage({
   }
 
   const currentUserRole =
-    workspace.members.find((member) => member.id === currentUserId)?.role ?? "member";
+    currentUserId &&
+    workspace.members.find((member) => member.id === currentUserId)?.role;
   const canManage = currentUserRole === "owner" || currentUserRole === "admin";
 
   return (
