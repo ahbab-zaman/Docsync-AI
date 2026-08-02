@@ -68,11 +68,26 @@ CREATE TABLE IF NOT EXISTS workspace_invites (
   email TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('admin', 'member')),
   invited_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined', 'expired')),
+  expires_at TIMESTAMPTZ NOT NULL DEFAULT NOW() + INTERVAL '7 days',
+  accepted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (workspace_id, email)
 );
 
+ALTER TABLE workspace_invites ADD COLUMN IF NOT EXISTS token TEXT;
+ALTER TABLE workspace_invites ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'pending';
+ALTER TABLE workspace_invites ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ NOT NULL DEFAULT NOW() + INTERVAL '7 days';
+ALTER TABLE workspace_invites ADD COLUMN IF NOT EXISTS accepted_at TIMESTAMPTZ;
+
+UPDATE workspace_invites SET token = encode(gen_random_bytes(16), 'hex') WHERE token IS NULL;
+
+ALTER TABLE workspace_invites ALTER COLUMN token SET NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_workspace_invites_token ON workspace_invites(token);
 CREATE INDEX IF NOT EXISTS idx_workspace_invites_workspace ON workspace_invites(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_workspace_invites_status ON workspace_invites(status);
 
 CREATE TABLE IF NOT EXISTS notifications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

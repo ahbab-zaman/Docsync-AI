@@ -9,7 +9,10 @@
 ├── context/           → source-of-truth documentation
 ├── server/            → standalone realtime servers (Hocuspocus, Socket.IO, migrate)
 ├── src/
-│   ├── app/           → Next.js App Router pages, layouts, and API route handlers
+│   ├── app/                          → Next.js App Router pages, layouts, and API route handlers
+│   │   ├── (auth)/                   → login + register (server wrappers, client forms LoginForm/RegisterForm)
+│   │   ├── invite/[token]/           → public invite accept/decline page
+│   │   └── ...
 │   ├── components/    → reusable UI components
 │   ├── data/          → mock data modules
 │   ├── hooks/         → reusable React hooks
@@ -74,6 +77,7 @@ src/app/
 - ai         → AiPanel, AiResponse, PromptInput, SuggestionChips, AiPageClient
 - search     → SearchDialog
 - members    → InviteModal, MemberList, RoleSelector, WorkspaceSwitcher
+- invite     → InviteActions (public accept/decline buttons)
 - settings   → SettingsForm, ThemeProvider
 
 > Page-local components live next to their routes, e.g. `DocumentActionBar` in `src/app/app/documents/[documentId]/` and `WorkspaceSettings` in `src/app/app/workspaces/[workspaceId]/`.
@@ -99,7 +103,9 @@ src/app/
 - auth-helpers.ts
 - cache.ts
 - db.ts
+- email.ts
 - errors.ts
+- invite-utils.ts
 - logger.ts
 - metrics.ts
 - notifications.ts
@@ -114,7 +120,7 @@ src/app/
     - openrouter.ts
     - sanitize.ts
 
-> Note: Phase 3 added `cache`, `errors`, `logger`, `metrics`, `rate-limiter`, `redis`, `retry`, and `sanitize`. Each infra module ships a colocated `*.test.ts`. Tests live next to the code they cover (`src/**/*.test.{ts,tsx}`) with shared setup in `src/tests/setup.ts`; 92 tests across 20 files.
+> Note: Phase 3 added `cache`, `errors`, `logger`, `metrics`, `rate-limiter`, `redis`, `retry`, and `sanitize`. The Invite & Email Workflow added `email` (Resend REST + SMTP/nodemailer fallback) and `invite-utils` (token/expiry/URL). Each infra module ships a colocated `*.test.ts`. Tests live next to the code they cover (`src/**/*.test.{ts,tsx}`) with shared setup in `src/tests/setup.ts`; 118 tests across 23 files.
 
 ## `src/realtime`
 - socket-events.ts

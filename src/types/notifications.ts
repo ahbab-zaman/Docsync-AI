@@ -4,7 +4,9 @@ export type NotificationType =
   | "role_changed"
   | "document_updated"
   | "document_shared"
+  | "invite_sent"
   | "invite_accepted"
+  | "invite_declined"
   | "project_created"
   | "workspace_updated";
 

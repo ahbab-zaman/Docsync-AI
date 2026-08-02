@@ -113,7 +113,7 @@ After building any component — update this file with the component name, file 
 ### Notifications
 - `src/components/notifications/NotificationList.tsx` — DB-backed notification list with lucide type icons, mark read/mark all
   - Props: `initialNotifications`
-  - Icons: UserPlus, UserMinus, ShieldCheck, FileEdit, Share2, UserCheck, FolderPlus, Settings
+  - Icons: UserPlus, UserMinus, ShieldCheck, FileEdit, Share2, UserCheck, Mail (invite_sent), XCircle (invite_declined), FolderPlus, Settings
   - Classes: `bg-surface-secondary` for unread, `rounded-full bg-accent/10 text-accent` for icon badges
   - Data source: `src/server/actions/notifications.ts` against the `notifications` table (via `src/lib/notifications.ts`)
 - `src/components/notifications/ActivityList.tsx` — DB-backed activity event list with same icon pattern
@@ -160,10 +160,14 @@ After building any component — update this file with the component name, file 
   - Delete button (page-local `deleteDocument`) with `ConfirmDialog`; redirects to project on success
 
 ### Members
-- `src/components/members/MemberList.tsx` — DB-backed member rows with role badges and actions (change role, remove)
+- `src/components/members/MemberList.tsx` — DB-backed member rows with role badges and actions (change role, remove); pending-invite list shows status badges (pending/accepted/declined/expired) with Resend + Cancel actions
 - `src/components/members/RoleSelector.tsx` — Dropdown to change a member's role (owner/admin/editor/viewer)
-- `src/components/members/InviteModal.tsx` — Invite dialog; creates a `workspace_invites` row
+- `src/components/members/InviteModal.tsx` — Invite dialog; creates a token-based `workspace_invites` row and emails the invitee
 - `src/components/members/WorkspaceSwitcher.tsx` — Selects which workspace the members page manages; options come from `getWorkspaces`
+- `src/components/invite/InviteActions.tsx` — Accept/Decline buttons for the public invite page; calls `acceptInviteByToken`/`declineInviteByToken`, redirects into the workspace on accept
+
+### Public Invite Page
+- `src/app/invite/[token]/page.tsx` — Public accept/decline page; renders invalid/expired/accepted/declined states and routes guests to sign-in/sign-up while preserving the token via `?next=`
 
 ### Settings
 - `src/components/settings/SettingsForm.tsx` — Client form bound to `src/server/actions/settings.ts`

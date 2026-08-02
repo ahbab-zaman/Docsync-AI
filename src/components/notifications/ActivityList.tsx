@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, UserPlus, UserMinus, ShieldCheck, FileEdit, Share2, UserCheck, FolderPlus, Settings } from "lucide-react";
+import { Activity, UserPlus, UserMinus, ShieldCheck, FileEdit, Share2, UserCheck, Mail, XCircle, FolderPlus, Settings } from "lucide-react";
 import type { ActivityEvent } from "@/types/notifications";
 
 interface ActivityListProps {
@@ -13,7 +13,9 @@ const typeIcons: Record<ActivityEvent["type"], React.ElementType> = {
   role_changed: ShieldCheck,
   document_updated: FileEdit,
   document_shared: Share2,
+  invite_sent: Mail,
   invite_accepted: UserCheck,
+  invite_declined: XCircle,
   project_created: FolderPlus,
   workspace_updated: Settings,
 };

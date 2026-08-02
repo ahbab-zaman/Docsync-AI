@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, UserPlus, UserMinus, ShieldCheck, FileEdit, Share2, UserCheck, FolderPlus, Settings } from "lucide-react";
+import { Bell, UserPlus, UserMinus, ShieldCheck, FileEdit, Share2, UserCheck, Mail, XCircle, FolderPlus, Settings } from "lucide-react";
 import { markAsRead, markAllAsRead } from "@/server/actions/notifications";
 import { cn } from "@/lib/utils";
 import type { Notification as NotificationType } from "@/types/notifications";
@@ -16,7 +16,9 @@ const typeIcons: Record<NotificationType["type"], React.ElementType> = {
   role_changed: ShieldCheck,
   document_updated: FileEdit,
   document_shared: Share2,
+  invite_sent: Mail,
   invite_accepted: UserCheck,
+  invite_declined: XCircle,
   project_created: FolderPlus,
   workspace_updated: Settings,
 };

@@ -270,6 +270,27 @@ Validate:
 
 ---
 
+## Email (Resend + SMTP fallback)
+
+### Purpose
+Send transactional email (workspace invitations) through Resend or an SMTP relay.
+
+### Project Rules
+- Use `src/lib/email.ts` (`sendInviteEmail`, `isEmailConfigured`, `isSmtpConfigured`) — never call Resend or nodemailer directly from actions/components.
+- Two providers, resolved in order:
+  1. **Resend** — requires `RESEND_API_KEY` + `RESEND_FROM_EMAIL` (needs a verified domain + from address on it).
+  2. **SMTP** — requires `SMTP_HOST` + `SMTP_USER` + `SMTP_PASS` + `SMTP_FROM` (e.g. Gmail App Password on `smtp.gmail.com:587`). Used when Resend is not configured; free path that reaches any recipient.
+- When no provider is configured, log-and-skip instead of failing (graceful degradation, mirroring the OpenRouter fallback).
+- Build URLs through `src/lib/invite-utils.ts` (`buildInviteUrl`), never hardcode the app origin.
+- Send email from the service/action layer, never from UI components.
+
+### Avoid
+- Adding a third email provider without updating this document.
+- Blocking the invite action on email delivery (email failures must not break the invite).
+- Exposing the invite token or SMTP credentials in logs or responses.
+
+---
+
 ## React Hook Form
 
 ### Purpose

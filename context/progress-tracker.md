@@ -1,8 +1,8 @@
 # Progress Tracker
 
 ## Current Status
-**Phase:** Phase 3 — Engineering Excellence (complete) + Dynamic Backend Data milestone (complete)
-**Last completed:** Dynamic Backend Data — all six app sections (AI, Documents, Members, Notifications, Settings, Workspaces) converted from mock data to PostgreSQL-backed server actions
+**Phase:** Phase 3 — Engineering Excellence (complete) + Dynamic Backend Data milestone (complete) + Invite & Email Workflow (complete)
+**Last completed:** Invite & Email Workflow — token-based email invites with public `/invite/[token]` accept/decline page, status tracking (pending/accepted/declined/expired), resend, expiry reconciliation, and `?next=` auth redirects
 **Next:** Phase 4 — Scalability & Infrastructure
 
 ## Progress
@@ -33,7 +33,7 @@
 - [x] 05 Logging + observability
 - [x] 06 Caching
 - [x] 07 Error handling
-- [x] 08 Testing — 92 tests across 20 files
+- [x] 08 Testing — 118 tests across 23 files
 - [x] 09 Documentation final pass
 - [x] 10 Monitoring
 - [x] 11 Production Readiness Review
@@ -93,6 +93,18 @@
 ## Dynamic Backend Data Milestone (post-Phase 3)
 - Schema additions applied to PostgreSQL (`src/server/schema.sql`): `workspace_invites`, `notifications`, `activity_events`, `ai_runs` tables and a `users.preferences` JSONB column.
 - Deleted mock modules `src/data/mock-notifications.ts` and `src/data/mock-workspaces.ts`.
+
+## Invite & Email Workflow (post-Phase 3)
+- `workspace_invites` extended with `token` (unique), `status` (`pending`/`accepted`/`declined`/`expired`), `expires_at` (7-day default), and `accepted_at`; a backfill migration generates tokens for existing rows.
+- New `src/lib/invite-utils.ts` — token generation, expiry math, effective-status resolution, and invite URL building (via `AUTH_URL`/`APP_URL`/localhost fallback).
+- New `src/lib/email.ts` — Resend REST integration when `RESEND_API_KEY` + `RESEND_FROM_EMAIL` are set; logs-and-skips in dev when unconfigured (never throws, mirrors the AI-provider fallback pattern). Later upgraded with an SMTP fallback (`nodemailer` + `SMTP_*` env vars, e.g. Gmail App Password on `smtp.gmail.com:587`) so invitations reach any recipient for free when no verified domain is available; Resend is preferred when both are configured. `next.config.ts` marks `nodemailer` as `serverExternalPackages`.
+- `src/server/actions/members.ts` rewritten around token invites: `inviteMember` stores token/expiry/status and emails the invitee; new `getInviteByToken`, `acceptInviteByToken`, `declineInviteByToken`, `resendInvite`; `getMembers` returns status + inviter name and reconciles stale invites to `expired` via `expireStaleInvites`. Email is rate limited (10/min per user). The old admin-side `acceptInvite(workspaceId, inviteId)` action was removed.
+- New public route `src/app/invite/[token]/page.tsx` renders invalid/expired/accepted/declined states and, for a pending invite, routes guests to sign-in or sign-up (preserving the token) and shows Accept/Decline via `src/components/invite/InviteActions.tsx`. Accepting redirects into the workspace.
+- `/login` and `/register` now read `?next=` and redirect the user back to the invite page after authentication; forms extracted to page-local `LoginForm.tsx` / `RegisterForm.tsx`.
+- `MemberList` shows per-invite status badges with Resend (pending) and Cancel (pending/expired) actions instead of admin-side accept.
+- Notification type union extended with `invite_sent` and `invite_declined`; both list components map them to Mail/XCircle icons.
+- `.env.template` documents `RESEND_API_KEY` and `RESEND_FROM_EMAIL`.
+- Final verification: `tsc --noEmit` clean, ESLint 0 problems, 118 tests / 23 files passing, `next build` succeeds including the new `/invite/[token]` route, schema migration applied to PostgreSQL.
 - Converted all six app sections to DB-backed server actions and verified at runtime:
   - AI (`/app/ai`) — OpenRouter completion with mock fallback, persisted runs, document selector.
   - Documents (`/app/documents/[documentId]`) — create/save/delete against PostgreSQL.
@@ -101,7 +113,7 @@
   - Settings (`/app/settings`) — profile, password change (bcrypt), appearance (theme/density/reduced-motion).
   - Workspaces (`/app/workspaces`, `/[workspaceId]`) — create/read/update/delete with activity events.
 - Activity events are fired from workspace create/update, project create, document create/save, invite, accept, role change, and member removal actions.
-- Final verification: `tsc --noEmit` clean, ESLint 0 problems, 92 tests / 20 files passing, `next build` succeeds (all 11 app routes dynamic), DB health check returns ok, and every app page returns HTTP 200 with real DB content.
+- Final verification: `tsc --noEmit` clean, ESLint 0 problems, 118 tests / 23 files passing, `next build` succeeds (all 11 app routes dynamic), DB health check returns ok, and every app page returns HTTP 200 with real DB content.
 
 ## Landing Navbar (Dynamic Auth)
 - `src/components/layout/MarketingNav.tsx` — client navbar on the landing page. When signed out it shows "Sign in" + "Get started"; when signed in it shows an animated user dropdown (avatar, name, email) listing every DB-backed app section (Dashboard, Workspaces, AI, Notifications, Members, Settings) plus Log out. Middle nav keeps only the section anchor links (Features / Collaboration / AI).
@@ -159,7 +171,7 @@
 - Authentication flow tests: `hashPassword`/`verifyPassword` (bcrypt hashing, correct/incorrect password, unique salts).
 - Cache degradation tests: `getCached`/`setCached`/`invalidateCache`/`withCache` no-op and fall back to source when Redis is unavailable.
 - Component tests: `EmptyState`, `LoadingSpinner`, `Skeleton`, `ConfirmDialog` (a11y, keyboard, backdrop), `CollaboratorAvatars` (initials, online dot, overflow cap).
-- Total: 92 tests across 20 files — all passing (`npm test`), typecheck (`tsc --noEmit`) clean, lint 0 errors, production build passes.
+- Total: 118 tests across 23 files — all passing (`npm test`), typecheck (`tsc --noEmit`) clean, lint 0 errors, production build passes.
 
 ## UX Polish Improvements (Phase 3)
 - Added missing `loading.tsx` for notifications page.
@@ -200,7 +212,7 @@
 - Removed dead `currentTitle` prop from `VersionHistory`.
 - Removed numerous unused imports/variables across `TiptapEditor`, `AiPanel`, `ActivityList`, `CommentThread`, `CommentReplyBox`, `MentionSuggestions`, `CommentMarkers`, `DocumentEditor`, and mock-data files.
 - ESLint: configured `@typescript-eslint/no-unused-vars` with `argsIgnorePattern`/`varsIgnorePattern` `^_` to codify the existing underscore convention for signature-matched unused params.
-- Final verification: `tsc --noEmit` clean, ESLint 0 problems, 92 tests / 20 files passing, `next build` succeeds.
+- Final verification: `tsc --noEmit` clean, ESLint 0 problems, 118 tests / 23 files passing, `next build` succeeds.
 
 # Phase 3 — Engineering Excellence
 

@@ -240,7 +240,7 @@ Tasks
 Acceptance Criteria
 - critical workflows are covered by tests
 
-Status: Implemented (Vitest, 92 tests across 20 files — unit, API route integration, server action integration, component, and collaboration/auth workflow tests). E2E workflow tests still pending a CI environment.
+Status: Implemented (Vitest, 118 tests across 23 files — unit, API route integration, server action integration, component, and collaboration/auth workflow tests). E2E workflow tests still pending a CI environment.
 
 ---
 
@@ -285,4 +285,4 @@ Acceptance Criteria
 - documentation reflects the current implementation
 - Phase 3 is marked complete
 
-Status: Complete — verified production-ready: `tsc --noEmit` clean, ESLint 0 errors/0 warnings, 92 tests / 20 files passing, `next build` succeeds. Phase 3 marked complete in progress-tracker.
+Status: Complete — verified production-ready: `tsc --noEmit` clean, ESLint 0 errors/0 warnings, 118 tests / 23 files passing, `next build` succeeds. Phase 3 marked complete in progress-tracker.

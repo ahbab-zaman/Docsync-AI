@@ -1755,7 +1755,7 @@ Examples
 - AI History
 - Audit Logs
 
-The current schema (`src/server/schema.sql`) realizes these as: `users` (with a `preferences` JSONB column for appearance/settings), `workspaces`, `workspace_members`, `projects`, `documents`, `workspace_invites`, `notifications`, `activity_events`, `ai_runs`, and `sessions` (id, user_id, created_at, expires_at). Invites, notifications, activity, and AI history were added during the Dynamic Backend Data milestone; all six app sections now read and write PostgreSQL instead of mock modules. Session persistence (login → `sessions` row + cookie; `getCurrentUser` resolves the cookie via the DB; logout deletes the row) means the auth-aware landing navbar correctly shows Sign in/Get started for guests and a user dropdown for authenticated users.
+The current schema (`src/server/schema.sql`) realizes these as: `users` (with a `preferences` JSONB column for appearance/settings), `workspaces`, `workspace_members`, `projects`, `documents`, `workspace_invites` (token, status `pending`/`accepted`/`declined`/`expired`, 7-day `expires_at`, `accepted_at`), `notifications`, `activity_events`, `ai_runs`, and `sessions` (id, user_id, created_at, expires_at). Invites, notifications, activity, and AI history were added during the Dynamic Backend Data milestone; all six app sections now read and write PostgreSQL instead of mock modules. Session persistence (login → `sessions` row + cookie; `getCurrentUser` resolves the cookie via the DB; logout deletes the row) means the auth-aware landing navbar correctly shows Sign in/Get started for guests and a user dropdown for authenticated users.
 
 Redis is NOT a replacement for PostgreSQL.
 
@@ -1820,6 +1820,10 @@ Notifications and activity events are durable PostgreSQL rows created through th
 - `createThrottledDocumentUpdatedActivity` — rate-limited document activity
 
 Activity events are dispatched from the workspace, project, document, and member server actions (create/update/save/invite/accept/role-change/remove). Unread counts power the sidebar badge; the `/app/notifications` page renders the `notifications` and `activity_events` tables directly with mark-read/mark-all mutations.
+
+# Invite & Email (current)
+
+Workspace invitations are token-based and invitee-driven. `src/server/actions/members.ts` stores a unique `token`, a 7-day `expires_at`, and a `status` (`pending`/`accepted`/`declined`/`expired`) on each `workspace_invites` row. `src/lib/invite-utils.ts` owns token generation, expiry math, and invite-URL construction (`AUTH_URL` → `APP_URL` → localhost fallback). `src/lib/email.ts` sends the invitation through the Resend REST API when `RESEND_API_KEY` + `RESEND_FROM_EMAIL` are configured, and otherwise logs-and-skips in dev so the flow never hard-fails (matching the AI-provider fallback pattern). Guests open the public `/invite/[token]` page, sign in or create an account (redirected back via `?next=`), then accept — inserting the membership, notifying admins, and redirecting into the workspace — or decline. Admins resend invitations from the Members page; stale pending invites are reconciled to `expired` on read via `expireStaleInvites`.
 
 ---
 

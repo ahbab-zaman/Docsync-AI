@@ -1,6 +1,18 @@
 # Memory — Phase 3: Engineering Excellence (Complete)
 
-Last updated: 2026-08-02
+Last updated: 2026-08-03
+
+## What was built (Invite & Email Workflow)
+
+- `workspace_invites` extended with unique `token`, `status` (`pending`/`accepted`/`declined`/`expired`), 7-day `expires_at`, and `accepted_at`; backfill migration generates tokens for existing rows.
+- New `src/lib/invite-utils.ts` — token generation, expiry math, effective-status resolution, `buildInviteUrl` (`AUTH_URL` → `APP_URL` → localhost). New `src/lib/email.ts` — Resend REST integration (`RESEND_API_KEY` + `RESEND_FROM_EMAIL`) with a logged log-and-skip dev fallback (never throws, mirrors the OpenRouter fallback pattern), later upgraded with an SMTP fallback (`nodemailer` + `SMTP_*` env vars, e.g. Gmail App Password on `smtp.gmail.com:587`) so invites reach any recipient free when no verified domain is available; Resend wins when both configured. `next.config.ts` adds `serverExternalPackages: ["nodemailer"]`; email tests cover both providers.
+- `src/server/actions/members.ts` rewritten around token invites: `inviteMember` stores token/expiry/status and emails the invitee (rate limited 10/min per user); new `getInviteByToken`, `acceptInviteByToken`, `declineInviteByToken`, `resendInvite`, `expireStaleInvites`; `getMembers` returns status + inviter name. Old admin-side `acceptInvite(workspaceId, inviteId)` removed.
+- New public route `src/app/invite/[token]/page.tsx` (invalid/expired/accepted/declined states, guest → sign-in/sign-up preserving token) + `src/components/invite/InviteActions.tsx` (Accept/Decline, redirects into workspace on accept).
+- `/login` and `/register` now read `?next=` and redirect back to the invite after auth; forms extracted to page-local `LoginForm.tsx` / `RegisterForm.tsx`.
+- `MemberList` shows per-invite status badges with Resend (pending) and Cancel (pending/expired) actions instead of admin-side accept.
+- Notification type union extended with `invite_sent` and `invite_declined`; icons added in `NotificationList`/`ActivityList`.
+- `.env.template` documents `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, and the `SMTP_*` fallback variables.
+- Final verification: `tsc --noEmit` clean, ESLint 0 problems, 118 tests / 23 files passing, `next build` succeeds, schema migration applied to PostgreSQL.
 
 ## What was built (Production Readiness Review — item 11)
 

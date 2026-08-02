@@ -12,14 +12,17 @@ Phase 1 established the application foundation. Phase 2 introduced the collabora
 - notifications
 - search across collaboration content
 
-Phase 3 (complete) upgraded the application to production quality: accessibility, UX polish, performance, security, logging, observability, caching, error handling, monitoring, testing (92 tests across 20 files), a documentation pass, and a final production-readiness review are all complete. Deployment & DevOps (Docker/CI-CD) is deferred to Phase 5.
+Phase 3 (complete) upgraded the application to production quality: accessibility, UX polish, performance, security, logging, observability, caching, error handling, monitoring, testing (118 tests across 23 files), a documentation pass, and a final production-readiness review are all complete. Deployment & DevOps (Docker/CI-CD) is deferred to Phase 5.
 
 Following Phase 3, a Dynamic Backend Data milestone converted every app section (AI, Documents, Members, Notifications, Settings, Workspaces) from mock data to PostgreSQL-backed server actions: new `workspace_invites`, `notifications`, `activity_events`, and `ai_runs` tables plus a `users.preferences` JSONB column; real OpenRouter AI completions with a mock fallback; DB-backed invites/member management; settings with profile, password, and appearance (theme/density/reduced-motion). No mock data remains for notifications or workspaces.
+
+An Invite & Email Workflow then upgraded invites to a real, invitee-driven flow: token-based email invitations (Resend when configured, logged fallback in dev), a public `/invite/[token]` accept/decline page, status tracking (pending/accepted/declined/expired), resend, expiry reconciliation, and `?next=` auth redirects so guests sign in and land back on their invitation.
 
 ## Pages
 ```text
 /                             → Landing
-/login, /register             → Authentication
+/login, /register             → Authentication (support ?next= redirects)
+/invite/[token]               → Public workspace invitation accept/decline
 /app                          → Dashboard (workspace overview)
 /app/workspaces               → Workspace list
 /app/workspaces/new           → Create workspace

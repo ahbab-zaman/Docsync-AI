@@ -48,7 +48,7 @@ npm run dev:all           # app + both realtime servers together
 npm run lint                # ESLint
 npx tsc --noEmit            # TypeScript
 npm run build               # Production build
-npm test                    # 92 tests (Vitest: unit, integration, component)
+npm test                    # 118 tests (Vitest: unit, integration, component)
 ```
 
 ## Documentation

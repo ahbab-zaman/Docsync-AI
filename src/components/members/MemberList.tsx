@@ -6,7 +6,8 @@ import type { Member, PendingInvite } from "@/server/actions/members";
 import RoleSelector from "./RoleSelector";
 import InviteModal from "./InviteModal";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
-import { inviteMember, changeRole, removeMember, acceptInvite, cancelInvite } from "@/server/actions/members";
+import { inviteMember, changeRole, removeMember, cancelInvite, resendInvite } from "@/server/actions/members";
+import { cn } from "@/lib/utils";
 
 interface MemberListProps {
   workspaceId: string;
@@ -14,6 +15,20 @@ interface MemberListProps {
   initialInvites: PendingInvite[];
   currentUserId: string;
 }
+
+const statusStyles: Record<PendingInvite["status"], string> = {
+  pending: "bg-warning-light text-warning",
+  accepted: "bg-success-light text-success-foreground",
+  declined: "bg-surface-tertiary text-text-muted",
+  expired: "bg-error-light text-error",
+};
+
+const statusLabels: Record<PendingInvite["status"], string> = {
+  pending: "Pending",
+  accepted: "Accepted",
+  declined: "Declined",
+  expired: "Expired",
+};
 
 export default function MemberList({
   workspaceId,
@@ -25,13 +40,13 @@ export default function MemberList({
   const [invites, setInvites] = useState<PendingInvite[]>(initialInvites);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [removingMember, setRemovingMember] = useState<Member | null>(null);
+  const [resendingId, setResendingId] = useState<string | null>(null);
 
   const currentUser = members.find((m) => m.id === currentUserId);
   const currentUserRole = currentUser?.role ?? "member";
 
   const handleInvite = async (formData: FormData) => {
     const result = await inviteMember({}, formData);
-    if (result.error) throw new Error(result.error);
     return result;
   };
 
@@ -52,19 +67,22 @@ export default function MemberList({
     setRemovingMember(null);
   };
 
-  const handleAccept = async (inviteId: string) => {
-    const result = await acceptInvite(workspaceId, inviteId);
-    if (result.success) {
-      setInvites((prev) => prev.filter((i) => i.id !== inviteId));
-      toast.success("Invite accepted");
-    }
-  };
-
   const handleCancel = async (inviteId: string) => {
     const result = await cancelInvite(workspaceId, inviteId);
     if (result.success) {
       setInvites((prev) => prev.filter((i) => i.id !== inviteId));
       toast.success("Invite cancelled");
+    }
+  };
+
+  const handleResend = async (inviteId: string) => {
+    setResendingId(inviteId);
+    const result = await resendInvite(workspaceId, inviteId);
+    setResendingId(null);
+    if (result.success) {
+      toast.success("Invitation resent");
+    } else {
+      toast.error(result.error ?? "Failed to resend invitation");
     }
   };
 
@@ -134,24 +152,38 @@ export default function MemberList({
                 <div>
                   <p className="text-sm text-foreground">{invite.email}</p>
                   <p className="text-xs text-text-muted">
-                    invited as {invite.role} &middot; {new Date(invite.invited_at).toLocaleDateString()}
+                    invited as {invite.role} &middot;{" "}
+                    {new Date(invite.invited_at).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleAccept(invite.id)}
-                    className="rounded-md bg-accent/10 px-3 py-1 text-xs font-medium text-accent hover:bg-accent/20 transition-colors"
+                <div className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+                      statusStyles[invite.status]
+                    )}
                   >
-                    Accept
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleCancel(invite.id)}
-                    className="rounded-md px-3 py-1 text-xs font-medium text-text-muted hover:text-text-secondary transition-colors"
-                  >
-                    Cancel
-                  </button>
+                    {statusLabels[invite.status]}
+                  </span>
+                  {invite.status === "pending" && (
+                    <button
+                      type="button"
+                      onClick={() => handleResend(invite.id)}
+                      disabled={resendingId === invite.id}
+                      className="rounded-md px-3 py-1 text-xs font-medium text-accent hover:bg-accent/10 transition-colors disabled:opacity-50"
+                    >
+                      {resendingId === invite.id ? "Sending..." : "Resend"}
+                    </button>
+                  )}
+                  {(invite.status === "pending" || invite.status === "expired") && (
+                    <button
+                      type="button"
+                      onClick={() => handleCancel(invite.id)}
+                      className="rounded-md px-3 py-1 text-xs font-medium text-text-muted hover:text-text-secondary transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
