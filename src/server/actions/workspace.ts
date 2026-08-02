@@ -10,6 +10,7 @@ import {
   setCached,
   withCache,
 } from "@/lib/cache";
+import { createActivityEvent } from "@/lib/notifications";
 
 interface WorkspaceWithCounts {
   id: string;
@@ -233,6 +234,13 @@ export async function createWorkspace(
       members: [{ id: currentUserId, name: currentUserName, email: "dev@docsync.dev", avatar_url: null, role: "owner" }],
     };
 
+    await createActivityEvent({
+      type: "workspace_updated",
+      description: `You created workspace ${ws.name}.`,
+      workspaceId: ws.id,
+      createdBy: currentUserId,
+    });
+
     logger.info("Workspace created", {
       action: "createWorkspace",
       userId: currentUserId,
@@ -258,5 +266,132 @@ export async function createWorkspace(
       return { error: error.message };
     }
     return { error: "Failed to create workspace" };
+  }
+}
+
+const updateWorkspaceSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Workspace name is required")
+    .max(100, "Name is too long")
+    .optional(),
+  description: z.string().max(500, "Description is too long").optional(),
+});
+
+export async function updateWorkspace(
+  id: string,
+  data: { name?: string; description?: string | null }
+): Promise<{ success?: boolean; error?: string }> {
+  try {
+    const currentUserId = await getDevUserId();
+    const parsed = updateWorkspaceSchema.parse(data);
+
+    const fields: string[] = [];
+    const values: unknown[] = [];
+    let paramIndex = 1;
+
+    if (parsed.name !== undefined) {
+      fields.push(`name = $${paramIndex++}`);
+      values.push(parsed.name);
+    }
+    if (parsed.description !== undefined) {
+      fields.push(`description = $${paramIndex++}`);
+      values.push(parsed.description);
+    }
+
+    if (fields.length === 0) return { success: true };
+
+    fields.push("updated_at = NOW()");
+    values.push(id);
+
+    const result = await query(
+      `UPDATE workspaces SET ${fields.join(", ")} WHERE id = $${paramIndex} RETURNING id, name`,
+      values
+    );
+
+    if (result.rows.length === 0) {
+      logger.warn("Workspace not found for update", { action: "updateWorkspace", status: "failure" });
+      return { error: "Workspace not found." };
+    }
+
+    const name = parsed.name ?? (result.rows[0] as { name: string }).name;
+
+    await invalidateCache(CACHE_KEYS.workspace(id), CACHE_KEYS.workspaces(currentUserId));
+
+    await createActivityEvent({
+      type: "workspace_updated",
+      description: `You updated the ${name} workspace.`,
+      workspaceId: id,
+      createdBy: currentUserId,
+    });
+
+    logger.info("Workspace updated", {
+      action: "updateWorkspace",
+      userId: currentUserId,
+      workspaceId: id,
+      status: "success",
+    });
+
+    return { success: true };
+  } catch (error) {
+    if (error instanceof ZodError) {
+      logger.warn("Workspace update validation failed", { action: "updateWorkspace", status: "failure" });
+      return { error: error.issues[0]?.message ?? "Validation failed" };
+    }
+    if (error instanceof Error) {
+      logger.error("Failed to update workspace", {
+        action: "updateWorkspace",
+        message: error.message,
+        status: "failure",
+      });
+      return { error: "Failed to update workspace." };
+    }
+    return { error: "Failed to update workspace." };
+  }
+}
+
+export async function deleteWorkspace(
+  id: string
+): Promise<{ success?: boolean; error?: string }> {
+  try {
+    const currentUserId = await getDevUserId();
+
+    const result = await query(
+      "DELETE FROM workspaces WHERE id = $1 AND owner_id = $2 RETURNING id",
+      [id, currentUserId]
+    );
+
+    if (result.rows.length === 0) {
+      logger.warn("Workspace delete denied or not found", {
+        action: "deleteWorkspace",
+        status: "failure",
+      });
+      return { error: "Workspace not found or you do not have permission to delete it." };
+    }
+
+    await invalidateCache(
+      CACHE_KEYS.workspace(id),
+      CACHE_KEYS.workspaces(currentUserId),
+      CACHE_KEYS.projects(id)
+    );
+
+    logger.info("Workspace deleted", {
+      action: "deleteWorkspace",
+      userId: currentUserId,
+      workspaceId: id,
+      status: "success",
+    });
+
+    return { success: true };
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error("Failed to delete workspace", {
+        action: "deleteWorkspace",
+        message: error.message,
+        status: "failure",
+      });
+      return { error: "Failed to delete workspace." };
+    }
+    return { error: "Failed to delete workspace." };
   }
 }

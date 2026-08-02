@@ -47,6 +47,7 @@ export default async function DocumentPage({
 
       <DocumentEditor
         documentId={document.id}
+        projectId={document.project_id}
         initialTitle={document.title}
         initialContent={document.content}
         createdAt={document.created_at.toISOString()}

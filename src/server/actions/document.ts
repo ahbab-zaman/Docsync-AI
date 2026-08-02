@@ -5,6 +5,11 @@ import { query } from "@/lib/db";
 import { getDevUserId, getDevUserName } from "@/lib/auth-helpers";
 import { logger, runWithRequestContext, generateRequestId } from "@/lib/logger";
 import { CACHE_KEYS, invalidateCache, invalidateProjectCache, withCache } from "@/lib/cache";
+import {
+  createActivityEvent,
+  notifyWorkspaceMembers,
+  createThrottledDocumentUpdatedActivity,
+} from "@/lib/notifications";
 
 interface DocumentFull {
   id: string;
@@ -121,13 +126,38 @@ export async function createDocument(
 
     const doc = mapDocument({ ...result.rows[0], created_by_name: currentUserName });
 
+    await invalidateProjectCache(data.projectId);
+
+    const projectResult = await query<{ workspace_id: string }>(
+      "SELECT workspace_id FROM projects WHERE id = $1",
+      [data.projectId]
+    );
+    const workspaceId = projectResult.rows[0]?.workspace_id;
+
+    if (workspaceId) {
+      await Promise.all([
+        createActivityEvent({
+          type: "document_updated",
+          description: `You created document ${doc.title}.`,
+          workspaceId,
+          createdBy: currentUserId,
+        }),
+        notifyWorkspaceMembers({
+          workspaceId,
+          type: "document_updated",
+          title: `New document: ${doc.title}`,
+          description: `A new document was created in this workspace.`,
+          createdBy: currentUserId,
+          excludeUserId: currentUserId,
+        }),
+      ]);
+    }
+
     logger.info("Document created", {
       action: "createDocument",
       userId: currentUserId,
       status: "success",
     });
-
-    await invalidateProjectCache(data.projectId);
 
     return { success: true, document: doc };
   } catch (error) {
@@ -189,6 +219,23 @@ export async function saveDocument(
 
     await invalidateCache(CACHE_KEYS.document(id));
 
+    const projectResult = await query<{ workspace_id: string }>(
+      `SELECT p.workspace_id FROM projects p
+       JOIN documents d ON d.project_id = p.id
+       WHERE d.id = $1`,
+      [id]
+    );
+    const workspaceId = projectResult.rows[0]?.workspace_id;
+
+    if (workspaceId) {
+      const currentUserId = await getDevUserId();
+      await createThrottledDocumentUpdatedActivity({
+        workspaceId,
+        description: `A document was updated in this workspace.`,
+        createdBy: currentUserId,
+      });
+    }
+
     return { success: true };
   } catch (error) {
     if (error instanceof ZodError) {
@@ -204,5 +251,59 @@ export async function saveDocument(
       return { error: error.message };
     }
     return { error: "Failed to save document" };
+  }
+}
+
+export async function deleteDocument(
+  id: string
+): Promise<{ success?: boolean; error?: string }> {
+  try {
+    const currentUserId = await getDevUserId();
+
+    const docResult = await query<{ project_id: string }>(
+      "SELECT project_id FROM documents WHERE id = $1 AND created_by = $2",
+      [id, currentUserId]
+    );
+
+    if (docResult.rows.length === 0) {
+      logger.warn("Document delete denied or not found", {
+        action: "deleteDocument",
+        status: "failure",
+      });
+      return { error: "Document not found or you do not have permission to delete it." };
+    }
+
+    const { project_id: projectId } = docResult.rows[0];
+
+    const result = await query(
+      "DELETE FROM documents WHERE id = $1 RETURNING id",
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return { error: "Document not found." };
+    }
+
+    await invalidateCache(CACHE_KEYS.document(id));
+    await invalidateProjectCache(projectId);
+
+    logger.info("Document deleted", {
+      action: "deleteDocument",
+      userId: currentUserId,
+      documentId: id,
+      status: "success",
+    });
+
+    return { success: true };
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error("Failed to delete document", {
+        action: "deleteDocument",
+        message: error.message,
+        status: "failure",
+      });
+      return { error: "Failed to delete document." };
+    }
+    return { error: "Failed to delete document." };
   }
 }

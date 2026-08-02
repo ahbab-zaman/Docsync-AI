@@ -10,6 +10,18 @@ export interface User {
 
 export type UserPublic = Pick<User, "id" | "email" | "name" | "avatar_url" | "created_at">;
 
+export interface UserPreferences {
+  theme: "light" | "dark" | "system";
+  reducedMotion: boolean;
+  density: "comfortable" | "compact";
+}
+
+export const defaultUserPreferences: UserPreferences = {
+  theme: "system",
+  reducedMotion: false,
+  density: "comfortable",
+};
+
 export interface Workspace {
   id: string;
   name: string;

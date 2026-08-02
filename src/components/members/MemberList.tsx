@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import type { MockMember, MockPendingInvite } from "@/data/mock-workspaces";
+import type { Member, PendingInvite } from "@/server/actions/members";
 import RoleSelector from "./RoleSelector";
 import InviteModal from "./InviteModal";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
@@ -10,8 +10,8 @@ import { inviteMember, changeRole, removeMember, acceptInvite, cancelInvite } fr
 
 interface MemberListProps {
   workspaceId: string;
-  initialMembers: MockMember[];
-  initialInvites: MockPendingInvite[];
+  initialMembers: Member[];
+  initialInvites: PendingInvite[];
   currentUserId: string;
 }
 
@@ -21,10 +21,10 @@ export default function MemberList({
   initialInvites,
   currentUserId,
 }: MemberListProps) {
-  const [members, setMembers] = useState<MockMember[]>(initialMembers);
-  const [invites, setInvites] = useState<MockPendingInvite[]>(initialInvites);
+  const [members, setMembers] = useState<Member[]>(initialMembers);
+  const [invites, setInvites] = useState<PendingInvite[]>(initialInvites);
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [removingMember, setRemovingMember] = useState<MockMember | null>(null);
+  const [removingMember, setRemovingMember] = useState<Member | null>(null);
 
   const currentUser = members.find((m) => m.id === currentUserId);
   const currentUserRole = currentUser?.role ?? "member";

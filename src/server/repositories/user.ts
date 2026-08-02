@@ -1,5 +1,6 @@
 import { query } from "@/lib/db";
-import type { User, UserPublic } from "@/types";
+import type { User, UserPublic, UserPreferences } from "@/types";
+import { defaultUserPreferences } from "@/types";
 
 export async function createUser(
   email: string,
@@ -59,4 +60,69 @@ export async function updateUser(
     values
   );
   return result.rows[0] ?? null;
+}
+
+export async function findUserByIdWithHash(
+  id: string
+): Promise<(User & { preferences: UserPreferences }) | null> {
+  const result = await query<User & { preferences: UserPreferences }>(
+    "SELECT * FROM users WHERE id = $1",
+    [id]
+  );
+  const row = result.rows[0];
+  if (!row) return null;
+  return {
+    ...row,
+    preferences: { ...defaultUserPreferences, ...(row.preferences ?? {}) },
+  };
+}
+
+export async function updateUserEmail(
+  id: string,
+  email: string
+): Promise<UserPublic | null> {
+  const result = await query<User>(
+    `UPDATE users SET email = $1, updated_at = NOW() WHERE id = $2
+     RETURNING id, email, name, avatar_url, created_at`,
+    [email, id]
+  );
+  return result.rows[0] ?? null;
+}
+
+export async function updateUserName(id: string, name: string): Promise<UserPublic | null> {
+  const result = await query<User>(
+    `UPDATE users SET name = $1, updated_at = NOW() WHERE id = $2
+     RETURNING id, email, name, avatar_url, created_at`,
+    [name, id]
+  );
+  return result.rows[0] ?? null;
+}
+
+export async function updateUserAvatar(
+  id: string,
+  avatarUrl: string | null
+): Promise<UserPublic | null> {
+  const result = await query<User>(
+    `UPDATE users SET avatar_url = $1, updated_at = NOW() WHERE id = $2
+     RETURNING id, email, name, avatar_url, created_at`,
+    [avatarUrl, id]
+  );
+  return result.rows[0] ?? null;
+}
+
+export async function updateUserPassword(id: string, passwordHash: string): Promise<void> {
+  await query("UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2", [
+    passwordHash,
+    id,
+  ]);
+}
+
+export async function updateUserPreferences(
+  id: string,
+  preferences: UserPreferences
+): Promise<void> {
+  await query("UPDATE users SET preferences = $1, updated_at = NOW() WHERE id = $2", [
+    JSON.stringify(preferences),
+    id,
+  ]);
 }

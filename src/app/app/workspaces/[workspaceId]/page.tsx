@@ -1,6 +1,8 @@
 import { getWorkspace } from "@/server/actions/workspace";
+import { getDevUserId } from "@/lib/auth-helpers";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import WorkspaceSettings from "./WorkspaceSettings";
 
 export default async function WorkspaceOverviewPage({
   params,
@@ -8,15 +10,22 @@ export default async function WorkspaceOverviewPage({
   params: Promise<{ workspaceId: string }>;
 }) {
   const { workspaceId } = await params;
-  const { workspace, error } = await getWorkspace(workspaceId);
+  const [{ workspace, error }, currentUserId] = await Promise.all([
+    getWorkspace(workspaceId),
+    getDevUserId(),
+  ]);
 
   if (error || !workspace) {
     notFound();
   }
 
+  const currentUserRole =
+    workspace.members.find((member) => member.id === currentUserId)?.role ?? "member";
+  const canManage = currentUserRole === "owner" || currentUserRole === "admin";
+
   return (
     <div className="space-y-8">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2 text-sm text-text-muted mb-1">
             <Link href="/app/workspaces" className="hover:text-text-secondary transition-colors">
@@ -30,6 +39,12 @@ export default async function WorkspaceOverviewPage({
             <p className="text-sm text-text-secondary mt-1">{workspace.description}</p>
           )}
         </div>
+        <WorkspaceSettings
+          workspaceId={workspaceId}
+          initialName={workspace.name}
+          initialDescription={workspace.description}
+          canManage={canManage}
+        />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

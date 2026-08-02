@@ -16,7 +16,7 @@ interface AiPanelProps {
   selectionContext?: AiSelectionContext | null;
 }
 
-export default function AiPanel({ documentContent, onInsertContent, selectionContext }: AiPanelProps) {
+export default function AiPanel({ documentContent, documentId, onInsertContent, selectionContext }: AiPanelProps) {
   const [responses, setResponses] = useState<AiResponseType[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +33,7 @@ export default function AiPanel({ documentContent, onInsertContent, selectionCon
       setError(null);
       try {
         const { response, error } = await withRetry(
-          () => runAiAction(actionType, prompt, effectiveContent),
+          () => runAiAction(actionType, prompt, effectiveContent, documentId),
           { maxRetries: 1 }
         );
         if (response) {
@@ -47,7 +47,7 @@ export default function AiPanel({ documentContent, onInsertContent, selectionCon
         setLoading(false);
       }
     },
-    [effectiveContent]
+    [effectiveContent, documentId]
   );
 
   const handleSuggestionSelect = useCallback(

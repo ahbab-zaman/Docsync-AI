@@ -2,13 +2,16 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 import TiptapEditor from "@/components/documents/TiptapEditor";
-import { saveDocument } from "@/server/actions/document";
+import { saveDocument, deleteDocument } from "@/server/actions/document";
 import { createComment } from "@/server/actions/comments";
 import { runAiAction } from "@/server/actions/ai";
 import { getAllMockCollaborators } from "@/data/mock-collaborators";
 import { getMockComments } from "@/data/mock-comments";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import type { CommentRange } from "@/types/comments";
 import type { AiActionType, AiSelectionContext } from "@/types/ai";
 import DocumentActionBar from "./DocumentActionBar";
@@ -20,6 +23,7 @@ const VersionHistory = dynamic(() => import("@/components/editor/VersionHistory"
 
 interface DocumentEditorProps {
   documentId: string;
+  projectId: string;
   initialTitle: string;
   initialContent: string;
   createdAt: string;
@@ -29,12 +33,14 @@ interface DocumentEditorProps {
 
 export default function DocumentEditor({
   documentId,
+  projectId,
   initialTitle,
   initialContent,
   createdAt,
   updatedAt,
   createdByName,
 }: DocumentEditorProps) {
+  const router = useRouter();
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
   const [saving, setSaving] = useState(false);
@@ -43,6 +49,7 @@ export default function DocumentEditor({
   const [outlineOpen, setOutlineOpen] = useState(false);
   const [comments, setComments] = useState(getMockComments(documentId));
   const [selectionContext, setSelectionContext] = useState<AiSelectionContext | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const collaborators = useMemo(() => getAllMockCollaborators(), []);
@@ -105,6 +112,18 @@ export default function DocumentEditor({
     handleSave();
     toast.success("Document saved");
   }, [handleSave]);
+
+  const handleDelete = useCallback(async () => {
+    setConfirmDelete(false);
+    const result = await deleteDocument(documentId);
+    if (result.success) {
+      toast.success("Document deleted");
+      router.push(`/app/projects/${projectId}`);
+      router.refresh();
+    } else if (result.error) {
+      toast.error(result.error);
+    }
+  }, [documentId, projectId, router]);
 
   const handleAddCommentFromSelection = useCallback(
     async (from: number, to: number, _text: string) => {
@@ -211,9 +230,19 @@ export default function DocumentEditor({
               onAiAction={handleAiActionFromSelection}
             />
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-4 text-xs text-text-muted border-t border-border mt-4 pt-3 pb-2">
-              <span>Created {formatDate(createdAt)} by {createdByName}</span>
-              <span>Last updated {formatDate(updatedAt)}</span>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-text-muted border-t border-border mt-4 pt-3 pb-2">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-4">
+                <span>Created {formatDate(createdAt)} by {createdByName}</span>
+                <span>Last updated {formatDate(updatedAt)}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-text-muted hover:text-error hover:bg-error/10 transition-colors"
+              >
+                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                Delete
+              </button>
             </div>
           </div>
         </div>
@@ -246,6 +275,16 @@ export default function DocumentEditor({
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete document"
+        message={`Are you sure you want to delete "${title}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDelete(false)}
+      />
     </div>
   );
 }

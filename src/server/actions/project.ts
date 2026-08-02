@@ -10,6 +10,7 @@ import {
   setCached,
   withCache,
 } from "@/lib/cache";
+import { createActivityEvent, notifyWorkspaceMembers } from "@/lib/notifications";
 
 interface ProjectFull {
   id: string;
@@ -162,6 +163,23 @@ export async function createProject(
 
     await setCached(CACHE_KEYS.project(r.id), project, 30);
     await invalidateProjectCache(r.id, data.workspaceId);
+
+    await Promise.all([
+      createActivityEvent({
+        type: "project_created",
+        description: `You created project ${r.name}.`,
+        workspaceId: data.workspaceId,
+        createdBy: currentUserId,
+      }),
+      notifyWorkspaceMembers({
+        workspaceId: data.workspaceId,
+        type: "project_created",
+        title: `New project: ${r.name}`,
+        description: `A new project was created in this workspace.`,
+        createdBy: currentUserId,
+        excludeUserId: currentUserId,
+      }),
+    ]);
 
     return { success: true, project };
   } catch (error) {

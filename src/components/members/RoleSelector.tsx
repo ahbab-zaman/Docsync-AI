@@ -1,9 +1,9 @@
 "use client";
 
-import type { MockMember } from "@/data/mock-workspaces";
+import type { Member } from "@/server/actions/members";
 
 interface RoleSelectorProps {
-  member: MockMember;
+  member: Member;
   currentUserRole: string;
   onChangeRole: (userId: string, role: "admin" | "member") => void;
 }

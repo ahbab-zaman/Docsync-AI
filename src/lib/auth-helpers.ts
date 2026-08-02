@@ -21,5 +21,10 @@ export async function getDevUserId(): Promise<string> {
 }
 
 export async function getDevUserName(): Promise<string> {
-  return "Dev User";
+  const id = await getDevUserId();
+  const result = await query<{ name: string }>(
+    "SELECT name FROM users WHERE id = $1",
+    [id]
+  );
+  return result.rows[0]?.name ?? "Dev User";
 }
