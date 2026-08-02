@@ -213,7 +213,7 @@ export default function MarketingNav({ user }: MarketingNavProps) {
               alt="Docsync"
               width={500}
               height={500}
-              className="h-8 w-auto"
+              className="h-12 w-12"
               priority
             />
           </Link>
