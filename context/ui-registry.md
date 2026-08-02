@@ -72,6 +72,10 @@ After building any component — update this file with the component name, file 
   - Props: `documentContent`, `documentId`, `onInsertContent`, `selectionContext?`
   - Shows selected text context banner when AI is triggered from selection
   - Banner: `rounded-lg border border-accent/20 bg-accent-muted p-2`
+- `src/components/ai/AiPageClient.tsx` — Client shell for `/app/ai`
+  - Props: `documents`, `initialRuns?`
+  - Document selector (picks a document from `getAiDocuments`), prompt input, message thread, clear-chat
+  - Delegates to `runAiCompletion` server action (OpenRouter with mock fallback)
 - `src/components/ai/AiResponse.tsx` — AI response card with insert/discard actions
   - Classes: `rounded-lg border border-accent/20 bg-surface-secondary p-3 space-y-2`
 - `src/components/ai/PromptInput.tsx` — Auto-resizing textarea with send button
@@ -107,16 +111,19 @@ After building any component — update this file with the component name, file 
 - `src/data/mock-versions.ts` — Mock version snapshots for doc-1 with `getMockVersions`, `addMockVersion`, `getMockVersionById`
 
 ### Notifications
-- `src/components/notifications/NotificationList.tsx` — Notification list with lucide type icons, mark read/mark all
+- `src/components/notifications/NotificationList.tsx` — DB-backed notification list with lucide type icons, mark read/mark all
   - Props: `initialNotifications`
   - Icons: UserPlus, UserMinus, ShieldCheck, FileEdit, Share2, UserCheck, FolderPlus, Settings
   - Classes: `bg-surface-secondary` for unread, `rounded-full bg-accent/10 text-accent` for icon badges
-- `src/components/notifications/ActivityList.tsx` — Activity event list with same icon pattern
+  - Data source: `src/server/actions/notifications.ts` against the `notifications` table (via `src/lib/notifications.ts`)
+- `src/components/notifications/ActivityList.tsx` — DB-backed activity event list with same icon pattern
   - Props: `activity`
   - Classes: `rounded-full bg-surface-tertiary text-text-muted` for icon badges
+  - Data source: `activity_events` table
 - `src/components/layout/Sidebar.tsx` — Nav sidebar with lucide icons, active state via `usePathname`, bell icon with unread badge, 30s polling
   - Classes: active `bg-accent text-accent-foreground`, inactive `text-text-secondary hover:bg-surface hover:text-foreground`
   - Mobile: hamburger menu (`fixed top-3 left-3 z-40`), overlay sidebar (`bg-overlay/40 backdrop-blur-sm`), auto-closes on pathname change
+  - "Docsync" title links to `/` so users can return to the landing page
 
 ### Search
 - `src/components/search/SearchDialog.tsx` — Cmd+K modal search dialog
@@ -150,6 +157,38 @@ After building any component — update this file with the component name, file 
   - Left: outline panel (collapsible, 56-wide)
   - Center: title input + TiptapEditor + metadata footer
   - Right: AI panel, Comments panel, or Version History panel (collapsible, 80-wide)
+  - Delete button (page-local `deleteDocument`) with `ConfirmDialog`; redirects to project on success
+
+### Members
+- `src/components/members/MemberList.tsx` — DB-backed member rows with role badges and actions (change role, remove)
+- `src/components/members/RoleSelector.tsx` — Dropdown to change a member's role (owner/admin/editor/viewer)
+- `src/components/members/InviteModal.tsx` — Invite dialog; creates a `workspace_invites` row
+- `src/components/members/WorkspaceSwitcher.tsx` — Selects which workspace the members page manages; options come from `getWorkspaces`
+
+### Settings
+- `src/components/settings/SettingsForm.tsx` — Client form bound to `src/server/actions/settings.ts`
+  - Profile tab: name, email, avatar; password tab: current/new (bcrypt via `changePassword`); appearance tab: theme, density, reduced-motion
+  - Loading/error/success feedback via server-action state and toasts
+- `src/components/settings/ThemeProvider.tsx` — Applies `users.preferences` via `applyAppearance` on mount and listens to system theme changes
+- `src/lib/appearance.ts` — `applyAppearance`, `resolveTheme`, `watchSystemTheme`; writes `data-theme` / `data-density` / `data-reduced-motion` on `<html>`
+
+### Landing Navbar (auth-aware)
+- `src/components/layout/MarketingNav.tsx` — Client navbar for the landing page, receives `user: UserPublic | null`
+  - Signed out: "Sign in" link + "Get started" button
+  - Signed in: animated user dropdown (`animate-dropdown-in`, 150ms) with avatar + name trigger; panel shows avatar, name, email and links to every DB-backed app section (Dashboard, Workspaces, AI Assistant, Notifications, Members, Settings) plus Log out (`logout` server action)
+  - Middle nav keeps only section anchor links (Features / Collaboration / AI); no dropdown in the middle
+  - `UserAvatar` renders `user.avatar_url` as an image, or an initials circle as the default avatar
+  - Mobile hamburger drawer via `MarketingMobileMenu`
+  - Keyboard: Escape closes dropdown/drawer, `aria-haspopup`/`aria-expanded`/`role="menu"` on the dropdown
+  - Classes: dropdown `rounded-xl border border-border bg-surface shadow-popover`, menu items `rounded-lg px-3 py-2`, user profile row `border-b border-border`
+- `src/components/layout/MarketingMobileMenu.tsx` — Slide/fade-in mobile drawer (`animate-menu-fade-in`, 150ms); shows a user profile block (avatar/name/email) when signed in, feature links, section anchors, and Sign in + Get started (signed out) or Log out (signed in); closes on nav or overlay click
+- Animation keyframes (`dropdown-in`, `menu-fade-in`) live in `src/app/globals.css` and respect `prefers-reduced-motion`
+- Used by `src/app/page.tsx`, which conditionally renders hero/final/footer CTAs based on `getCurrentUser()`
+
+### Workspace Settings (page-local)
+- `src/app/app/workspaces/[workspaceId]/WorkspaceSettings.tsx` — Edit (rename/description) and delete workspace
+  - Props: `workspace`, `canManage`
+  - Calls `updateWorkspace` / `deleteWorkspace`; delete uses `ConfirmDialog` and redirects to `/app/workspaces`
 
 
 ---

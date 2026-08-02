@@ -1,8 +1,8 @@
 # Progress Tracker
 
 ## Current Status
-**Phase:** Phase 3 — Engineering Excellence (complete)
-**Last completed:** 10 Production Readiness Review — final engineering review before Phase 3 completion
+**Phase:** Phase 3 — Engineering Excellence (complete) + Dynamic Backend Data milestone (complete)
+**Last completed:** Dynamic Backend Data — all six app sections (AI, Documents, Members, Notifications, Settings, Workspaces) converted from mock data to PostgreSQL-backed server actions
 **Next:** Phase 4 — Scalability & Infrastructure
 
 ## Progress
@@ -78,8 +78,41 @@
 - React 19 lint rules (`react-hooks/set-state-in-effect`, `react-hooks/refs`) required replacing effects that reset state on prop change with the "adjust state during render" pattern (Sidebar, SearchDialog, usePresence) and moving provider creation before `useEditor` in document sync.
 - Removed dead code found during the production-readiness audit: `useDocumentSync` hook and `lib/hocuspocus.ts` client provider (no longer imported anywhere); server-side `server/hocuspocus-server.ts` remains. Also removed unused imports (`findUserById`, `getSocket`).
 
-## Security Improvements (Phase 3)
-- Created `lib/rate-limiter.ts` — in-memory rate limiter with configurable windows and max requests.
+## Decisions Made During Dynamic Backend Data (post-Phase 3)
+- AI runs through a real OpenRouter provider (`src/lib/ai/openrouter.ts`) using `~deepseek/deepseek-v4-flash-latest` as the default model; `isAiConfigured`, `runAiCompletion`, and `getAiModelName` helpers gate provider vs. fallback. Every AI run is persisted to the `ai_runs` table; the AI page (`/app/ai`) includes a real document selector so prompts can attach to a document.
+- Notifications and activity events are fully PostgreSQL-backed via `src/lib/notifications.ts` helpers (`createNotification`, `createActivityEvent`, `notifyWorkspaceMembers`, `notifyWorkspaceAdmins`, `createThrottledDocumentUpdatedActivity`). No mock data remains for notifications.
+- Members management is DB-backed: `workspace_invites` table stores pending invites with status + role, and `src/server/actions/members.ts` implements invite, accept, cancel, change role, and remove member against PostgreSQL.
+- Settings is DB-backed via `src/server/actions/settings.ts` + extended `src/server/repositories/user.ts`: profile (name/email/avatar), password (bcrypt via the same auth helpers), and appearance (theme/density/reduced-motion) stored in the `users.preferences` JSONB column.
+- Appearance settings are applied client-side by `src/lib/appearance.ts` (`applyAppearance`, `resolveTheme`, `watchSystemTheme`) and `src/components/settings/ThemeProvider.tsx`; CSS tokens in `globals.css` react to `data-theme`, `data-density`, and `data-reduced-motion` attributes on `<html>`.
+- Workspaces gained `updateWorkspace` + `deleteWorkspace` actions; the workspace detail page (`[workspaceId]/WorkspaceSettings.tsx`) exposes edit/delete gated by the caller's role (`canManage`). Documents gained a `deleteDocument` action wired into the editor.
+- Model ID note: the plain `deepseek/deepseek-v4-flash-latest` identifier returns a 400 from OpenRouter; the `~`-prefixed `~deepseek/deepseek-v4-flash-latest` resolves correctly, so the provider uses the prefixed form.
+- CSS was converted from `@theme inline` to `@theme` because Tailwind v4 cannot override `inline` theme values.
+- Server action files are async-only; sync exports from `"use server"` files break the Turbopack build (removed `sanitizePreferences` accordingly).
+- `.env.local` carries the OpenRouter API key; the original value had a stray trailing `]` which was removed so the key authenticates correctly.
+
+## Dynamic Backend Data Milestone (post-Phase 3)
+- Schema additions applied to PostgreSQL (`src/server/schema.sql`): `workspace_invites`, `notifications`, `activity_events`, `ai_runs` tables and a `users.preferences` JSONB column.
+- Deleted mock modules `src/data/mock-notifications.ts` and `src/data/mock-workspaces.ts`.
+- Converted all six app sections to DB-backed server actions and verified at runtime:
+  - AI (`/app/ai`) — OpenRouter completion with mock fallback, persisted runs, document selector.
+  - Documents (`/app/documents/[documentId]`) — create/save/delete against PostgreSQL.
+  - Members (`/app/members`) — workspace switcher, real members, DB invites with accept/cancel/role management.
+  - Notifications (`/app/notifications`) — DB-backed list, mark read / mark all, unread badge, plus activity feed.
+  - Settings (`/app/settings`) — profile, password change (bcrypt), appearance (theme/density/reduced-motion).
+  - Workspaces (`/app/workspaces`, `/[workspaceId]`) — create/read/update/delete with activity events.
+- Activity events are fired from workspace create/update, project create, document create/save, invite, accept, role change, and member removal actions.
+- Final verification: `tsc --noEmit` clean, ESLint 0 problems, 92 tests / 20 files passing, `next build` succeeds (all 11 app routes dynamic), DB health check returns ok, and every app page returns HTTP 200 with real DB content.
+
+## Landing Navbar (Dynamic Auth)
+- `src/components/layout/MarketingNav.tsx` — client navbar on the landing page. When signed out it shows "Sign in" + "Get started"; when signed in it shows an animated user dropdown (avatar, name, email) listing every DB-backed app section (Dashboard, Workspaces, AI, Notifications, Members, Settings) plus Log out. Middle nav keeps only the section anchor links (Features / Collaboration / AI).
+- Avatar uses `user.avatar_url` when present, otherwise an initials circle.
+- Dropdown animation uses CSS keyframes `dropdown-in` / `menu-fade-in` defined in `globals.css` (150ms ease-out, respects `prefers-reduced-motion`).
+- `src/app/page.tsx` passes the current user from `getCurrentUser()` into the navbar and renders every CTA (hero, final section, footer) conditionally on login state.
+- `src/components/layout/MarketingMobileMenu.tsx` — mobile drawer with user profile block when signed in, feature links, and Sign in/Get started or Log out actions.
+- Session persistence implemented: new `sessions` table (id, user_id, created_at, expires_at) + `src/server/repositories/session.ts`. `loginUser` writes a session row and cookie, `getCurrentUser` resolves the cookie via the DB, `logoutUser` deletes the session row. `src/server/auth.ts` previously returned null unconditionally, so the navbar always showed the signed-out state.
+- The `/app` sidebar "Docsync" title now links to `/` so authenticated users can return to the landing page.
+
+## Security Improvements (Phase 3)- Created `lib/rate-limiter.ts` — in-memory rate limiter with configurable windows and max requests.
 - Applied rate limiting to login (10/min) and register (5/min) server actions.
 - Created `lib/sanitize.ts` — HTML sanitizer and escape utilities for user content.
 - Hardened cookie configuration: `sameSite` changed from `"lax"` to `"strict"`.

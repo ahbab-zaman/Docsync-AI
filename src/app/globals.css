@@ -231,6 +231,36 @@ html[data-reduced-motion="true"] *::after {
   scroll-behavior: auto !important;
 }
 
+@keyframes dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes menu-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-dropdown-in {
+  animation: dropdown-in 0.15s ease-out both;
+}
+
+.animate-menu-fade-in {
+  animation: menu-fade-in 0.15s ease-out both;
+}
+
 .comment-marker {
   cursor: pointer;
   border-radius: 2px;

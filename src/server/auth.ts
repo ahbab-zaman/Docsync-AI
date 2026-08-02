@@ -1,11 +1,19 @@
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
-import { createUser, findUserByEmail } from "@/server/repositories/user";
+import { createUser, findUserByEmail, findUserById } from "@/server/repositories/user";
+import {
+  createSession,
+  findSessionById,
+  deleteSessionById,
+} from "@/server/repositories/session";
+import { logger } from "@/lib/logger";
 import type { UserPublic } from "@/types";
 
 const SESSION_COOKIE = "pulseboard_session";
 
 const SALT_ROUNDS = 12;
+
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, SALT_ROUNDS);
@@ -33,13 +41,19 @@ export async function loginUser(
   }
 
   const sessionId = crypto.randomUUID();
+  const expiresAt = new Date(
+    Date.now() + SESSION_MAX_AGE_SECONDS * 1000
+  );
+
+  await createSession(sessionId, user.id, expiresAt);
+
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, sessionId, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
     path: "/",
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: SESSION_MAX_AGE_SECONDS,
   });
 
   return {
@@ -75,6 +89,10 @@ export async function registerUser(
 
 export async function logoutUser(): Promise<void> {
   const cookieStore = await cookies();
+  const sessionId = cookieStore.get(SESSION_COOKIE)?.value;
+  if (sessionId) {
+    await deleteSessionById(sessionId);
+  }
   cookieStore.delete(SESSION_COOKIE);
 }
 
@@ -83,6 +101,20 @@ export async function getCurrentUser(): Promise<UserPublic | null> {
   const sessionId = cookieStore.get(SESSION_COOKIE)?.value;
   if (!sessionId) return null;
 
-  // Session persistence is not implemented yet; getCurrentUser intentionally returns null.
-  return null;
+  try {
+    const session = await findSessionById(sessionId);
+    if (!session) return null;
+
+    const user = await findUserById(session.user_id);
+    if (!user) return null;
+
+    return user;
+  } catch (error) {
+    logger.warn("Failed to resolve current user", {
+      action: "auth:getCurrentUser",
+      status: "failure",
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
 }

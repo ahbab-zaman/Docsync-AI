@@ -76,7 +76,9 @@ export default function Sidebar() {
   const sidebarContent = (
     <>
       <div className="flex items-center justify-between px-2">
-        <span className="text-lg font-bold text-foreground">Docsync</span>
+        <Link href="/" className="text-lg font-bold text-foreground hover:text-accent transition-colors">
+          Docsync
+        </Link>
           <button
             type="button"
             onClick={() => setMobileOpen(false)}

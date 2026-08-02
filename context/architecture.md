@@ -3,9 +3,9 @@
 # AI Collaboration Platform
 ## System Architecture
 
-> Version: Phase 3
-> Status: Phase 1, Phase 2, and Phase 3 Engineering Milestones Implemented
-> Current Phase: Engineering Excellence (logging, observability, caching, error handling, monitoring, testing)
+> Version: Phase 3 + Dynamic Backend Data
+> Status: Phase 1, Phase 2, and Phase 3 Engineering Milestones Implemented; all six app sections (AI, Documents, Members, Notifications, Settings, Workspaces) converted to PostgreSQL-backed server actions
+> Current Phase: Engineering Excellence (logging, observability, caching, error handling, monitoring, testing, dynamic data)
 
 ---
 
@@ -1524,6 +1524,18 @@ AI Orchestrator
       └──────── OpenRouter
 ```
 
+## AI Implementation (current)
+
+The current implementation uses **OpenRouter** as the production provider (`src/lib/ai/openrouter.ts`), with a deterministic mock fallback when no API key is configured (`isAiConfigured`). The default model is `~deepseek/deepseek-v4-flash-latest` (the `~` prefix is required; the unprefixed identifier returns 400 from OpenRouter). The provider module exposes:
+
+- `isAiConfigured` — whether `OPENROUTER_API_KEY` is set
+- `runAiCompletion` — single-turn chat completion against OpenRouter's `/api/v1/chat/completions`
+- `getAiModelName` — the configured model for UI display
+
+Every AI run is persisted to the `ai_runs` table (prompt, response, model, latency, status) so history survives page reloads. The AI page (`/app/ai`) is client-driven via `AiPageClient.tsx` with a document selector sourced from `getAiDocuments`. Prompt content passes through `src/lib/ai/sanitize.ts` before display.
+
+AI calls degrade gracefully: if the provider is unreachable, the server action falls back to the offline mock instead of failing the request.
+
 ---
 
 ## AI Responsibilities
@@ -1743,6 +1755,8 @@ Examples
 - AI History
 - Audit Logs
 
+The current schema (`src/server/schema.sql`) realizes these as: `users` (with a `preferences` JSONB column for appearance/settings), `workspaces`, `workspace_members`, `projects`, `documents`, `workspace_invites`, `notifications`, `activity_events`, `ai_runs`, and `sessions` (id, user_id, created_at, expires_at). Invites, notifications, activity, and AI history were added during the Dynamic Backend Data milestone; all six app sections now read and write PostgreSQL instead of mock modules. Session persistence (login → `sessions` row + cookie; `getCurrentUser` resolves the cookie via the DB; logout deletes the row) means the auth-aware landing navbar correctly shows Sign in/Get started for guests and a user dropdown for authenticated users.
+
 Redis is NOT a replacement for PostgreSQL.
 
 ---
@@ -1788,6 +1802,36 @@ Workspace ───────── Project
           ┌───────────────┴──────────────┐
           ▼                              ▼
       Comment                    DocumentVersion
+
+User ───── WorkspaceInvite ───── Workspace (pending membership)
+User ───── Notification            (per-user, `user_id`)
+User ───── ActivityEvent           (audit-style feed)
+User ───── AiRun                   (per-run AI history, optional `document_id`)
+
+---
+
+# Notifications & Activity (current)
+
+Notifications and activity events are durable PostgreSQL rows created through the shared helpers in `src/lib/notifications.ts`:
+
+- `createNotification` — single-user notification
+- `createActivityEvent` — single audit/feed event
+- `notifyWorkspaceMembers` / `notifyWorkspaceAdmins` — fan-out to a workspace's membership
+- `createThrottledDocumentUpdatedActivity` — rate-limited document activity
+
+Activity events are dispatched from the workspace, project, document, and member server actions (create/update/save/invite/accept/role-change/remove). Unread counts power the sidebar badge; the `/app/notifications` page renders the `notifications` and `activity_events` tables directly with mark-read/mark-all mutations.
+
+---
+
+# Settings & Appearance (current)
+
+User settings live in the `users.preferences` JSONB column and are exposed only through `src/server/actions/settings.ts` + `src/server/repositories/user.ts`:
+
+- Profile — name, email, avatar
+- Password — bcrypt change via the shared auth helpers
+- Appearance — `theme` (`light`/`dark`/`system`), `density`, `reducedMotion`
+
+Appearance is applied client-side by `src/components/settings/ThemeProvider.tsx` + `src/lib/appearance.ts`, which write `data-theme`, `data-density`, and `data-reduced-motion` attributes on `<html>`; `globals.css` token overrides key off those attributes (converted from `@theme inline` because Tailwind v4 cannot override inline theme values).
 
 ---
 

@@ -1,54 +1,13 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/server/auth";
+import MarketingNav from "@/components/layout/MarketingNav";
 
 export default async function MarketingPage() {
   const user = await getCurrentUser();
 
   return (
     <div className="flex flex-col min-h-full">
-      <header className="border-b border-border">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="text-lg font-bold text-foreground tracking-tight">
-            Docsync
-          </Link>
-          <nav className="hidden md:flex items-center gap-6">
-            <a href="#features" className="text-sm text-text-secondary hover:text-foreground transition-colors">
-              Features
-            </a>
-            <a href="#collaboration" className="text-sm text-text-secondary hover:text-foreground transition-colors">
-              Collaboration
-            </a>
-            <a href="#ai" className="text-sm text-text-secondary hover:text-foreground transition-colors">
-              AI
-            </a>
-          </nav>
-          <div className="flex items-center gap-3">
-            {user ? (
-              <Link
-                href="/app"
-                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent-dark transition-colors"
-              >
-                Dashboard
-              </Link>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="text-sm font-medium text-text-secondary hover:text-foreground transition-colors"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/register"
-                  className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent-dark transition-colors"
-                >
-                  Get started
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+      <MarketingNav user={user} />
 
       <main className="flex-1">
         <section className="mx-auto max-w-6xl px-6 pt-24 pb-32 text-center">
@@ -281,12 +240,25 @@ export default async function MarketingPage() {
               <span className="text-xs text-text-muted">&copy; {new Date().getFullYear()}</span>
             </div>
             <div className="flex items-center gap-6">
-              <Link href="/login" className="text-xs text-text-muted hover:text-text-secondary transition-colors">
-                Sign in
-              </Link>
-              <Link href="/register" className="text-xs text-text-muted hover:text-text-secondary transition-colors">
-                Create account
-              </Link>
+              {user ? (
+                <>
+                  <Link href="/app" className="text-xs text-text-muted hover:text-text-secondary transition-colors">
+                    Dashboard
+                  </Link>
+                  <Link href="/app/settings" className="text-xs text-text-muted hover:text-text-secondary transition-colors">
+                    Settings
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" className="text-xs text-text-muted hover:text-text-secondary transition-colors">
+                    Sign in
+                  </Link>
+                  <Link href="/register" className="text-xs text-text-muted hover:text-text-secondary transition-colors">
+                    Create account
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

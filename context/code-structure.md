@@ -71,35 +71,38 @@ src/app/
 - presence   → CollaboratorAvatars
 - comments   → CommentThread, CommentSidebar, CommentReplyBox, CommentMarkers, MentionSuggestions
 - notifications → NotificationList, ActivityList
-- ai         → AiPanel, AiResponse, PromptInput, SuggestionChips
+- ai         → AiPanel, AiResponse, PromptInput, SuggestionChips, AiPageClient
 - search     → SearchDialog
-- members    → InviteModal, MemberList, RoleSelector
+- members    → InviteModal, MemberList, RoleSelector, WorkspaceSwitcher
+- settings   → SettingsForm, ThemeProvider
 
-> Page-local components live next to their routes, e.g. `DocumentActionBar` in `src/app/app/documents/[documentId]/`.
+> Page-local components live next to their routes, e.g. `DocumentActionBar` in `src/app/app/documents/[documentId]/` and `WorkspaceSettings` in `src/app/app/workspaces/[workspaceId]/`.
 
 ## `src/data`
 - mock-ai.ts
 - mock-collaborators.ts
 - mock-comments.ts
 - mock-documents.ts
-- mock-notifications.ts
 - mock-projects.ts
 - mock-search.ts
 - mock-users.ts
 - mock-versions.ts
-- mock-workspaces.ts
+
+> Note: mock-notifications.ts and mock-workspaces.ts were removed when notifications and workspaces moved to PostgreSQL-backed server actions.
 
 ## `src/hooks`
 - useSocket.ts
 - usePresence.ts
 
 ## `src/lib`
+- appearance.ts
 - auth-helpers.ts
 - cache.ts
 - db.ts
 - errors.ts
 - logger.ts
 - metrics.ts
+- notifications.ts
 - rate-limiter.ts
 - redis.ts
 - retry.ts
@@ -107,6 +110,9 @@ src/app/
 - socket.ts
 - utils.ts
 - yjs.ts
+- ai/
+    - openrouter.ts
+    - sanitize.ts
 
 > Note: Phase 3 added `cache`, `errors`, `logger`, `metrics`, `rate-limiter`, `redis`, `retry`, and `sanitize`. Each infra module ships a colocated `*.test.ts`. Tests live next to the code they cover (`src/**/*.test.{ts,tsx}`) with shared setup in `src/tests/setup.ts`; 92 tests across 20 files.
 
@@ -131,6 +137,7 @@ src/app/
     - versions.ts
     - search.ts
     - ai.ts
+    - settings.ts
 - repositories/
     - user.ts
 

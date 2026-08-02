@@ -14,6 +14,8 @@ Phase 1 established the application foundation. Phase 2 introduced the collabora
 
 Phase 3 (complete) upgraded the application to production quality: accessibility, UX polish, performance, security, logging, observability, caching, error handling, monitoring, testing (92 tests across 20 files), a documentation pass, and a final production-readiness review are all complete. Deployment & DevOps (Docker/CI-CD) is deferred to Phase 5.
 
+Following Phase 3, a Dynamic Backend Data milestone converted every app section (AI, Documents, Members, Notifications, Settings, Workspaces) from mock data to PostgreSQL-backed server actions: new `workspace_invites`, `notifications`, `activity_events`, and `ai_runs` tables plus a `users.preferences` JSONB column; real OpenRouter AI completions with a mock fallback; DB-backed invites/member management; settings with profile, password, and appearance (theme/density/reduced-motion). No mock data remains for notifications or workspaces.
+
 ## Pages
 ```text
 /                             → Landing
