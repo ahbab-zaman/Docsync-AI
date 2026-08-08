@@ -62,7 +62,6 @@ function createPool(): Pool {
     max: 3,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 20000,
-    ssl: { rejectUnauthorized: false },
   });
 }
 
@@ -80,7 +79,6 @@ export async function ensureConnected(): Promise<boolean> {
     connectionString: rawUrl,
     max: 1,
     connectionTimeoutMillis: 3000,
-    ssl: { rejectUnauthorized: false },
   });
 
   try {

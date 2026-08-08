@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "Docsync",
   description: "Real-time AI collaboration platform",
   icons: {
-    icon: "/DocSync-logo.png",
+    icon: "@/assets/DocSync-logo.png",
   },
 };
 

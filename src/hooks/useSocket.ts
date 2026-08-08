@@ -10,10 +10,12 @@ import type { CursorData } from "@/realtime/cursor";
 interface UseSocketOptions {
   userId: string;
   roomId: string;
+  userName?: string;
+  userColor?: string;
   enabled?: boolean;
 }
 
-export function useSocket({ userId, roomId, enabled = true }: UseSocketOptions) {
+export function useSocket({ userId, roomId, userName, userColor, enabled = true }: UseSocketOptions) {
   const socketRef = useRef<Socket | null>(null);
   const [connected, setConnected] = useState(false);
   const [presenceList, setPresenceList] = useState<PresenceUser[]>([]);
@@ -22,7 +24,7 @@ export function useSocket({ userId, roomId, enabled = true }: UseSocketOptions) 
   useEffect(() => {
     if (!enabled) return;
 
-    const socket = connectSocket(userId, roomId);
+    const socket = connectSocket(userId, roomId, { name: userName, color: userColor });
     socketRef.current = socket;
 
     const onConnect = () => {
@@ -70,7 +72,7 @@ export function useSocket({ userId, roomId, enabled = true }: UseSocketOptions) 
       socket.emit(SOCKET_EVENTS.ROOM_LEAVE, { roomId, userId });
       disconnectSocket();
     };
-  }, [userId, roomId, enabled]);
+  }, [userId, roomId, userName, userColor, enabled]);
 
   const emitCursor = useCallback(
     (cursor: CursorData) => {

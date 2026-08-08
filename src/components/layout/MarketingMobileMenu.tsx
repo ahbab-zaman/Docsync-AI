@@ -5,7 +5,7 @@ import Image from "next/image";
 import { LayoutDashboard, LogOut, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { UserPublic } from "@/types";
-
+import DocSync from "@/assets/DocSync.png";
 interface FeatureItem {
   href: string;
   label: string;
@@ -76,7 +76,7 @@ export default function MarketingMobileMenu({
         <div className="flex items-center justify-between">
           <span className="inline-flex items-center">
             <Image
-              src="/DocSync.png"
+              src={DocSync}
               alt="Docsync"
               width={500}
               height={500}

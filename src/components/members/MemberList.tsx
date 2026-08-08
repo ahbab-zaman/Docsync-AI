@@ -47,31 +47,46 @@ export default function MemberList({
 
   const handleInvite = async (formData: FormData) => {
     const result = await inviteMember({}, formData);
+    if (result.success && result.invite) {
+      setInvites((prev) => [result.invite!, ...prev]);
+    }
     return result;
   };
 
   const handleChangeRole = async (userId: string, role: "admin" | "member") => {
+    const previous = members;
+    setMembers((prev) => prev.map((m) => (m.id === userId ? { ...m, role } : m)));
     const result = await changeRole(workspaceId, userId, role);
     if (result.success) {
-      setMembers((prev) => prev.map((m) => (m.id === userId ? { ...m, role } : m)));
       toast.success(`Role changed to ${role}`);
+    } else {
+      setMembers(previous);
+      toast.error(result.error ?? "Failed to change role");
     }
   };
 
   const handleRemove = async (userId: string) => {
+    setRemovingMember(null);
+    const previous = members;
+    setMembers((prev) => prev.filter((m) => m.id !== userId));
     const result = await removeMember(workspaceId, userId);
     if (result.success) {
-      setMembers((prev) => prev.filter((m) => m.id !== userId));
       toast.success("Member removed");
+    } else {
+      setMembers(previous);
+      toast.error(result.error ?? "Failed to remove member");
     }
-    setRemovingMember(null);
   };
 
   const handleCancel = async (inviteId: string) => {
+    const previous = invites;
+    setInvites((prev) => prev.filter((i) => i.id !== inviteId));
     const result = await cancelInvite(workspaceId, inviteId);
     if (result.success) {
-      setInvites((prev) => prev.filter((i) => i.id !== inviteId));
       toast.success("Invite cancelled");
+    } else {
+      setInvites(previous);
+      toast.error(result.error ?? "Failed to cancel invite");
     }
   };
 

@@ -1,5 +1,34 @@
 import type { AiResponse, AiActionType, AiSuggestion } from "@/types/ai";
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function stripHtml(value: string): string {
+  return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function buildCustomFallback(prompt: string, documentContent: string): string {
+  const promptText = stripHtml(prompt) || "your request";
+  const docSnippet = stripHtml(documentContent);
+  const echoed = escapeHtml(promptText.slice(0, 200));
+  const docNote = docSnippet
+    ? ` The document contains: &ldquo;${escapeHtml(docSnippet.slice(0, 160))}${docSnippet.length > 160 ? "&hellip;" : ""}&rdquo;`
+    : " No document content was provided for context.";
+  return [
+    "<h3>Local response</h3>",
+    `<p>Asked: <strong>${echoed}</strong></p>`,
+    `<p>${docNote}</p>`,
+    `<p>This reply was generated locally because the AI provider is unavailable right now (no API key or the provider rejected the payment). Restart with valid OpenRouter credits to get a live answer.</p>`,
+    `<p>For a real answer, check your <code>OPENROUTER_API_KEY</code> in <code>.env.local</code> and top up your OpenRouter balance.</p>`,
+  ].join("");
+}
+
 export const mockSuggestions: AiSuggestion[] = [
   {
     id: "sug-1",
@@ -51,7 +80,7 @@ export const mockSuggestions: AiSuggestion[] = [
   },
 ];
 
-const mockResponseContent: Record<AiActionType, string> = {
+const mockResponseContent: Record<Exclude<AiActionType, "custom">, string> = {
   summarize:
     "<h3>Document Summary</h3><ul><li>This document covers the key planning and technical details for the current project phase</li><li>Main topics include architecture decisions, implementation priorities, and team responsibilities</li><li>Several action items have been identified with clear owners and deadlines</li><li>This document establishes a foundation for future collaboration and iteration</li><li>Next steps involve implementation, testing, and team review cycles</li></ul>",
   "action-items":
@@ -68,20 +97,22 @@ const mockResponseContent: Record<AiActionType, string> = {
     "<h3>Suggested Titles</h3><ol><li><strong>Strategic Blueprint: Architecture and Implementation Guide</strong></li><li><strong>Project Foundation: Technical Decisions and Roadmap</strong></li><li><strong>Building the Core: Architecture, Design, and Delivery</strong></li><li><strong>From Plan to Product: A Technical Implementation Guide</strong></li><li><strong>Engineering Playbook: Architecture, Workflow, and Execution</strong></li></ol>",
   "project-summary":
     "<h3>Project Summary</h3><p><strong>Status:</strong> Active Development</p><p><strong>Key Areas:</strong></p><ul><li>Architecture design and technology selection</li><li>Core component implementation</li><li>Testing and quality assurance</li><li>Documentation and knowledge sharing</li></ul><p><strong>Current Phase:</strong> Foundation — setting up the base structure and core patterns before scaling to full feature set.</p><p><strong>Team:</strong> Cross-functional collaboration with design, engineering, and product.</p><p><strong>Next Milestone:</strong> Complete core component library and establish CI/CD pipeline.</p>",
-  custom:
-    "<p>Based on your request, here is what I can suggest:</p><p>This document covers several important topics that would benefit from further discussion and refinement. Consider breaking down the larger goals into smaller, actionable tasks that can be completed incrementally.</p><p>Would you like me to help with any specific aspect in more detail?</p>",
 };
 
 export function getMockAiResponse(
   actionType: AiActionType,
-  _prompt: string,
-  _documentContent: string
+  prompt: string,
+  documentContent: string
 ): AiResponse {
   const id = `ai-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
   const label = mockSuggestions.find((s) => s.actionType === actionType)?.label ?? "AI Response";
+  const content =
+    actionType === "custom"
+      ? buildCustomFallback(prompt, documentContent)
+      : mockResponseContent[actionType];
   return {
     id,
-    content: mockResponseContent[actionType],
+    content,
     actionType,
     label,
     timestamp: new Date(),

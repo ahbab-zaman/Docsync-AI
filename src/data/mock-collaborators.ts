@@ -1,6 +1,6 @@
 import type { Collaborator } from "@/components/presence/CollaboratorAvatars";
 
-const collaboratorColors = [
+export const collaboratorColors = [
   "#5b4bff",
   "#0fa3b1",
   "#d97d54",

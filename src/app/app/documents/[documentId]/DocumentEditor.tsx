@@ -9,8 +9,8 @@ import TiptapEditor from "@/components/documents/TiptapEditor";
 import { saveDocument, deleteDocument } from "@/server/actions/document";
 import { createComment } from "@/server/actions/comments";
 import { runAiAction } from "@/server/actions/ai";
-import { getAllMockCollaborators } from "@/data/mock-collaborators";
 import { getMockComments } from "@/data/mock-comments";
+import { usePresence } from "@/hooks/usePresence";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import type { CommentRange } from "@/types/comments";
 import type { AiActionType, AiSelectionContext } from "@/types/ai";
@@ -29,6 +29,9 @@ interface DocumentEditorProps {
   createdAt: string;
   updatedAt: string;
   createdByName: string;
+  currentUserId: string | null;
+  currentUserName: string;
+  currentUserColor: string;
 }
 
 export default function DocumentEditor({
@@ -39,6 +42,9 @@ export default function DocumentEditor({
   createdAt,
   updatedAt,
   createdByName,
+  currentUserId,
+  currentUserName,
+  currentUserColor,
 }: DocumentEditorProps) {
   const router = useRouter();
   const [title, setTitle] = useState(initialTitle);
@@ -51,9 +57,19 @@ export default function DocumentEditor({
   const [selectionContext, setSelectionContext] = useState<AiSelectionContext | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dirtyRef = useRef(false);
+  const latestSnapshotRef = useRef({ title, content });
 
-  const collaborators = useMemo(() => getAllMockCollaborators(), []);
-  const onlineCount = useMemo(() => collaborators.filter((c) => c.isOnline).length, [collaborators]);
+  const presence = usePresence({
+    documentId,
+    userId: currentUserId ?? "",
+    userName: currentUserName,
+    userColor: currentUserColor,
+    enabled: Boolean(currentUserId),
+  });
+
+  const { collaborators, onlineCount, emitTyping } = presence;
 
   const commentRanges: CommentRange[] = useMemo(() => comments
     .filter((c) => c.selectionRange)
@@ -67,50 +83,68 @@ export default function DocumentEditor({
 
   const unresolvedCount = useMemo(() => comments.filter((c) => !c.resolved).length, [comments]);
 
-  const handleSave = useCallback(async () => {
+  const handleSave = useCallback(async (): Promise<boolean> => {
     setSaving(true);
     const result = await saveDocument(documentId, { title, content });
-    if (result.success) {
-      setSaved(true);
-    }
     setSaving(false);
+    if (result.success) {
+      dirtyRef.current = false;
+      setSaved(true);
+      return true;
+    }
+    setSaved(false);
+    if (result.error) {
+      toast.error(result.error);
+    }
+    return false;
   }, [documentId, title, content]);
+
+  const scheduleSave = useCallback(() => {
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(() => {
+      handleSave();
+    }, 800);
+  }, [handleSave]);
 
   const handleContentUpdate = useCallback(
     (html: string) => {
       setContent(html);
+      dirtyRef.current = true;
       setSaved(false);
-      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
-      autoSaveTimer.current = setTimeout(() => {
-        handleSave();
-      }, 2000);
+      scheduleSave();
+      if (emitTyping) {
+        emitTyping(true);
+        if (typingTimer.current) clearTimeout(typingTimer.current);
+        typingTimer.current = setTimeout(() => emitTyping(false), 1500);
+      }
     },
-    [handleSave]
+    [scheduleSave, emitTyping]
   );
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setTitle(e.target.value);
+      dirtyRef.current = true;
       setSaved(false);
-      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
-      autoSaveTimer.current = setTimeout(() => {
-        handleSave();
-      }, 2000);
+      scheduleSave();
     },
-    [handleSave]
+    [scheduleSave]
   );
 
   const handleInsertContent = useCallback(
     (newContent: string) => {
       setContent((prev) => prev + newContent);
+      dirtyRef.current = true;
       setSaved(false);
+      scheduleSave();
     },
-    []
+    [scheduleSave]
   );
 
   const handleManualSave = useCallback(() => {
-    handleSave();
-    toast.success("Document saved");
+    handleSave().then((saved) => {
+      if (saved) toast.success("Document saved");
+    });
   }, [handleSave]);
 
   const handleDelete = useCallback(async () => {
@@ -156,9 +190,11 @@ export default function DocumentEditor({
   const handleVersionRestore = useCallback(
     (restoredContent: string) => {
       setContent(restoredContent);
+      dirtyRef.current = true;
       setSaved(false);
+      scheduleSave();
     },
-    []
+    [scheduleSave]
   );
 
   const handleTogglePanel = useCallback(
@@ -169,10 +205,32 @@ export default function DocumentEditor({
   );
 
   useEffect(() => {
+    latestSnapshotRef.current = { title, content };
+  }, [title, content]);
+
+  useEffect(() => {
     return () => {
       if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+      if (typingTimer.current) clearTimeout(typingTimer.current);
+      if (dirtyRef.current) {
+        const { title, content } = latestSnapshotRef.current;
+        saveDocument(documentId, { title, content }).catch(() => {
+          // Best-effort flush of the last pending edit when leaving the page.
+        });
+      }
     };
-  }, []);
+  }, [documentId]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        handleManualSave();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleManualSave]);
 
   const formatDate = (iso: string) => {
     const d = new Date(iso);
@@ -223,7 +281,7 @@ export default function DocumentEditor({
             />
 
             <TiptapEditor
-              content={initialContent}
+              content={content}
               onUpdate={handleContentUpdate}
               commentRanges={commentRanges}
               onAddComment={handleAddCommentFromSelection}

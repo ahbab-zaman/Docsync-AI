@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
+import Select from "@/components/ui/Select";
 
 interface InviteModalProps {
   workspaceId: string;
@@ -95,15 +96,15 @@ export default function InviteModal({ workspaceId, onInvite, onClose }: InviteMo
           </div>
           <div className="space-y-2">
             <label htmlFor="role" className="text-sm font-medium text-foreground">Role</label>
-            <select
+            <Select
               id="role"
               value={role}
-              onChange={(e) => setRole(e.target.value as "admin" | "member")}
-              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
-            >
-              <option value="member">Member</option>
-              <option value="admin">Admin</option>
-            </select>
+              onChange={(value) => setRole(value as "admin" | "member")}
+              options={[
+                { value: "member", label: "Member" },
+                { value: "admin", label: "Admin" },
+              ]}
+            />
           </div>
           {error && (
             <p id="invite-error" className="text-sm text-error" role="alert">

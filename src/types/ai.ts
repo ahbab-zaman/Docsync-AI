@@ -15,6 +15,7 @@ export interface AiResponse {
   actionType: AiActionType;
   label: string;
   timestamp: Date;
+  degraded?: boolean;
 }
 
 export interface AiRun {

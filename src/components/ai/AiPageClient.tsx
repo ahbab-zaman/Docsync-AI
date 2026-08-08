@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { FileText } from "lucide-react";
+import Select from "@/components/ui/Select";
 import type { AiDocumentOption } from "@/server/actions/ai";
 import AiPanel from "./AiPanel";
 
@@ -49,18 +50,15 @@ export default function AiPageClient({ documents }: AiPageClientProps) {
           </div>
         ) : (
           <>
-            <select
+            <Select
               id="ai-document"
               value={selectedDocument?.id ?? ""}
-              onChange={(e) => setSelectedDocumentId(e.target.value)}
-              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
-            >
-              {documents.map((doc) => (
-                <option key={doc.id} value={doc.id}>
-                  {doc.title} — {doc.workspace_name}/{doc.project_name}
-                </option>
-              ))}
-            </select>
+              onChange={(value) => setSelectedDocumentId(value)}
+              options={documents.map((doc) => ({
+                value: doc.id,
+                label: `${doc.title} — ${doc.workspace_name}/${doc.project_name}`,
+              }))}
+            />
             {selectedDocument && (
               <p className="mt-1.5 text-xs text-text-muted">
                 Using “{selectedDocument.title}” from {selectedDocument.workspace_name} /{" "}

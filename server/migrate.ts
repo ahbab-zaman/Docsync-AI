@@ -9,7 +9,6 @@ async function migrate() {
 
   const pool = new Pool({
     connectionString: url.toString(),
-    ssl: { rejectUnauthorized: false },
   });
 
   const schemaPath = join(process.cwd(), "src", "server", "schema.sql");

@@ -87,6 +87,7 @@ export async function runAiAction(
         }
 
         let content: string;
+        let degraded = false;
         if (isAiConfigured()) {
           try {
             content = await runAiCompletion(actionType, prompt, documentContent);
@@ -96,6 +97,7 @@ export async function runAiAction(
               status: "success",
             });
           } catch (providerError) {
+            degraded = true;
             logger.error("AI provider request failed, falling back to mock", {
               action: `ai:${actionType}`,
               message:
@@ -107,6 +109,7 @@ export async function runAiAction(
             content = getMockAiResponse(actionType, prompt, documentContent).content;
           }
         } else {
+          degraded = true;
           logger.warn("AI provider not configured, using mock response", {
             action: `ai:${actionType}`,
             status: "degraded",
@@ -135,6 +138,7 @@ export async function runAiAction(
           actionType,
           label: getResponseLabel(actionType),
           timestamp: new Date(),
+          degraded,
         };
 
         return { response };

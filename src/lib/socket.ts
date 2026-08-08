@@ -14,10 +14,14 @@ export function getSocket(): Socket {
   return socket;
 }
 
-export function connectSocket(userId: string, roomId: string): Socket {
+export function connectSocket(
+  userId: string,
+  roomId: string,
+  userInfo?: { name?: string; color?: string }
+): Socket {
   const s = getSocket();
   if (!s.connected) {
-    s.auth = { userId, roomId };
+    s.auth = { userId, roomId, name: userInfo?.name, color: userInfo?.color };
     s.connect();
   }
   return s;

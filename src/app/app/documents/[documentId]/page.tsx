@@ -1,9 +1,19 @@
 import { getDocument } from "@/server/actions/document";
 import { getProject } from "@/server/actions/project";
 import { getWorkspace } from "@/server/actions/workspace";
+import { getCurrentUserId, getCurrentUserInfo } from "@/server/access";
+import { collaboratorColors } from "@/data/mock-collaborators";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import DocumentEditor from "./DocumentEditor";
+
+function colorForId(id: string): string {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  }
+  return collaboratorColors[hash % collaboratorColors.length];
+}
 
 export default async function DocumentPage({
   params,
@@ -11,7 +21,11 @@ export default async function DocumentPage({
   params: Promise<{ documentId: string }>;
 }) {
   const { documentId } = await params;
-  const { document, error } = await getDocument(documentId);
+  const [{ document, error }, currentUserId, currentUser] = await Promise.all([
+    getDocument(documentId),
+    getCurrentUserId(),
+    getCurrentUserInfo(),
+  ]);
 
   if (error || !document) {
     notFound();
@@ -53,6 +67,9 @@ export default async function DocumentPage({
         createdAt={document.created_at.toISOString()}
         updatedAt={document.updated_at.toISOString()}
         createdByName={document.created_by_name}
+        currentUserId={currentUserId}
+        currentUserName={currentUser?.name ?? "You"}
+        currentUserColor={currentUserId ? colorForId(currentUserId) : "#5b4bff"}
       />
     </div>
   );

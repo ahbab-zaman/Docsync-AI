@@ -38,9 +38,11 @@ interface RoomUser {
 const rooms = new Map<string, Map<string, RoomUser>>();
 
 io.on("connection", (socket) => {
-  const { userId, roomId } = socket.handshake.auth as {
+  const { userId, roomId, name, color } = socket.handshake.auth as {
     userId?: string;
     roomId?: string;
+    name?: string;
+    color?: string;
   };
 
   if (!userId || !roomId) {
@@ -61,8 +63,8 @@ io.on("connection", (socket) => {
 
   const user: RoomUser = {
     userId,
-    name: "Unknown",
-    color: "#5b4bff",
+    name: name || "Guest",
+    color: color || "#5b4bff",
     joinedAt: new Date(),
   };
   room.set(socket.id, user);

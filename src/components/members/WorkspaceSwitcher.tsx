@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
+import Select from "@/components/ui/Select";
 
 interface WorkspaceSwitcherProps {
   workspaces: { id: string; name: string }[];
@@ -16,18 +17,19 @@ export default function WorkspaceSwitcher({ workspaces, selectedId }: WorkspaceS
       <label htmlFor="workspace-switcher" className="text-sm text-text-secondary">
         Workspace
       </label>
-      <select
+      <Select
         id="workspace-switcher"
+        label="Switch workspace"
         value={selectedId}
-        onChange={(e) => router.push(`${pathname}?workspace=${encodeURIComponent(e.target.value)}`)}
-        className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
-      >
-        {workspaces.map((workspace) => (
-          <option key={workspace.id} value={workspace.id}>
-            {workspace.name}
-          </option>
-        ))}
-      </select>
+        onChange={(value) =>
+          router.push(`${pathname}?workspace=${encodeURIComponent(value)}`)
+        }
+        options={workspaces.map((workspace) => ({
+          value: workspace.id,
+          label: workspace.name,
+        }))}
+        className="w-48"
+      />
     </div>
   );
 }

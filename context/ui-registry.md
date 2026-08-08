@@ -19,7 +19,7 @@ After building any component — update this file with the component name, file 
 
 ### Hooks
 - `src/hooks/useSocket.ts` — Socket.IO connection hook with presence and cursor events
-- `src/hooks/usePresence.ts` — Presence management hook
+- `src/hooks/usePresence.ts` — Real presence hook; maps live `presenceList` from the socket into `Collaborator[]` (falls back to just the current user when disconnected) and exposes `onlineCount` + `emitTyping`
 
 ### Server
 - `server/hocuspocus-server.ts` — Hocuspocus collaboration server
@@ -158,12 +158,13 @@ After building any component — update this file with the component name, file 
   - Center: title input + TiptapEditor + metadata footer
   - Right: AI panel, Comments panel, or Version History panel (collapsible, 80-wide)
   - Delete button (page-local `deleteDocument`) with `ConfirmDialog`; redirects to project on success
+  - Editor is controlled: `content` state flows into TiptapEditor so AI inserts and version restores update the editor immediately; autosave debounces at 800ms and also fires after AI insert / version restore; Ctrl+S (Cmd+S) triggers a manual save
 
 ### Members
-- `src/components/members/MemberList.tsx` — DB-backed member rows with role badges and actions (change role, remove); pending-invite list shows status badges (pending/accepted/declined/expired) with Resend + Cancel actions
-- `src/components/members/RoleSelector.tsx` — Dropdown to change a member's role (owner/admin/editor/viewer)
+- `src/components/members/MemberList.tsx` — DB-backed member rows with role badges and actions (change role, remove); pending-invite list shows status badges (pending/accepted/declined/expired) with Resend + Cancel actions. All mutations are optimistic (immediate UI update, rollback + error toast on failure); new invites are appended to the list immediately after sending
+- `src/components/members/RoleSelector.tsx` — Custom `Select` dropdown to change a member's role; owner shows a badge with ShieldCheck icon, read-only viewers show a Shield label
 - `src/components/members/InviteModal.tsx` — Invite dialog; creates a token-based `workspace_invites` row and emails the invitee
-- `src/components/members/WorkspaceSwitcher.tsx` — Selects which workspace the members page manages; options come from `getWorkspaces`
+- `src/components/members/WorkspaceSwitcher.tsx` — Custom `Select` that switches which workspace the members page manages; options come from `getWorkspaces`
 - `src/components/invite/InviteActions.tsx` — Accept/Decline buttons for the public invite page; calls `acceptInviteByToken`/`declineInviteByToken`, redirects into the workspace on accept
 
 ### Public Invite Page
@@ -193,6 +194,14 @@ After building any component — update this file with the component name, file 
 - `src/app/app/workspaces/[workspaceId]/WorkspaceSettings.tsx` — Edit (rename/description) and delete workspace
   - Props: `workspace`, `canManage`
   - Calls `updateWorkspace` / `deleteWorkspace`; delete uses `ConfirmDialog` and redirects to `/app/workspaces`
+
+### UI Primitives
+- `src/components/ui/Select.tsx` — Reusable, accessible dropdown (ARIA `listbox`/`option` pattern)
+  - Props: `value`, `onChange`, `options: { value, label }[]`, `id`, `name` (renders hidden input for forms), `placeholder`, `disabled`, `className`, `label`
+  - Keyboard: ArrowUp/ArrowDown navigate, Home/End jump, Enter/Space select, Escape closes; opens on ArrowDown/ArrowUp/Enter/Space
+  - Outside-click closes; selected option shows a Check icon; highlighted option uses `bg-surface-secondary`
+  - Classes: trigger `rounded-lg border border-border bg-surface px-3 py-2`, panel `absolute z-20 mt-1 rounded-lg border border-border bg-surface p-1 shadow-popover`
+  - Replaces all previously generic native `<select>` dropdowns (WorkspaceSwitcher, RoleSelector, InviteModal role, Settings theme/density, AI page document)
 
 
 ---

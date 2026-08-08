@@ -19,6 +19,7 @@ import { logout } from "@/server/actions/auth";
 import { cn } from "@/lib/utils";
 import type { UserPublic } from "@/types";
 import MarketingMobileMenu from "@/components/layout/MarketingMobileMenu";
+import DocsyncLogo from "@/assets/DocSync.png";
 
 interface FeatureItem {
   href: string;
@@ -209,7 +210,7 @@ export default function MarketingNav({ user }: MarketingNavProps) {
         <div className="flex items-center gap-8">
           <Link href="/" className="inline-flex items-center" aria-label="Docsync home">
             <Image
-              src="/DocSync.png"
+              src={DocsyncLogo}
               alt="Docsync"
               width={500}
               height={500}

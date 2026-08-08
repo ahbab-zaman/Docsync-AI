@@ -106,6 +106,22 @@
 - `.env.template` documents `RESEND_API_KEY` and `RESEND_FROM_EMAIL`.
 - Final verification: `tsc --noEmit` clean, ESLint 0 problems, 123 tests / 23 files passing, `next build` succeeds including the new `/invite/[token]` route, schema migration applied to PostgreSQL.
 
+## Optimistic UI + Editor Save Polish (post-Phase 3)
+- **Members CRUD is optimistic**: removing a member, cancelling an invite, and changing a role update the UI instantly and roll back (with an error toast) only if the server action fails. Previously failures were silent, which made removals look like they "weren't deleting" from the UI.
+- **Invites appear immediately**: `inviteMember` now returns the created `PendingInvite` (via `INSERT ... RETURNING`), and `MemberList` prepends it to the list the moment sending succeeds — no reload needed.
+- **Editor is now controlled**: `DocumentEditor` passes live `content` state into `TiptapEditor` (was passing the frozen `initialContent`), so AI-panel inserts and version-history restores now appear in the editor immediately instead of only after a reload.
+- **Faster autosave**: debounce reduced from 2000ms → 800ms; autosave also fires after AI insert and version restore; Ctrl/Cmd+S triggers a manual save; failed saves now show an error toast and keep the "unsaved" indicator.
+- **Reusable `Select` component** (`src/components/ui/Select.tsx`) replaces every generic native `<select>`: WorkspaceSwitcher, RoleSelector, InviteModal role, Settings theme/density, and the AI page document selector. ARIA listbox pattern with full keyboard navigation, outside-click close, and design-token styling (surface/border/shadow-popover/ring-accent).
+- Final verification: `tsc --noEmit` clean, ESLint 0 problems, 123 tests / 23 files passing, `next build` succeeds.
+
+## Editor Reliability + AI Transparency + Real Presence (post-Phase 3)
+- **Editor no longer loses formatting.** `TiptapEditor`'s controlled-content sync used `content !== editor.getHTML()` in an effect, which could reset the document with a stale prop right after an editor-originated update. It now tracks the last HTML the editor emitted (`lastEmittedRef`) and only calls `setContent(content, { emitUpdate: false })` when the incoming prop differs from BOTH that value and the current doc — so external changes (AI insert, version restore) still apply instantly while user formatting is never clobbered.
+- **Pending edits are flushed on unmount.** `DocumentEditor` only cleared the debounce timer on unmount, so navigating away inside the 800ms idle window could silently lose the latest content. A `dirtyRef` + latest-snapshot ref now fire a best-effort `saveDocument` on cleanup, so headings and formatting are not lost on fast navigation.
+- **Online collaborator count is real, not mocked.** `usePresence` ignored the socket's `presenceList` and returned `getAllMockCollaborators()`. It now maps live `PresenceUser[]` into `Collaborator[]` (falling back to just the current user when disconnected); `DocumentEditor` passes `userId`/`userName`/`userColor` from the server page, and typing presence is emitted on edits. `useSocket`/`connectSocket` forward name+color, and `server/socket-server.ts` reads them from handshake auth.
+- **AI degradation is surfaced, not silent.** The OpenRouter key in `.env.local` currently returns 402 (no credits), so every AI request silently fell back to the static mock — the "same answer" bug. `runAiAction` now sets `degraded: true` for any fallback, `AiResponse.tsx` renders a visible offline-provider notice, and the `custom` mock echoes the user's actual prompt + doc snippet so fallback replies are never byte-identical.
+- Replaced `TiptapEditor.debug*.test.tsx` scaffolding with `TiptapEditor.test.tsx` covering external-content sync and formatting preservation.
+- Final verification: `tsc --noEmit` clean, ESLint 0 problems, 125 tests / 24 files passing, `next build` succeeds.
+
 ## Role-Based Authorization (post-Phase 3)
 - New `src/server/access.ts` — session-based identity + permission helpers: `getCurrentUserId`, `getCurrentUserInfo`, `getWorkspaceRole`, `requireWorkspaceAccess(workspaceId, allowedRoles)`, `resolveDocumentWorkspaceId`; constants `ANY_MEMBER` (`owner|admin|member`) and `ADMIN_ROLES` (`owner|admin`).
 - Deleted `src/lib/auth-helpers.ts` (`getDevUserId`/`getDevUserName` hardcoded dev identity) — all server actions now resolve the real logged-in user from the session cookie.
@@ -129,8 +145,7 @@
 - Final verification: `tsc --noEmit` clean, ESLint 0 problems, 123 tests / 23 files passing, `next build` succeeds (all 11 app routes dynamic), DB health check returns ok, and every app page returns HTTP 200 with real DB content.
 
 ## Landing Navbar (Dynamic Auth)
-- `src/components/layout/MarketingNav.tsx` — client navbar on the landing page. When signed out it shows "Sign in" + "Get started"; when signed in it shows an animated user dropdown (avatar, name, email) listing every DB-backed app section (Dashboard, Workspaces, AI, Notifications, Members, Settings) plus Log out. Middle nav keeps only the section anchor links (Features / Collaboration / AI).
-- Avatar uses `user.avatar_url` when present, otherwise an initials circle.
+- `src/components/layout/MarketingNav.tsx` — client navbar on the landing page. When signed out it shows "Sign in" + "Get started"; when signed in it shows an animated user dropdown (avatar, name, email) listing every DB-backed app section (Dashboard, Workspaces, AI, Notifications, Members, Settings) plus Log out. Middle nav keeps only the section anchor links (Features / Collaboration / AI).- Avatar uses `user.avatar_url` when present, otherwise an initials circle.
 - Dropdown animation uses CSS keyframes `dropdown-in` / `menu-fade-in` defined in `globals.css` (150ms ease-out, respects `prefers-reduced-motion`).
 - `src/app/page.tsx` passes the current user from `getCurrentUser()` into the navbar and renders every CTA (hero, final section, footer) conditionally on login state.
 - `src/components/layout/MarketingMobileMenu.tsx` — mobile drawer with user profile block when signed in, feature links, and Sign in/Get started or Log out actions.

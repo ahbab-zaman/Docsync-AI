@@ -2,7 +2,7 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { memo, useEffect } from "react";
+import { memo, useEffect, useRef } from "react";
 import {
   Bold,
   Italic,
@@ -74,6 +74,8 @@ export default function TiptapEditor({
   onAddComment,
   onAiAction,
 }: TiptapEditorProps) {
+  const lastEmittedHtml = useRef(content || "");
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -86,6 +88,7 @@ export default function TiptapEditor({
     content,
     editable,
     onUpdate: ({ editor }) => {
+      lastEmittedHtml.current = editor.getHTML();
       onUpdate(editor.getHTML());
     },
     editorProps: {
@@ -103,8 +106,13 @@ export default function TiptapEditor({
   }, [commentRanges]);
 
   useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content);
+    if (!editor) return;
+
+    const currentHtml = editor.getHTML();
+
+    if (content !== lastEmittedHtml.current && content !== currentHtml) {
+      lastEmittedHtml.current = content;
+      editor.commands.setContent(content, { emitUpdate: false });
     }
   }, [content, editor]);
 

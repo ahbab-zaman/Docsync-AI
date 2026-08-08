@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { getUnreadCount } from "@/server/actions/notifications";
 import { cn } from "@/lib/utils";
+import DocSync from "@/assets/DocSync.png";
+
 
 const SearchDialog = dynamic(() => import("@/components/search/SearchDialog"), { ssr: false });
 
@@ -79,7 +81,7 @@ export default function Sidebar() {
       <div className="flex items-center justify-between px-2">
         <Link href="/" className="inline-flex items-center" aria-label="Docsync home">
           <Image
-            src="/DocSync.png"
+            src={DocSync}
             alt="Docsync"
             width={500}
             height={500}

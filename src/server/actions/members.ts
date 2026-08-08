@@ -131,7 +131,7 @@ export async function getMembers(
 export async function inviteMember(
   _prevState: { error?: string; success?: boolean },
   formData: FormData
-): Promise<{ error?: string; success?: boolean }> {
+): Promise<{ error?: string; success?: boolean; invite?: PendingInvite }> {
   return runWithRequestContext(
     { requestId: generateRequestId(), action: "inviteMember" },
     async () => {
@@ -177,12 +177,21 @@ export async function inviteMember(
         const token = generateInviteToken();
         const expiresAt = inviteExpiryDate();
 
-        await query(
+        const inviteResult = await query<{
+          id: string;
+          email: string;
+          role: "admin" | "member";
+          invited_by: string;
+          invited_at: Date;
+          status: InviteStatus;
+          expires_at: Date;
+        }>(
           `INSERT INTO workspace_invites (workspace_id, email, role, invited_by, token, status, expires_at)
            VALUES ($1, $2, $3, $4, $5, 'pending', $6)
            ON CONFLICT (workspace_id, email)
            DO UPDATE SET role = $3, invited_by = $4, token = $5, status = 'pending',
-                         expires_at = $6, accepted_at = NULL, created_at = NOW()`,
+                         expires_at = $6, accepted_at = NULL, created_at = NOW()
+           RETURNING id, email, role, invited_by, created_at AS invited_at, status, expires_at`,
           [data.workspaceId, data.email, data.role, currentUserId, token, expiresAt]
         );
 
@@ -231,7 +240,14 @@ export async function inviteMember(
 
         await invalidateCache(CACHE_KEYS.workspace(data.workspaceId));
 
-        return { success: true };
+        const row = inviteResult.rows[0];
+        return {
+          success: true,
+          invite: {
+            ...row,
+            invited_by_name: inviterName,
+          },
+        };
       } catch (error) {
         if (error instanceof ZodError) {
           logger.warn("Invite validation failed", { action: "inviteMember", status: "failure" });

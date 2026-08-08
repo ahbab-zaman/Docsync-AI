@@ -20,6 +20,15 @@ export default function AiResponseView({ response, onInsert, onDiscard }: AiResp
         <span className="text-xs font-medium text-accent">{response.label}</span>
         <span className="text-[10px] text-text-muted">{time}</span>
       </div>
+      {response.degraded && (
+        <div
+          role="status"
+          className="rounded-md border border-warning/40 bg-warning-lightest p-2 text-[11px] leading-relaxed text-warning-foreground"
+        >
+          Live AI provider is unavailable — this is an offline response. Check OpenRouter
+          credits so a real answer can be generated.
+        </div>
+      )}
       <div
         className="prose prose-sm prose-invert max-w-none text-text-secondary [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-foreground [&_ul]:pl-4 [&_ol]:pl-4 [&_li]:text-text-secondary [&_strong]:text-foreground"
         dangerouslySetInnerHTML={{ __html: response.content }}

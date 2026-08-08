@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useActionState } from "react";
 import { toast } from "sonner";
+import Select from "@/components/ui/Select";
 import { updateProfile, changePassword, updateAppearance } from "@/server/actions/settings";
 import type { ProfileData } from "@/server/actions/settings";
 import type { UserPreferences } from "@/types";
@@ -210,54 +211,62 @@ function PasswordSection() {
 
 function AppearanceSection({ preferences }: { preferences: UserPreferences }) {
   const [state, formAction, pending] = useActionState(updateAppearance, {});
+  const [theme, setTheme] = useState<UserPreferences["theme"]>(preferences.theme);
+  const [density, setDensity] = useState<UserPreferences["density"]>(preferences.density);
+  const [reducedMotion, setReducedMotion] = useState(preferences.reducedMotion);
 
   useEffect(() => {
     if (state.success) toast.success("Appearance saved");
   }, [state.success]);
+
+  const apply = (next: Partial<UserPreferences>) => {
+    const nextPrefs: UserPreferences = {
+      theme: next.theme ?? theme,
+      density: next.density ?? density,
+      reducedMotion: next.reducedMotion ?? reducedMotion,
+    };
+    setTheme(nextPrefs.theme);
+    setDensity(nextPrefs.density);
+    setReducedMotion(nextPrefs.reducedMotion);
+    applyAppearance(nextPrefs);
+  };
 
   return (
     <Section
       title="Appearance"
       description="Customize how Docsync looks and feels on your device."
     >
-      <form
-        action={(formData) => {
-          formAction(formData);
-          const theme = formData.get("theme") as UserPreferences["theme"];
-          const reducedMotion = formData.get("reducedMotion") === "on";
-          const density = formData.get("density") as UserPreferences["density"];
-          applyAppearance({ theme, reducedMotion, density });
-        }}
-        className="space-y-4"
-      >
+      <form action={formAction} className="space-y-4">
         <div className="space-y-2">
           <label htmlFor="settings-theme" className="text-sm font-medium text-foreground">
             Theme
           </label>
-          <select
+          <Select
             id="settings-theme"
             name="theme"
-            defaultValue={preferences.theme}
-            className={inputClass}
-          >
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="system">System</option>
-          </select>
+            value={theme}
+            onChange={(value) => apply({ theme: value as UserPreferences["theme"] })}
+            options={[
+              { value: "light", label: "Light" },
+              { value: "dark", label: "Dark" },
+              { value: "system", label: "System" },
+            ]}
+          />
         </div>
         <div className="space-y-2">
           <label htmlFor="settings-density" className="text-sm font-medium text-foreground">
             Density
           </label>
-          <select
+          <Select
             id="settings-density"
             name="density"
-            defaultValue={preferences.density}
-            className={inputClass}
-          >
-            <option value="comfortable">Comfortable</option>
-            <option value="compact">Compact</option>
-          </select>
+            value={density}
+            onChange={(value) => apply({ density: value as UserPreferences["density"] })}
+            options={[
+              { value: "comfortable", label: "Comfortable" },
+              { value: "compact", label: "Compact" },
+            ]}
+          />
           <p className="text-xs text-text-muted">Compact density reduces spacing and text size.</p>
         </div>
         <div className="flex items-center justify-between">
@@ -271,7 +280,8 @@ function AppearanceSection({ preferences }: { preferences: UserPreferences }) {
             id="settings-reduced-motion"
             name="reducedMotion"
             type="checkbox"
-            defaultChecked={preferences.reducedMotion}
+            checked={reducedMotion}
+            onChange={(e) => apply({ reducedMotion: e.target.checked })}
             className="h-5 w-5 rounded border-border text-accent focus:ring-2 focus:ring-accent"
           />
         </div>

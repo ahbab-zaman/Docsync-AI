@@ -67,7 +67,7 @@ src/app/
 > Note: Feature behavior is implemented through server actions under `src/server/actions`, not REST route handlers. The only API route handlers are the health, metrics, and infrastructure check endpoints. A REST API layer may be added in a later phase.
 
 ## `src/components`
-- ui         → primitives (EmptyState, LoadingSpinner, Skeleton, ConfirmDialog)
+- ui         → primitives (EmptyState, LoadingSpinner, Skeleton, ConfirmDialog, Select)
 - layout     → Sidebar
 - documents  → TiptapEditor
 - editor     → OutlinePanel, SelectionMenu, VersionHistory
