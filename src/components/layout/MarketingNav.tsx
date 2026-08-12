@@ -14,6 +14,7 @@ import {
   ChevronDown,
   LogOut,
   Menu,
+  X,
 } from "lucide-react";
 import { logout } from "@/server/actions/auth";
 import { cn } from "@/lib/utils";
@@ -27,7 +28,7 @@ interface FeatureItem {
   icon: React.ElementType;
 }
 
-const featureItems: FeatureItem[] = [
+const allFeatureItems: FeatureItem[] = [
   { href: "/app", label: "Dashboard", icon: LayoutDashboard },
   { href: "/app/workspaces", label: "Workspaces", icon: Briefcase },
   { href: "/app/ai", label: "AI Assistant", icon: Sparkles },
@@ -79,14 +80,22 @@ function UserAvatar({ user, size = "md" }: { user: UserPublic; size?: "sm" | "md
 
 interface MarketingNavProps {
   user: UserPublic | null;
+  canManageMembers?: boolean;
 }
 
-export default function MarketingNav({ user }: MarketingNavProps) {
+export default function MarketingNav({
+  user,
+  canManageMembers = false,
+}: MarketingNavProps) {
   const router = useRouter();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const featureItems = allFeatureItems.filter(
+    (item) => item.href !== "/app/members" || canManageMembers
+  );
 
   const closeAll = useCallback(() => {
     setUserMenuOpen(false);
@@ -131,7 +140,7 @@ export default function MarketingNav({ user }: MarketingNavProps) {
         className="flex items-center gap-2 rounded-full border border-border bg-surface py-1 pl-1 pr-2.5 hover:bg-surface-secondary transition-colors"
       >
         <UserAvatar user={user} />
-        <span className="max-w-[10rem] truncate text-sm font-medium text-foreground">
+        <span className="max-w-40 truncate text-sm font-medium text-foreground">
           {user.name}
         </span>
         <ChevronDown
@@ -208,16 +217,44 @@ export default function MarketingNav({ user }: MarketingNavProps) {
     <header className="border-b border-border">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <div className="flex items-center gap-8">
-          <Link href="/" className="inline-flex items-center" aria-label="Docsync home">
-            <Image
-              src={DocsyncLogo}
-              alt="Docsync"
-              width={500}
-              height={500}
-              className="h-12 w-12"
-              priority
-            />
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link
+              href="/"
+              aria-label="DocSync home"
+              className="group flex flex-1 items-center rounded-xl px-2 py-2.5"
+            >
+              {/* Document Logo */}
+              <div className="relative flex h-10 w-10 shrink-0 items-center justify-center">
+                {/* Back document */}
+                <div className="absolute left-1 top-1 h-8 w-7 border-2 border-accent/40 bg-accent/10 -rotate-6" />
+
+                {/* Main document */}
+                <div className="relative h-9 w-7 overflow-hidden border-2 border-accent bg-accent/10 shadow-sm transition-transform duration-200 group-hover:-translate-y-0.5">
+                  {/* Folded corner */}
+                  <div className="absolute -right-px -top-px h-3.5 w-3.5 border-b-2 border-l-2 border-accent bg-surface-secondary" />
+
+                  {/* Document lines */}
+                  <div className="absolute left-1.5 top-4 h-0.5 w-3 rounded-full bg-accent/70" />
+                  <div className="absolute left-1.5 top-5.5 h-0.5 w-4 rounded-full bg-accent/50" />
+                  <div className="absolute left-1.5 top-7 h-0.5 w-2.5 rounded-full bg-accent/40" />
+                </div>
+              </div>
+
+              {/* Wordmark */}
+              <span className="text-[23px] font-black tracking-[-0.045em] text-foreground">
+                Doc<span className="text-accent">Sync</span>
+              </span>
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => setMobileOpen(false)}
+              className="md:hidden flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-surface"
+              aria-label="Close navigation"
+            >
+              <X className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
           <nav className="hidden md:flex items-center gap-6" aria-label="Primary navigation">
             {sectionLinks.map((link) => (
               <a

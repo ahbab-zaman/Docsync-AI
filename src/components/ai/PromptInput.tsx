@@ -43,8 +43,7 @@ export default function PromptInput({ onSubmit, disabled, placeholder }: PromptI
         onKeyDown={handleKeyDown}
         placeholder={resolvedPlaceholder}
         disabled={disabled}
-        rows={1}
-        className="min-h-[36px] flex-1 resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
+        className="flex-1 resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
       />
       <button
         type="button"

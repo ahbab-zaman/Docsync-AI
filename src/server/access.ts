@@ -32,6 +32,19 @@ export async function getWorkspaceRole(
   return result.rows[0]?.role ?? null;
 }
 
+export async function canManageWorkspaceMembers(
+  userId: string
+): Promise<boolean> {
+  const result = await query<{ exists: boolean }>(
+    `SELECT EXISTS (
+       SELECT 1 FROM workspace_members
+       WHERE user_id = $1 AND role IN ('owner', 'admin')
+     ) AS exists`,
+    [userId]
+  );
+  return result.rows[0]?.exists ?? false;
+}
+
 export const ANY_MEMBER: WorkspaceRole[] = ["owner", "admin", "member"];
 export const ADMIN_ROLES: WorkspaceRole[] = ["owner", "admin"];
 

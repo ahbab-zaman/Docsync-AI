@@ -8,6 +8,7 @@
     "dev:socket": "tsx server/socket-server.ts",
     "dev:all": "concurrently \"next dev\" \"tsx server/hocuspocus-server.ts\" \"tsx server/socket-server.ts\"",
     "migrate": "tsx server/migrate.ts",
+    "seed": "tsx server/seed.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
