@@ -1,13 +1,13 @@
 import type { AiActionType } from "@/types/ai";
 import { logger } from "@/lib/logger";
 
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY ?? "";
-const OPENROUTER_MODEL =
-  process.env.OPENROUTER_MODEL ?? "~deepseek/deepseek-v4-flash-latest";
-const API_URL = "https://openrouter.ai/api/v1/chat/completions";
+const GROQ_API_KEY = process.env.GROQ_API_KEY ?? "";
+const GROQ_MODEL = process.env.GROQ_MODEL ?? "groq/compound-mini";
+const GROQ_MODEL_VERSION = process.env.GROQ_MODEL_VERSION ?? "latest";
+const API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 export function isAiConfigured(): boolean {
-  return Boolean(OPENROUTER_API_KEY);
+  return Boolean(GROQ_API_KEY);
 }
 
 const ACTION_SYSTEM_PROMPTS: Record<AiActionType, string> = {
@@ -31,18 +31,14 @@ const ACTION_SYSTEM_PROMPTS: Record<AiActionType, string> = {
     "Answer the user's request based on the document content provided. Respond with clean HTML only. No markdown, no extra commentary.",
 };
 
-function buildUserPrompt(
-  actionType: AiActionType,
-  prompt: string,
-  documentContent: string
-): string {
+function buildUserPrompt(prompt: string, documentContent: string): string {
   const contentLabel = documentContent.trim()
     ? documentContent
     : "(No document content provided)";
   return `${prompt}\n\n--- Document content ---\n${contentLabel}`;
 }
 
-interface OpenRouterResponse {
+interface GroqResponse {
   choices?: { message?: { content?: string } }[];
   error?: { message?: string };
 }
@@ -52,8 +48,8 @@ export async function runAiCompletion(
   prompt: string,
   documentContent: string
 ): Promise<string> {
-  if (!OPENROUTER_API_KEY) {
-    throw new Error("OPENROUTER_API_KEY is not configured");
+  if (!GROQ_API_KEY) {
+    throw new Error("GROQ_API_KEY is not configured");
   }
 
   const controller = new AbortController();
@@ -63,28 +59,27 @@ export async function runAiCompletion(
     const res = await fetch(API_URL, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+        Authorization: `Bearer ${GROQ_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": process.env.AUTH_URL ?? "http://localhost:3000",
+        "Groq-Model-Version": GROQ_MODEL_VERSION,
         "X-Title": "Docsync",
       },
       body: JSON.stringify({
-        model: OPENROUTER_MODEL,
+        model: GROQ_MODEL,
         messages: [
           { role: "system", content: ACTION_SYSTEM_PROMPTS[actionType] },
-          { role: "user", content: buildUserPrompt(actionType, prompt, documentContent) },
+          { role: "user", content: buildUserPrompt(prompt, documentContent) },
         ],
         temperature: 0.7,
-        max_tokens: 2000,
+        max_completion_tokens: 2000,
       }),
       signal: controller.signal,
     });
 
-    const data = (await res.json().catch(() => ({}))) as OpenRouterResponse;
+    const data = (await res.json().catch(() => ({}))) as GroqResponse;
 
     if (!res.ok) {
-      const message =
-        data.error?.message ?? `OpenRouter request failed with status ${res.status}`;
+      const message = data.error?.message ?? `Groq request failed with status ${res.status}`;
       throw new Error(message);
     }
 
@@ -100,19 +95,19 @@ export async function runAiCompletion(
 }
 
 export function getAiModelName(): string {
-  return OPENROUTER_MODEL;
+  return GROQ_MODEL;
 }
 
 export function logAiConfig(): void {
   if (isAiConfigured()) {
     logger.info("AI provider configured", {
       action: "ai:init",
-      provider: "openrouter",
-      model: OPENROUTER_MODEL,
+      provider: "groq",
+      model: GROQ_MODEL,
       status: "success",
     });
   } else {
-    logger.warn("OPENROUTER_API_KEY not set, AI will use mock responses", {
+    logger.warn("GROQ_API_KEY not set, AI will use mock responses", {
       action: "ai:init",
       status: "degraded",
     });

@@ -79,16 +79,16 @@
 - Removed dead code found during the production-readiness audit: `useDocumentSync` hook and `lib/hocuspocus.ts` client provider (no longer imported anywhere); server-side `server/hocuspocus-server.ts` remains. Also removed unused imports (`findUserById`, `getSocket`).
 
 ## Decisions Made During Dynamic Backend Data (post-Phase 3)
-- AI runs through a real OpenRouter provider (`src/lib/ai/openrouter.ts`) using `~deepseek/deepseek-v4-flash-latest` as the default model; `isAiConfigured`, `runAiCompletion`, and `getAiModelName` helpers gate provider vs. fallback. Every AI run is persisted to the `ai_runs` table; the AI page (`/app/ai`) includes a real document selector so prompts can attach to a document.
+- AI runs through a real Groq provider (`src/lib/ai/groq.ts`) using `groq/compound-mini` as the default model; `isAiConfigured`, `runAiCompletion`, and `getAiModelName` helpers gate provider vs. fallback. Every AI run is persisted to the `ai_runs` table; the AI page (`/app/ai`) includes a real document selector so prompts can attach to a document.
 - Notifications and activity events are fully PostgreSQL-backed via `src/lib/notifications.ts` helpers (`createNotification`, `createActivityEvent`, `notifyWorkspaceMembers`, `notifyWorkspaceAdmins`, `createThrottledDocumentUpdatedActivity`). No mock data remains for notifications.
 - Members management is DB-backed: `workspace_invites` table stores pending invites with status + role, and `src/server/actions/members.ts` implements invite, accept, cancel, change role, and remove member against PostgreSQL.
 - Settings is DB-backed via `src/server/actions/settings.ts` + extended `src/server/repositories/user.ts`: profile (name/email/avatar), password (bcrypt via the same auth helpers), and appearance (theme/density/reduced-motion) stored in the `users.preferences` JSONB column.
 - Appearance settings are applied client-side by `src/lib/appearance.ts` (`applyAppearance`, `resolveTheme`, `watchSystemTheme`) and `src/components/settings/ThemeProvider.tsx`; CSS tokens in `globals.css` react to `data-theme`, `data-density`, and `data-reduced-motion` attributes on `<html>`.
 - Workspaces gained `updateWorkspace` + `deleteWorkspace` actions; the workspace detail page (`[workspaceId]/WorkspaceSettings.tsx`) exposes edit/delete gated by the caller's role (`canManage`). Documents gained a `deleteDocument` action wired into the editor.
-- Model ID note: the plain `deepseek/deepseek-v4-flash-latest` identifier returns a 400 from OpenRouter; the `~`-prefixed `~deepseek/deepseek-v4-flash-latest` resolves correctly, so the provider uses the prefixed form.
+- Model ID note: the Groq provider defaults to `groq/compound-mini`; `GROQ_MODEL` can override it if a different supported model is preferred.
 - CSS was converted from `@theme inline` to `@theme` because Tailwind v4 cannot override `inline` theme values.
 - Server action files are async-only; sync exports from `"use server"` files break the Turbopack build (removed `sanitizePreferences` accordingly).
-- `.env.local` carries the OpenRouter API key; the original value had a stray trailing `]` which was removed so the key authenticates correctly.
+- `.env.local` carries the Groq API key; the original value had a stray trailing `]` which was removed so the key authenticates correctly.
 
 ## Dynamic Backend Data Milestone (post-Phase 3)
 - Schema additions applied to PostgreSQL (`src/server/schema.sql`): `workspace_invites`, `notifications`, `activity_events`, `ai_runs` tables and a `users.preferences` JSONB column.
@@ -118,7 +118,7 @@
 - **Editor no longer loses formatting.** `TiptapEditor`'s controlled-content sync used `content !== editor.getHTML()` in an effect, which could reset the document with a stale prop right after an editor-originated update. It now tracks the last HTML the editor emitted (`lastEmittedRef`) and only calls `setContent(content, { emitUpdate: false })` when the incoming prop differs from BOTH that value and the current doc — so external changes (AI insert, version restore) still apply instantly while user formatting is never clobbered.
 - **Pending edits are flushed on unmount.** `DocumentEditor` only cleared the debounce timer on unmount, so navigating away inside the 800ms idle window could silently lose the latest content. A `dirtyRef` + latest-snapshot ref now fire a best-effort `saveDocument` on cleanup, so headings and formatting are not lost on fast navigation.
 - **Online collaborator count is real, not mocked.** `usePresence` ignored the socket's `presenceList` and returned `getAllMockCollaborators()`. It now maps live `PresenceUser[]` into `Collaborator[]` (falling back to just the current user when disconnected); `DocumentEditor` passes `userId`/`userName`/`userColor` from the server page, and typing presence is emitted on edits. `useSocket`/`connectSocket` forward name+color, and `server/socket-server.ts` reads them from handshake auth.
-- **AI degradation is surfaced, not silent.** The OpenRouter key in `.env.local` currently returns 402 (no credits), so every AI request silently fell back to the static mock — the "same answer" bug. `runAiAction` now sets `degraded: true` for any fallback, `AiResponse.tsx` renders a visible offline-provider notice, and the `custom` mock echoes the user's actual prompt + doc snippet so fallback replies are never byte-identical.
+- **AI degradation is surfaced, not silent.** When Groq is unavailable or the key is missing, AI requests fall back to the static mock. `runAiAction` sets `degraded: true` for any fallback, `AiResponse.tsx` renders a visible offline-provider notice, and the `custom` mock echoes the user's actual prompt + doc snippet so fallback replies are never byte-identical.
 - Replaced `TiptapEditor.debug*.test.tsx` scaffolding with `TiptapEditor.test.tsx` covering external-content sync and formatting preservation.
 - Final verification: `tsc --noEmit` clean, ESLint 0 problems, 125 tests / 24 files passing, `next build` succeeds.
 
@@ -135,7 +135,7 @@
 - Tests updated: `workspace.test.ts` and `members.test.ts` mock `@/server/access`; added tests for unauthenticated creation, non-admin invite denial, role-change admin denial/allowance, and member-removal denial. 123 tests total.
 - Verified: `tsc --noEmit` clean, ESLint 0 problems, 123 tests / 23 files passing, `next build` succeeds.
 - Converted all six app sections to DB-backed server actions and verified at runtime:
-  - AI (`/app/ai`) — OpenRouter completion with mock fallback, persisted runs, document selector.
+  - AI (`/app/ai`) — Groq completion with mock fallback, persisted runs, document selector.
   - Documents (`/app/documents/[documentId]`) — create/save/delete against PostgreSQL.
   - Members (`/app/members`) — workspace switcher, real members, DB invites with accept/cancel/role management.
   - Notifications (`/app/notifications`) — DB-backed list, mark read / mark all, unread badge, plus activity feed.

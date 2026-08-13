@@ -116,7 +116,7 @@ src/app/
 - utils.ts
 - yjs.ts
 - ai/
-    - openrouter.ts
+    - groq.ts
     - sanitize.ts
 
 > Note: Phase 3 added `cache`, `errors`, `logger`, `metrics`, `rate-limiter`, `redis`, `retry`, and `sanitize`. The Invite & Email Workflow added `email` (Resend REST + SMTP/nodemailer fallback) and `invite-utils` (token/expiry/URL). Each infra module ships a colocated `*.test.ts`. Tests live next to the code they cover (`src/**/*.test.{ts,tsx}`) with shared setup in `src/tests/setup.ts`; 123 tests across 23 files.

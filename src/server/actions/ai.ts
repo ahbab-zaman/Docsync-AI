@@ -10,7 +10,7 @@ import {
   ANY_MEMBER,
 } from "@/server/access";
 import { logger, runWithRequestContext, generateRequestId } from "@/lib/logger";
-import { runAiCompletion, isAiConfigured } from "@/lib/ai/openrouter";
+import { runAiCompletion, isAiConfigured } from "@/lib/ai/groq";
 import { sanitizeHtml } from "@/lib/ai/sanitize";
 
 function getResponseLabel(actionType: AiActionType): string {

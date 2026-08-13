@@ -323,7 +323,7 @@ Realtime Presence
 
 Gemini
 
-OpenRouter
+Groq
 
 Prompt orchestration
 
@@ -521,7 +521,7 @@ Responsibilities
 
 Gemini
 
-OpenRouter
+Groq
 
 Email Provider
 
@@ -1535,15 +1535,15 @@ AI Orchestrator
       │
       ├──────── Gemini
       │
-      └──────── OpenRouter
+      └──────── Groq
 ```
 
 ## AI Implementation (current)
 
-The current implementation uses **OpenRouter** as the production provider (`src/lib/ai/openrouter.ts`), with a deterministic mock fallback when no API key is configured (`isAiConfigured`). The default model is `~deepseek/deepseek-v4-flash-latest` (the `~` prefix is required; the unprefixed identifier returns 400 from OpenRouter). The provider module exposes:
+The current implementation uses **Groq** as the production provider (`src/lib/ai/groq.ts`), with a deterministic mock fallback when no API key is configured (`isAiConfigured`). The default model is `groq/compound-mini`, configured through `GROQ_API_KEY` and optionally `GROQ_MODEL` / `GROQ_MODEL_VERSION`. The provider module exposes:
 
-- `isAiConfigured` — whether `OPENROUTER_API_KEY` is set
-- `runAiCompletion` — single-turn chat completion against OpenRouter's `/api/v1/chat/completions`
+- `isAiConfigured` — whether `GROQ_API_KEY` is set
+- `runAiCompletion` — single-turn chat completion against Groq's `/openai/v1/chat/completions`
 - `getAiModelName` — the configured model for UI display
 
 Every AI run is persisted to the `ai_runs` table (prompt, response, model, latency, status) so history survives page reloads. The AI page (`/app/ai`) is client-driven via `AiPageClient.tsx` with a document selector sourced from `getAiDocuments`. Prompt content passes through `src/lib/ai/sanitize.ts` before display.

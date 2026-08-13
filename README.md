@@ -21,7 +21,7 @@ A production-grade, real-time AI collaboration workspace. Teams write documents 
 - **Editor & Collaboration:** TipTap, Yjs, Hocuspocus, Socket.IO
 - **Backend:** Node.js, Express, PostgreSQL, pg (Repository Pattern), Redis, BullMQ
 - **Auth:** JWT, refresh tokens, secure cookies
-- **AI:** Gemini, OpenRouter
+- **AI:** Gemini, Groq
 
 ## Getting Started
 

@@ -75,7 +75,7 @@ After building any component — update this file with the component name, file 
 - `src/components/ai/AiPageClient.tsx` — Client shell for `/app/ai`
   - Props: `documents`, `initialRuns?`
   - Document selector (picks a document from `getAiDocuments`), prompt input, message thread, clear-chat
-  - Delegates to `runAiCompletion` server action (OpenRouter with mock fallback)
+  - Delegates to `runAiCompletion` server action (Groq with mock fallback)
 - `src/components/ai/AiResponse.tsx` — AI response card with insert/discard actions
   - Classes: `rounded-lg border border-accent/20 bg-surface-secondary p-3 space-y-2`
 - `src/components/ai/PromptInput.tsx` — Auto-resizing textarea with send button
@@ -433,4 +433,3 @@ Every component entry should answer the following questions:
 - When was it last updated?
 
 If any answer changes, update this registry immediately.
-

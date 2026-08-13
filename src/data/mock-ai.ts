@@ -24,8 +24,8 @@ function buildCustomFallback(prompt: string, documentContent: string): string {
     "<h3>Local response</h3>",
     `<p>Asked: <strong>${echoed}</strong></p>`,
     `<p>${docNote}</p>`,
-    `<p>This reply was generated locally because the AI provider is unavailable right now (no API key or the provider rejected the payment). Restart with valid OpenRouter credits to get a live answer.</p>`,
-    `<p>For a real answer, check your <code>OPENROUTER_API_KEY</code> in <code>.env.local</code> and top up your OpenRouter balance.</p>`,
+    `<p>This reply was generated locally because the AI provider is unavailable right now (no API key or the provider rejected the request). Restart with a valid Groq key to get a live answer.</p>`,
+    `<p>For a real answer, check your <code>GROQ_API_KEY</code> in <code>.env.local</code> and confirm your Groq account is active.</p>`,
   ].join("");
 }
 

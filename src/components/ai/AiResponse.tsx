@@ -25,8 +25,8 @@ export default function AiResponseView({ response, onInsert, onDiscard }: AiResp
           role="status"
           className="rounded-md border border-warning/40 bg-warning-lightest p-2 text-[11px] leading-relaxed text-warning-foreground"
         >
-          Live AI provider is unavailable — this is an offline response. Check OpenRouter
-          credits so a real answer can be generated.
+          Live AI provider is unavailable — this is an offline response. Check your Groq API
+          key so a real answer can be generated.
         </div>
       )}
       <div

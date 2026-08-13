@@ -2,7 +2,6 @@
 
 import { useRef, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -20,7 +19,6 @@ import { logout } from "@/server/actions/auth";
 import { cn } from "@/lib/utils";
 import type { UserPublic } from "@/types";
 import MarketingMobileMenu from "@/components/layout/MarketingMobileMenu";
-import DocsyncLogo from "@/assets/DocSync.png";
 
 interface FeatureItem {
   href: string;
@@ -38,9 +36,9 @@ const allFeatureItems: FeatureItem[] = [
 ];
 
 const sectionLinks = [
-  { href: "#features", label: "Features" },
-  { href: "#collaboration", label: "Collaboration" },
-  { href: "#ai", label: "AI" },
+  { href: "#showcase", label: "Showcase" },
+  { href: "#process", label: "Process" },
+  { href: "#about", label: "About" },
 ];
 
 function UserAvatar({ user, size = "md" }: { user: UserPublic; size?: "sm" | "md" }) {
@@ -255,18 +253,18 @@ export default function MarketingNav({
               <X className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
-          <nav className="hidden md:flex items-center gap-6" aria-label="Primary navigation">
+        </div>
+          <div className="hidden md:flex items-center gap-10" aria-label="Primary navigation">
             {sectionLinks.map((link) => (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
                 className="text-sm text-text-secondary hover:text-foreground transition-colors"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
-          </nav>
-        </div>
+          </div>
 
         <div className="flex items-center gap-3">
           <div className="hidden md:block">{userMenu}</div>
